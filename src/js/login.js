@@ -8,16 +8,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let loginData = null;
 
-    // Initialize Turnstile
+    // 初始化 Turnstile（人机验证）
     let turnstileWidgetId = null;
-    if (typeof turnstile !== 'undefined') {
-        const turnstileContainer = document.getElementById('turnstile-container');
-        if (turnstileContainer) {
-            turnstileWidgetId = turnstile.render('#turnstile-container', {
-                sitekey: import.meta.env?.VITE_TURNSTILE_SITE_KEY || window.TURNSTILE_SITE_KEY || '',
-                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light'
-            });
+    let turnstileToken = null;
+
+    // 全局回调：Turnstile 验证成功
+    window.onTurnstileSuccess = function(token) {
+        turnstileToken = token;
+    };
+
+    // 初始化 Turnstile
+    function initTurnstile() {
+        if (typeof turnstile === 'undefined') {
+            // Turnstile 还未加载，稍后重试
+            setTimeout(initTurnstile, 500);
+            return;
         }
+
+        const turnstileContainer = document.getElementById('turnstile-container');
+        if (!turnstileContainer) return;
+
+        const siteKey = window.getConfig ? window.getConfig('TURNSTILE_SITE_KEY') : '';
+
+        if (!siteKey) {
+            console.warn('Turnstile 站点密钥未配置，跳过人机验证');
+            turnstileContainer.innerHTML = '<p style="color:var(--text-tertiary);font-size:12px;">⚠ Turnstile 未配置</p>';
+            return;
+        }
+
+        try {
+            turnstileWidgetId = turnstile.render('#turnstile-container', {
+                sitekey: siteKey,
+                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light',
+                callback: function(token) {
+                    turnstileToken = token;
+                }
+            });
+        } catch (e) {
+            console.error('Turnstile 初始化失败:', e);
+        }
+    }
+
+    // 等待 DOM 完全加载后再初始化
+    if (document.readyState === 'complete') {
+        initTurnstile();
+    } else {
+        window.addEventListener('load', initTurnstile);
     }
 
     // Handle form submission
@@ -28,14 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value;
         const rememberMe = document.getElementById('remember-me').checked;
 
-        // Get Turnstile token
-        let turnstileToken = null;
-        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+        // 获取 Turnstile token
+        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null && !turnstileToken) {
             turnstileToken = turnstile.getResponse(turnstileWidgetId);
         }
 
         try {
-            // Verify Turnstile first
+            // 先验证 Turnstile
             if (turnstileToken) {
                 await Auth.verifyTurnstile(turnstileToken);
             }

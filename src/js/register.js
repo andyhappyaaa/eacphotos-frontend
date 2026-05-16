@@ -11,16 +11,48 @@ document.addEventListener('DOMContentLoaded', () => {
     let countdown = 0;
     let countdownInterval = null;
 
-    // Initialize Turnstile
+    // 初始化 Turnstile（人机验证）
     let turnstileWidgetId = null;
-    if (typeof turnstile !== 'undefined') {
-        const turnstileContainer = document.getElementById('turnstile-container');
-        if (turnstileContainer) {
-            turnstileWidgetId = turnstile.render('#turnstile-container', {
-                sitekey: import.meta.env?.VITE_TURNSTILE_SITE_KEY || window.TURNSTILE_SITE_KEY || '',
-                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light'
-            });
+    let turnstileToken = null;
+
+    window.onTurnstileSuccess = function(token) {
+        turnstileToken = token;
+    };
+
+    function initTurnstile() {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(initTurnstile, 500);
+            return;
         }
+
+        const turnstileContainer = document.getElementById('turnstile-container');
+        if (!turnstileContainer) return;
+
+        const siteKey = window.getConfig ? window.getConfig('TURNSTILE_SITE_KEY') : '';
+
+        if (!siteKey) {
+            console.warn('Turnstile 站点密钥未配置，跳过人机验证');
+            turnstileContainer.innerHTML = '<p style="color:var(--text-tertiary);font-size:12px;">⚠ Turnstile 未配置</p>';
+            return;
+        }
+
+        try {
+            turnstileWidgetId = turnstile.render('#turnstile-container', {
+                sitekey: siteKey,
+                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light',
+                callback: function(token) {
+                    turnstileToken = token;
+                }
+            });
+        } catch (e) {
+            console.error('Turnstile 初始化失败:', e);
+        }
+    }
+
+    if (document.readyState === 'complete') {
+        initTurnstile();
+    } else {
+        window.addEventListener('load', initTurnstile);
     }
 
     // Send email verification code
@@ -114,14 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Get Turnstile token
-        let turnstileToken = null;
-        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+        // 获取 Turnstile token
+        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null && !turnstileToken) {
             turnstileToken = turnstile.getResponse(turnstileWidgetId);
         }
 
         try {
-            // Verify Turnstile first
+            // 先验证 Turnstile
             if (turnstileToken) {
                 await Auth.verifyTurnstile(turnstileToken);
             }

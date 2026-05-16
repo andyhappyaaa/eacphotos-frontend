@@ -1,23 +1,66 @@
-// Upload Page Logic
+// 上传页面逻辑
 document.addEventListener('DOMContentLoaded', async () => {
+    // ==================== 登录验证 ====================
+    // 检查用户是否已登录，未登录则跳转到登录页
+    if (!Auth.isLoggedIn()) {
+        // 显示提示信息
+        alert('请先登录后再上传图片');
+        // 跳转登录页，带上回跳参数
+        const returnUrl = encodeURIComponent(window.location.pathname);
+        window.location.href = '/login.html?return=' + returnUrl;
+        return;
+    }
+
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
     const uploadForm = document.getElementById('upload-form');
 
-    // Initialize Turnstile
+    // 初始化 Turnstile（人机验证）
     let turnstileWidgetId = null;
-    if (typeof turnstile !== 'undefined') {
+    let turnstileToken = null;
+
+    window.onTurnstileSuccess = function(token) {
+        turnstileToken = token;
+    };
+
+    function initTurnstile() {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(initTurnstile, 500);
+            return;
+        }
+
         const turnstileContainer = document.getElementById('turnstile-container');
-        if (turnstileContainer) {
+        if (!turnstileContainer) return;
+
+        const siteKey = window.getConfig ? window.getConfig('TURNSTILE_SITE_KEY') : '';
+
+        if (!siteKey) {
+            console.warn('Turnstile 站点密钥未配置，跳过人机验证');
+            turnstileContainer.innerHTML = '<p style="color:var(--text-tertiary);font-size:12px;">⚠ Turnstile 未配置</p>';
+            return;
+        }
+
+        try {
             turnstileWidgetId = turnstile.render('#turnstile-container', {
-                sitekey: import.meta.env?.VITE_TURNSTILE_SITE_KEY || window.TURNSTILE_SITE_KEY || '',
-                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light'
+                sitekey: siteKey,
+                theme: Theme.getTheme() === 'dark' ? 'dark' : 'light',
+                callback: function(token) {
+                    turnstileToken = token;
+                }
             });
+        } catch (e) {
+            console.error('Turnstile 初始化失败:', e);
         }
     }
 
-    // Load queue info
+    if (document.readyState === 'complete') {
+        initTurnstile();
+    } else {
+        window.addEventListener('load', initTurnstile);
+    }
+
+    // 加载队列信息
     await loadQueueInfo();
 
     // Setup drag and drop
@@ -178,14 +221,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('photos', file);
         });
 
-        // Get Turnstile token
-        let turnstileToken = null;
-        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+        // 获取 Turnstile token
+        if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null && !turnstileToken) {
             turnstileToken = turnstile.getResponse(turnstileWidgetId);
         }
 
         try {
-            // Verify Turnstile
+            // 验证 Turnstile
             if (turnstileToken) {
                 await Auth.verifyTurnstile(turnstileToken);
             }

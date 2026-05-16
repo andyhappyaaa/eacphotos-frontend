@@ -98,7 +98,7 @@
                             </label>
                         </div>
                         <div class="form-group">
-                            <div class="turnstile-container" id="turnstile-container"></div>
+                            <div class="cf-turnstile turnstile-container" id="turnstile-container" data-callback="onTurnstileSuccess"></div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-full" data-i18n="register.submit">注册</button>
                         <div class="form-footer">
@@ -135,6 +135,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+    <script src="/js/config.js"></script>
     <script src="/js/i18n.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/theme.js"></script>

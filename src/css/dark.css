@@ -1,21 +1,125 @@
-/* Dark Theme */
+/* Dark Theme - 暗色主题 */
 body.dark {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-card: #1e293b;
+    /* 背景色：更深更柔和 */
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #161b2c;
+    --bg-tertiary: #1f2940;
+    --bg-card: #161b2c;
 
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #64748b;
+    /* 文字色：增强对比度，确保清晰可读 */
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-tertiary: #94a3b8;
 
-    --border-color: #334155;
+    /* 边框色 */
+    --border-color: #2d3958;
     --border-hover: #475569;
 
+    /* 阴影 */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+/* 暗色主题文字渲染优化 */
+body.dark {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* 暗色主题下确保所有文字都清晰 */
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark h5,
+body.dark h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+body.dark p,
+body.dark span,
+body.dark div,
+body.dark a {
+    color: inherit;
+}
+
+/* 暗色主题下的输入框文字 */
+body.dark input,
+body.dark textarea,
+body.dark select {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+}
+
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+    color: #64748b;
+    opacity: 1;
+}
+
+/* 暗色主题下的按钮文字 */
+body.dark .btn {
+    font-weight: 500;
+}
+
+body.dark .btn-outline {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body.dark .btn-outline:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+/* 暗色主题下的链接 */
+body.dark a:not(.btn) {
+    color: #60a5fa;
+}
+
+body.dark a:not(.btn):hover {
+    color: #93c5fd;
+}
+
+/* 导航栏链接 */
+body.dark .nav-link {
+    color: var(--text-secondary);
+}
+
+body.dark .nav-link:hover {
+    color: var(--text-primary);
+}
+
+body.dark .nav-link.active {
+    color: #60a5fa;
+}
+
+/* 表单标签 */
+body.dark label {
+    color: var(--text-primary);
+}
+
+/* 下拉框选项 */
+body.dark option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* 暗色主题下小字（hint 等） */
+body.dark small {
+    color: var(--text-tertiary);
+}
+
+/* 暗色主题下的代码块 */
+body.dark code {
+    background-color: var(--bg-tertiary);
+    color: #f0abfc;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 /* Logo switching in dark mode */
