@@ -1,0 +1,30 @@
+{
+  "name": "eac-photo-frontend",
+  "version": "1.0.0",
+  "description": "EAC Photo 前端 - 航空摄影社区用户界面，部署在 Vercel 上",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "eac-photo",
+    "aviation",
+    "photography",
+    "frontend",
+    "vercel",
+    "vanilla-js"
+  ],
+  "author": "EAC Photo Team",
+  "license": "MIT",
+  "dependencies": {
+    
+    "qrcodejs2": "^0.0.2"
+  },
+  "devDependencies": {
+    
+    "vite": "^5.0.0"
+  },
+  "type": "module"
+}

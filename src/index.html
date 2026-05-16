@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAC Photo - 航空摄影社区</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dark.css">
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="nav-logo">
+                    <img id="nav-logo" src="https://r2.eacof.org/logo-light.png" alt="EAC Photo">
+                </a>
+                <div class="nav-menu">
+                    <a href="/" class="nav-link" data-i18n="nav.home">首页</a>
+                    <a href="/gallery.html" class="nav-link" data-i18n="nav.gallery">图库</a>
+                    <a href="/upload.html" class="nav-link" data-i18n="nav.upload">上传</a>
+                    <a href="/search.html" class="nav-link" data-i18n="nav.search">搜索</a>
+                    <a href="/news.html" class="nav-link" data-i18n="nav.news">新闻</a>
+                </div>
+                <div class="nav-actions">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                    <select id="lang-select" class="lang-select">
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                    </select>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="/login.html" class="btn btn-outline" data-i18n="nav.login">登录</a>
+                        <a href="/register.html" class="btn btn-primary" data-i18n="nav.register">注册</a>
+                    </div>
+                    <div id="user-menu" class="user-menu hidden">
+                        <div class="user-avatar">
+                            <img src="https://r2.eacof.org/logo-light.png" alt="User">
+                        </div>
+                        <div class="user-dropdown">
+                            <a href="/profile.html" data-i18n="nav.profile">个人主页</a>
+                            <a href="/my-photos.html" data-i18n="nav.myPhotos">我的作品</a>
+                            <a href="/settings.html" data-i18n="nav.settings">设置</a>
+                            <button id="logout-btn" data-i18n="nav.logout">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <section class="hero">
+                <div class="hero-content">
+                    <h1 data-i18n="hero.title">发现世界各地的航空之美</h1>
+                    <p data-i18n="hero.subtitle">分享你的航空摄影作品，加入全球航空摄影爱好者社区</p>
+                    <div class="hero-actions">
+                        <a href="/upload.html" class="btn btn-primary btn-large" data-i18n="hero.upload">上传照片</a>
+                        <a href="/gallery.html" class="btn btn-outline btn-large" data-i18n="hero.browse">浏览图库</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="featured">
+                <div class="container">
+                    <h2 data-i18n="featured.title">精选作品</h2>
+                    <div class="featured-grid" id="featured-grid">
+                        <div class="featured-main" id="featured-main">
+                            <img src="https://r2.eacof.org/logo-light.png" alt="Featured">
+                        </div>
+                        <div class="featured-side">
+                            <div class="featured-item" id="featured-1">
+                                <img src="https://r2.eacof.org/logo-light.png" alt="Featured">
+                            </div>
+                            <div class="featured-item" id="featured-2">
+                                <img src="https://r2.eacof.org/logo-light.png" alt="Featured">
+                            </div>
+                            <div class="featured-item" id="featured-3">
+                                <img src="https://r2.eacof.org/logo-light.png" alt="Featured">
+                            </div>
+                            <div class="featured-item" id="featured-4">
+                                <img src="https://r2.eacof.org/logo-light.png" alt="Featured">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="stat-photos">0</span>
+                            <span class="stat-label" data-i18n="stats.photos">张照片</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="stat-users">0</span>
+                            <span class="stat-label" data-i18n="stats.users">位摄影师</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="stat-airlines">0</span>
+                            <span class="stat-label" data-i18n="stats.airlines">家航空公司</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="stat-aircraft">0</span>
+                            <span class="stat-label" data-i18n="stats.aircraft">种机型</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="latest">
+                <div class="container">
+                    <h2 data-i18n="latest.title">最新上传</h2>
+                    <div class="photo-grid" id="latest-photos">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <img src="https://r2.eacof.org/logo-light.png" alt="EAC Photo" class="footer-logo">
+                        <p data-i18n="footer.description">全球航空摄影爱好者的家园</p>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.links">快速链接</h3>
+                        <ul>
+                            <li><a href="/about.html" data-i18n="nav.about">关于我们</a></li>
+                            <li><a href="/contact.html" data-i18n="nav.contact">联系我们</a></li>
+                            <li><a href="/terms.html" data-i18n="nav.terms">服务条款</a></li>
+                            <li><a href="/privacy.html" data-i18n="nav.privacy">隐私政策</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.follow">关注我们</h3>
+                        <div class="social-links">
+                            <a href="#">Twitter</a>
+                            <a href="#">Instagram</a>
+                            <a href="#">Weibo</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2024 EAC Photo. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+</html>

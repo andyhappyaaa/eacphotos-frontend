@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - EAC Photo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dark.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="nav-logo">
+                    <img id="nav-logo" src="https://r2.eacof.org/logo-light.png" alt="EAC Photo">
+                </a>
+                <div class="nav-menu">
+                    <a href="/" class="nav-link" data-i18n="nav.home">首页</a>
+                    <a href="/gallery.html" class="nav-link" data-i18n="nav.gallery">图库</a>
+                    <a href="/upload.html" class="nav-link" data-i18n="nav.upload">上传</a>
+                    <a href="/search.html" class="nav-link" data-i18n="nav.search">搜索</a>
+                </div>
+                <div class="nav-actions">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                    <select id="lang-select" class="lang-select">
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <div class="auth-container">
+                <div class="auth-box auth-box-large">
+                    <div class="auth-header">
+                        <img src="https://r2.eacof.org/logo-light.png" alt="EAC Photo">
+                        <h1 data-i18n="register.title">注册账号</h1>
+                        <p data-i18n="register.subtitle">加入EAC Photo航空摄影社区</p>
+                    </div>
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="username" data-i18n="register.username">用户名</label>
+                            <input type="text" id="username" name="username" required minlength="3" maxlength="20">
+                            <small data-i18n="register.usernameHint">3-20个字符，只能包含字母、数字和下划线</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" data-i18n="register.email">邮箱地址</label>
+                            <input type="email" id="email" name="email" required>
+                            <button type="button" id="send-code" class="send-code-btn" data-i18n="register.sendCode">发送验证码</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-code" data-i18n="register.emailCode">邮箱验证码</label>
+                            <input type="text" id="email-code" name="emailCode" required maxlength="6" placeholder="6位数字">
+                        </div>
+                        <div class="form-group">
+                            <label for="password" data-i18n="register.password">密码</label>
+                            <input type="password" id="password" name="password" required minlength="8">
+                            <small data-i18n="register.passwordHint">至少8个字符，包含字母和数字</small>
+                            <button type="button" class="toggle-password" data-target="password">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password" data-i18n="register.confirmPassword">确认密码</label>
+                            <input type="password" id="confirm-password" name="confirmPassword" required>
+                            <button type="button" class="toggle-password" data-target="confirm-password">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="agree-terms" name="agree" required>
+                                <span data-i18n="register.agree">我已阅读并同意 <a href="/terms.html">服务条款</a> 和 <a href="/privacy.html">隐私政策</a></span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <div class="turnstile-container" id="turnstile-container"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full" data-i18n="register.submit">注册</button>
+                        <div class="form-footer">
+                            <span data-i18n="register.hasAccount">已有账号？</span>
+                            <a href="/login.html" data-i18n="register.login">立即登录</a>
+                        </div>
+                    </form>
+
+                    <div id="2fa-setup" class="2fa-setup hidden">
+                        <h2 data-i18n="2fa.setupTitle">设置两步验证</h2>
+                        <p data-i18n="2fa.setupDesc">请使用Google Authenticator、Microsoft Authenticator或系统自带验证器扫描下方二维码</p>
+                        <div id="qrcode" class="qrcode-container"></div>
+                        <div class="manual-entry">
+                            <p data-i18n="2fa.manualEntry">或手动输入密钥：</p>
+                            <code id="secret-key"></code>
+                            <button id="copy-secret" class="btn btn-small" data-i18n="2fa.copy">复制</button>
+                        </div>
+                        <div class="verify-test">
+                            <p data-i18n="2fa.verifyTest">请输入验证码以确认设置成功：</p>
+                            <div class="code-inputs">
+                                <input type="text" maxlength="1" class="code-input" data-index="0">
+                                <input type="text" maxlength="1" class="code-input" data-index="1">
+                                <input type="text" maxlength="1" class="code-input" data-index="2">
+                                <input type="text" maxlength="1" class="code-input" data-index="3">
+                                <input type="text" maxlength="1" class="code-input" data-index="4">
+                                <input type="text" maxlength="1" class="code-input" data-index="5">
+                            </div>
+                            <button id="verify-setup" class="btn btn-primary" data-i18n="2fa.verifySetup">验证并完成</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+    <script src="/js/i18n.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/register.js"></script>
+</body>
+</html>

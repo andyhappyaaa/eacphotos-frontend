@@ -1,0 +1,293 @@
+/* Dark Theme */
+body.dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #64748b;
+
+    --border-color: #334155;
+    --border-hover: #475569;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+/* Logo switching in dark mode */
+body.dark .nav-logo img {
+    content: url('https://r2.eacof.org/logo-dark.png');
+}
+
+body.dark .auth-header img,
+body.dark .footer-logo {
+    filter: brightness(0) invert(1);
+}
+
+/* Scrollbar for dark mode */
+body.dark ::-webkit-scrollbar {
+    width: 10px;
+}
+
+body.dark ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
+}
+
+body.dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+}
+
+/* Input placeholders in dark mode */
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Selection color in dark mode */
+body.dark ::selection {
+    background: rgba(37, 99, 235, 0.3);
+    color: var(--text-primary);
+}
+
+/* Focus states in dark mode */
+body.dark input:focus,
+body.dark select:focus,
+body.dark textarea:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Button hover effects in dark mode */
+body.dark .btn-outline:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+}
+
+/* Modal in dark mode */
+body.dark .modal-content {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Photo modal image background in dark mode */
+body.dark .photo-modal-image {
+    background-color: var(--bg-tertiary);
+}
+
+/* Navbar in dark mode */
+body.dark .navbar {
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Footer in dark mode */
+body.dark .footer {
+    background-color: var(--bg-secondary);
+}
+
+/* Stats in dark mode */
+body.dark .stats {
+    background-color: var(--bg-tertiary);
+}
+
+/* Card backgrounds in dark mode */
+body.dark .form-section {
+    background-color: var(--bg-card);
+}
+
+/* Autocomplete results in dark mode */
+body.dark .autocomplete-results {
+    background-color: var(--bg-card);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .autocomplete-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* User dropdown in dark mode */
+body.dark .user-dropdown {
+    background-color: var(--bg-card);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .user-dropdown a:hover,
+body.dark .user-dropdown button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Manual entry code in dark mode */
+body.dark .manual-entry {
+    background-color: var(--bg-tertiary);
+}
+
+body.dark .manual-entry code {
+    color: var(--text-primary);
+}
+
+/* Photo card in dark mode */
+body.dark .photo-card {
+    background-color: var(--bg-card);
+}
+
+/* Tags in dark mode */
+body.dark .photo-tag {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+/* Pagination in dark mode */
+body.dark .pagination button {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+body.dark .pagination button:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+}
+
+/* Filter tabs in dark mode */
+body.dark .filter-tab {
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+}
+
+body.dark .filter-tab:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Skeleton animation in dark mode */
+body.dark .skeleton {
+    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+}
+
+/* Links in dark mode */
+body.dark a {
+    color: var(--primary-color);
+}
+
+body.dark .footer-section a:hover {
+    color: var(--primary-color);
+}
+
+/* Toast notifications in dark mode */
+body.dark .toast {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .toast.success {
+    border-left: 4px solid var(--success-color);
+}
+
+body.dark .toast.error {
+    border-left: 4px solid var(--error-color);
+}
+
+body.dark .toast.warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+body.dark .toast.info {
+    border-left: 4px solid var(--info-color);
+}
+
+/* Progress bar in dark mode */
+body.dark .progress-bar {
+    background-color: var(--bg-tertiary);
+}
+
+/* Level badge in dark mode */
+body.dark .level-badge {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+}
+
+/* Achievement cards in dark mode */
+body.dark .achievement-card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+body.dark .achievement-card.locked {
+    opacity: 0.5;
+}
+
+/* Queue options in dark mode */
+body.dark .queue-option {
+    background-color: var(--bg-secondary);
+}
+
+/* Photo meta in dark mode */
+body.dark .meta-label {
+    color: var(--text-tertiary);
+}
+
+/* Hot photo conditions in dark mode */
+body.dark .hot-photo-conditions {
+    background-color: var(--bg-secondary);
+}
+
+/* News card in dark mode */
+body.dark .news-card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+body.dark .news-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* Profile cover in dark mode */
+body.dark .profile-cover {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+/* Profile tab content in dark mode */
+body.dark .tab-pane {
+    background-color: var(--bg-card);
+}
+
+/* File drop zone in dark mode */
+body.dark .file-drop-zone {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+body.dark .file-drop-zone.dragover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--primary-color);
+}
+
+/* File item in dark mode */
+body.dark .file-item {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+/* Settings section in dark mode */
+body.dark .settings-section {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+/* Toggle switch in dark mode */
+body.dark .toggle-track {
+    background-color: var(--bg-tertiary);
+}
+
+body.dark .toggle-switch.active .toggle-track {
+    background-color: var(--primary-color);
+}
+
+/* Date range in dark mode */
+body.dark .date-range span {
+    color: var(--text-tertiary);
+}

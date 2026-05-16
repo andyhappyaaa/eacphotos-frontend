@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传照片 - EAC Photo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/src/css/upload.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="nav-logo">
+                    <img id="nav-logo" src="https://r2.eacof.org/logo-light.png" alt="EAC Photo">
+                </a>
+                <div class="nav-menu">
+                    <a href="/" class="nav-link" data-i18n="nav.home">首页</a>
+                    <a href="/gallery.html" class="nav-link" data-i18n="nav.gallery">图库</a>
+                    <a href="/upload.html" class="nav-link active" data-i18n="nav.upload">上传</a>
+                    <a href="/search.html" class="nav-link" data-i18n="nav.search">搜索</a>
+                </div>
+                <div class="nav-actions">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                    <select id="lang-select" class="lang-select">
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                    </select>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="/login.html" class="btn btn-outline" data-i18n="nav.login">登录</a>
+                        <a href="/register.html" class="btn btn-primary" data-i18n="nav.register">注册</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <div class="container">
+                <div class="upload-page">
+                    <div class="upload-header">
+                        <h1 data-i18n="upload.title">上传照片</h1>
+                        <p data-i18n="upload.subtitle">分享你的航空摄影作品</p>
+                    </div>
+
+                    <div class="upload-container">
+                        <div class="upload-sidebar">
+                            <div class="file-drop-zone" id="drop-zone">
+                                <div class="drop-zone-content">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    <p data-i18n="upload.dragDrop">拖放文件到此处或点击上传</p>
+                                    <p class="upload-hint" data-i18n="upload.formats">支持 JPG, PNG, WEBP (最大 20MB)</p>
+                                </div>
+                                <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple>
+                            </div>
+
+                            <div class="file-list" id="file-list">
+                            </div>
+                        </div>
+
+                        <div class="upload-form">
+                            <form id="upload-form">
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.basicInfo">基本信息</h3>
+
+                                    <div class="form-group">
+                                        <label for="photo-title" data-i18n="upload.title">图片标题</label>
+                                        <input type="text" id="photo-title" name="title" maxlength="100" placeholder="请输入图片标题">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="photo-date" data-i18n="upload.date">拍摄日期</label>
+                                            <input type="date" id="photo-date" name="date" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="registration" data-i18n="upload.registration">注册号</label>
+                                            <input type="text" id="registration" name="registration" placeholder="例如：B-2032" required>
+                                            <div class="autocomplete-results" id="registration-results"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="serial-number" data-i18n="upload.serialNumber">制造商序列号</label>
+                                            <input type="text" id="serial-number" name="serialNumber" placeholder="例如：39769">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="airline" data-i18n="upload.airline">航司/运营人</label>
+                                            <input type="text" id="airline" name="airline" placeholder="例如：中国国际航空" required>
+                                            <div class="autocomplete-results" id="airline-results"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="aircraft-type" data-i18n="upload.aircraftType">机型</label>
+                                            <input type="text" id="aircraft-type" name="aircraftType" placeholder="例如：Boeing 777-300ER" required>
+                                            <div class="autocomplete-results" id="aircraft-results"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="location" data-i18n="upload.location">拍摄地点</label>
+                                            <input type="text" id="location" name="location" placeholder="例如：北京首都国际机场" required>
+                                            <div class="autocomplete-results" id="location-results"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.categories">图片类型</h3>
+                                    <div class="checkbox-grid">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="normal">
+                                            <span data-i18n="upload.type.normal">普通涂装</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="special">
+                                            <span data-i18n="upload.type.special">特殊涂装</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="artistic">
+                                            <span data-i18n="upload.type.artistic">风格图</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="military">
+                                            <span data-i18n="upload.type.military">军用机</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="night">
+                                            <span data-i18n="upload.type.night">夜拍图片</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="airport">
+                                            <span data-i18n="upload.type.airport">机场</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="wing">
+                                            <span data-i18n="upload.type.wing">机翼</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="cargo">
+                                            <span data-i18n="upload.type.cargo">货机</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="cockpit">
+                                            <span data-i18n="upload.type.cockpit">驾驶舱或客舱</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="meal">
+                                            <span data-i18n="upload.type.meal">餐食</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="accident">
+                                            <span data-i18n="upload.type.accident">事故</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="vehicle">
+                                            <span data-i18n="upload.type.vehicle">地面车辆</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="rocket">
+                                            <span data-i18n="upload.type.rocket">火箭或航天器</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="helicopter">
+                                            <span data-i18n="upload.type.helicopter">直升机</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="parachute">
+                                            <span data-i18n="upload.type.parachute">降落伞</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="balloon">
+                                            <span data-i18n="upload.type.balloon">浮空器</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="selfie">
+                                            <span data-i18n="upload.type.selfie">飞机迷同框</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="counter">
+                                            <span data-i18n="upload.type.counter">值机柜台</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="gate">
+                                            <span data-i18n="upload.type.gate">登机口</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="lounge">
+                                            <span data-i18n="upload.type.lounge">贵宾休息室</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="baggage">
+                                            <span data-i18n="upload.type.baggage">行李传送带</span>
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="type" value="internal">
+                                            <span data-i18n="upload.type.internal">内部上传</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.hotPhoto">热门照片</h3>
+                                    <p class="section-hint" data-i18n="upload.hotPhotoHint">符合以下情况的图片可作为热门照片上传</p>
+                                    <ul class="hot-photo-conditions">
+                                        <li data-i18n="upload.hotCondition1">飞机的涂装方案有任何变化（例如：去除特殊涂装、新增涂装）</li>
+                                        <li data-i18n="upload.hotCondition2">飞机自身有改动（如加装翼梢小翼、鲨鳍小翼等）</li>
+                                        <li data-i18n="upload.hotCondition3">图库中没有的飞机</li>
+                                    </ul>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="isHot" id="is-hot">
+                                        <span data-i18n="upload.markAsHot">标记为热门照片</span>
+                                    </label>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.queue">审核队列</h3>
+                                    <div class="queue-options">
+                                        <label class="radio-label">
+                                            <input type="radio" name="queue" value="normal" checked>
+                                            <div class="queue-option">
+                                                <span class="queue-title" data-i18n="upload.queue.normal">普通队列</span>
+                                                <span class="queue-remaining" id="normal-remaining">剩余: --</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="queue" value="priority">
+                                            <div class="queue-option queue-priority">
+                                                <span class="queue-title" data-i18n="upload.queue.priority">优先审核</span>
+                                                <span class="queue-remaining" id="priority-remaining">剩余: --</span>
+                                                <span class="queue-note" data-i18n="upload.queue.priorityNote">需消耗优先配额</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <p class="queue-contact" data-i18n="upload.queueContact">如需增加优先审核图片数量，请联系：ap@eacof.org</p>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.description">图片描述</h3>
+                                    <textarea id="photo-description" name="description" rows="4" maxlength="1000" placeholder="请描述这张图片..."></textarea>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3 data-i18n="upload.message">留言（仅审核员可见）</h3>
+                                    <textarea id="photo-message" name="message" rows="3" maxlength="500" placeholder="需要特别说明的信息，仅审核员可见..."></textarea>
+                                </div>
+
+                                <div class="form-section">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="socialShare" id="social-share">
+                                        <span data-i18n="upload.socialShare">我同意并授权eacphoto在不事先通知的情况下将此图片发布在eacphoto的社交媒体平台上</span>
+                                    </label>
+                                </div>
+
+                                <div class="form-section">
+                                    <div class="turnstile-container" id="turnstile-container"></div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-large" data-i18n="upload.submit">提交审核</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/upload.js"></script>
+</body>
+</html>
