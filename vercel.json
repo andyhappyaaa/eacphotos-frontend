@@ -1,27 +1,8 @@
 {
-	"version": 2,
-	"builds": [
-		{
-			"src": "package.json",
-			"use": "@sveltejs/adapter-vercel"
+	"functions": {
+		"api/*.js": {
+			"memory": 512,
+			"maxDuration": 30
 		}
-	],
-	"routes": [
-		{
-			"src": "/api/env",
-			"dest": "/api/env.js"
-		},
-		{
-			"src": "/api/oauth-token-exchange",
-			"dest": "/api/oauth-token-exchange.js"
-		},
-		{
-			"src": "/api/oauth-userinfo",
-			"dest": "/api/oauth-userinfo.js"
-		},
-		{
-			"src": "/api/proxy/(.*)",
-			"dest": "/api/proxy.js?path=/api/$1"
-		}
-	]
+	}
 }
