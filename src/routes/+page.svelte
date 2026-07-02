@@ -1,10 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
-	import { animateNumber } from '$lib/utils/helpers';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { Card, CardContent } from '$lib/components/ui/card';
-	import { Separator } from '$lib/components/ui/separator';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import FeaturedGrid from '$lib/components/FeaturedGrid.svelte';
 	import CategoryRow from '$lib/components/CategoryRow.svelte';
@@ -19,11 +15,10 @@
 	let statUsers = $state(0);
 	let statAirlines = $state(0);
 	let statAircraft = $state(0);
-
 	let latestPhotos = $state([]);
 	let newsItems = $state([]);
 
-	onMount(async () => {
+	onMount(() => {
 		loadStats();
 		loadLatestPhotos();
 		loadNews();
@@ -33,10 +28,11 @@
 		try {
 			const r = await api('/api/stats');
 			const data = await r.json();
-			animateNumber(data.photos || 0, (v) => (statPhotos = v));
-			animateNumber(data.users || 0, (v) => (statUsers = v));
-			animateNumber(data.airlines || 0, (v) => (statAirlines = v));
-			animateNumber(data.aircraft || 0, (v) => (statAircraft = v));
+			// Assign directly — Svelte 5 $state will trigger reactivity
+			statPhotos = data.photos || 0;
+			statUsers = data.users || 0;
+			statAirlines = data.airlines || 0;
+			statAircraft = data.aircraft || 0;
 		} catch (e) {
 			console.error('Failed to load stats:', e);
 		}
@@ -54,23 +50,17 @@
 
 	async function loadNews() {
 		try {
-			const galleryR = await api('/api/site/news-with-gallery?limit=6', { noRedirect: true });
-			const galleryD = await galleryR.json();
+			const [galleryR, newsR] = await Promise.all([
+				api('/api/site/news-with-gallery?limit=6', { noRedirect: true }),
+				api('/api/news?limit=30', { noRedirect: true })
+			]);
+			const [galleryD, newsD] = await Promise.all([galleryR.json(), newsR.json()]);
 			const enrichedNews = galleryD.news || [];
-			const r = await api('/api/news?limit=30', { noRedirect: true });
-			const d = await r.json();
-			const allNews = d.news || [];
+			const allNews = newsD.news || [];
 			const usedIds = new Set(enrichedNews.map((n) => n.id));
 			newsItems = [...enrichedNews, ...allNews.filter((n) => !usedIds.has(n.id))];
-		} catch (e) { /* */ }
+		} catch (e) { /* ignore */ }
 	}
-
-	const statsItems = [
-		{ value: statPhotos, key: 'stats.photos', icon: Camera },
-		{ value: statUsers, key: 'stats.users', icon: Users },
-		{ value: statAirlines, key: 'stats.airlines', icon: PlaneTakeoff },
-		{ value: statAircraft, key: 'stats.aircraft', icon: Plane }
-	];
 </script>
 
 <!-- Hero Carousel -->
@@ -80,17 +70,42 @@
 <section class="relative border-b bg-card py-16">
 	<div class="container mx-auto max-w-[1400px] px-5">
 		<div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-			{#each statsItems as stat}
-				<div class="flex flex-col items-center gap-3 text-center">
-					<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-						<stat.icon class="h-6 w-6 text-primary" />
-					</div>
-					<div>
-						<div class="text-3xl font-bold tracking-tight tabular-nums">{stat.value.toLocaleString()}</div>
-						<div class="mt-1 text-sm text-muted-foreground">{@html tFn(stat.key)}</div>
-					</div>
+			<div class="flex flex-col items-center gap-3 text-center">
+				<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+					<Camera class="h-6 w-6 text-primary" />
 				</div>
-			{/each}
+				<div>
+					<div class="text-3xl font-bold tracking-tight tabular-nums">{statPhotos.toLocaleString()}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.photos')}</div>
+				</div>
+			</div>
+			<div class="flex flex-col items-center gap-3 text-center">
+				<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+					<Users class="h-6 w-6 text-primary" />
+				</div>
+				<div>
+					<div class="text-3xl font-bold tracking-tight tabular-nums">{statUsers.toLocaleString()}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.users')}</div>
+				</div>
+			</div>
+			<div class="flex flex-col items-center gap-3 text-center">
+				<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+					<PlaneTakeoff class="h-6 w-6 text-primary" />
+				</div>
+				<div>
+					<div class="text-3xl font-bold tracking-tight tabular-nums">{statAirlines.toLocaleString()}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.airlines')}</div>
+				</div>
+			</div>
+			<div class="flex flex-col items-center gap-3 text-center">
+				<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+					<Plane class="h-6 w-6 text-primary" />
+				</div>
+				<div>
+					<div class="text-3xl font-bold tracking-tight tabular-nums">{statAircraft.toLocaleString()}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.aircraft')}</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </section>

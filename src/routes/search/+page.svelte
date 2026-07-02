@@ -35,10 +35,10 @@
 			if (dateFrom) p.append('dateFrom', dateFrom);
 			if (dateTo) p.append('dateTo', dateTo);
 			p.append('sort', sort); p.append('limit', '24');
-			const r = await api(`/api/photos/search?${p.toString()}`);
+			const r = await api(`/api/photos/search?${p.toString()}`, { noRedirect: true });
 			const d = await r.json();
 			photos = d.photos || [];
-		} catch (e) { photos = []; } finally { loading = false; }
+		} catch (e) { console.error('Search failed:', e); photos = []; } finally { loading = false; }
 	}
 
 	function resetFilters() {

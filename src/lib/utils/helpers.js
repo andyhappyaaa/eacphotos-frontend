@@ -1,12 +1,7 @@
 /**
- * Shared utility functions - ported from the original vanilla JS.
+ * Shared utility functions.
  */
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} text
- * @returns {string}
- */
 export function escapeHtml(text) {
 	if (!text) return '';
 	const div = document.createElement('div');
@@ -14,46 +9,19 @@ export function escapeHtml(text) {
 	return div.innerHTML;
 }
 
-/**
- * Format a date string/timestamp for display
- * @param {string|number|Date} ts
- * @param {string} locale
- * @returns {string}
- */
 export function formatDate(ts, locale = 'zh-CN') {
 	if (!ts) return '';
-	try {
-		return new Date(ts).toLocaleDateString(locale);
-	} catch (e) {
-		return '';
-	}
+	try { return new Date(ts).toLocaleDateString(locale); }
+	catch (e) { return ''; }
 }
 
-/**
- * Format a date/time string for display
- * @param {*} v
- * @returns {string}
- */
 export function formatDateTime(v) {
 	if (!v) return '';
 	const d = v instanceof Date ? v : new Date(v);
 	if (isNaN(d.getTime())) return '';
-	return d.toLocaleString('zh-CN', {
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
+	return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-/**
- * Take a cyclic slice from an array
- * @param {Array} arr
- * @param {number} offset
- * @param {number} n
- * @returns {Array}
- */
 export function takeSlice(arr, offset, n) {
 	if (!arr.length) return [];
 	const out = [];
@@ -64,45 +32,46 @@ export function takeSlice(arr, offset, n) {
 }
 
 /**
- * Animate a number counting up
- * @param {number} target
- * @param {function} onFrame - called with current value each frame
- * @param {number} duration
+ * Animate a number counting up — Svelte 5 safe.
+ * Uses a promise that resolves after the animation completes.
+ * The caller should use $state to track the display value.
  */
-export function animateNumber(target, onFrame, duration = 1000) {
-	const startTime = performance.now();
-	const start = 0;
+export function createCountUp(target, duration = 1000) {
+	// Returns an object with a .current reactive getter and a .start() method
+	let rafId;
+	let resolved = false;
 
-	function update(currentTime) {
-		const elapsed = currentTime - startTime;
-		const progress = Math.min(elapsed / duration, 1);
-		const easeOut = 1 - Math.pow(1 - progress, 3);
-		const current = Math.floor(start + (target - start) * easeOut);
-		onFrame(current);
-		if (progress < 1) {
-			requestAnimationFrame(update);
+	const api = {
+		current: 0,
+		start() {
+			const startTime = performance.now();
+			const step = (now) => {
+				const elapsed = now - startTime;
+				const progress = Math.min(elapsed / duration, 1);
+				const ease = 1 - Math.pow(1 - progress, 3);
+				api.current = Math.floor(target * ease);
+				if (progress < 1) {
+					rafId = requestAnimationFrame(step);
+				} else {
+					api.current = target;
+				}
+			};
+			rafId = requestAnimationFrame(step);
+		},
+		stop() {
+			if (rafId) cancelAnimationFrame(rafId);
+			api.current = target;
 		}
-	}
-
-	requestAnimationFrame(update);
+	};
+	return api;
 }
 
-/**
- * Get default logo URL based on theme
- * @param {string} theme - 'light' or 'dark'
- * @returns {string}
- */
 export function getLogoUrl(theme = 'light') {
 	return theme === 'dark'
 		? 'https://r2.eacof.org/logo-dark.png'
 		: 'https://r2.eacof.org/logo-light.png';
 }
 
-/**
- * Create a photo card HTML (for use in non-Svelte contexts)
- * @param {object} photo
- * @returns {object} photo card data
- */
 export function getPhotoCardData(photo) {
 	return {
 		id: photo.id,

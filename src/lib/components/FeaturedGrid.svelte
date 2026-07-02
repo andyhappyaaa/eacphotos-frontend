@@ -4,45 +4,36 @@
 	import { takeSlice } from '$lib/utils/helpers';
 	import PhotoCard from './PhotoCard.svelte';
 
-	/**
-	 * Featured photos grid with rotation.
-	 * Shows 1 main + 4 side photos, rotating every 10s.
-	 * Ported from index.js loadFeaturedPhotos().
-	 */
-
 	let { t } = $props();
 
 	let pool = $state([]);
 	let offset = $state(0);
-	let intervalId = null;
 	const BATCH_SIZE = 5;
 	const ROTATE_INTERVAL = 10000;
+	let _interval = null;
 
 	onMount(async () => {
 		try {
 			const r = await api('/api/photos/featured?limit=25', { noRedirect: true });
 			const data = await r.json();
 			pool = data.photos || [];
-		} catch (e) {
-			/* ignore */
-		}
-
-		if (pool.length > BATCH_SIZE) {
-			intervalId = setInterval(rotate, ROTATE_INTERVAL);
-		}
+		} catch (e) { /* */ }
 	});
 
 	onDestroy(() => {
-		if (intervalId) clearInterval(intervalId);
+		if (_interval) clearInterval(_interval);
 	});
 
-	function rotate() {
-		offset = (offset + BATCH_SIZE) % pool.length;
-	}
+	// Start rotation once pool is populated
+	$effect(() => {
+		if (pool.length > BATCH_SIZE && !_interval) {
+			_interval = setInterval(() => {
+				offset = (offset + BATCH_SIZE) % pool.length;
+			}, ROTATE_INTERVAL);
+		}
+	});
 
 	let batch = $derived(takeSlice(pool, offset, BATCH_SIZE));
-	let mainPhoto = $derived(batch[0]);
-	let sidePhotos = $derived(batch.slice(1, 5));
 </script>
 
 <section class="py-12">
@@ -57,16 +48,16 @@
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 				<!-- Main featured -->
 				<div class="md:col-span-2">
-					{#if mainPhoto}
+					{#if batch[0]}
 						<div class="aspect-video overflow-hidden rounded-xl">
-							<PhotoCard photo={mainPhoto} variant="overlay" />
+							<PhotoCard photo={batch[0]} variant="overlay" />
 						</div>
 					{/if}
 				</div>
 
 				<!-- Side featured -->
 				<div class="grid grid-rows-4 gap-4">
-					{#each sidePhotos as photo}
+					{#each batch.slice(1, 5) as photo}
 						{#if photo}
 							<div class="overflow-hidden rounded-lg">
 								<PhotoCard photo={photo} variant="overlay" />

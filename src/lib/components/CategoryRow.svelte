@@ -1,18 +1,13 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import { api } from '$lib/api';
-	import { takeSlice, escapeHtml } from '$lib/utils/helpers';
-
-	/**
-	 * Category rows section - one row per photo category, rotating every 10s.
-	 * Ported from index.js loadFeaturedByCategory().
-	 */
+	import { takeSlice } from '$lib/utils/helpers';
 
 	let categories = $state([]);
 	let offsets = $state([]);
-	let intervalId = null;
 	const PHOTOS_PER_ROW = 4;
 	const ROTATE_INTERVAL = 10000;
+	let _interval = null;
 
 	onMount(async () => {
 		try {
@@ -20,25 +15,25 @@
 			const d = await r.json();
 			categories = d.categories || [];
 			offsets = categories.map(() => 0);
-
-			if (categories.some((c) => c.photos && c.photos.length > PHOTOS_PER_ROW)) {
-				intervalId = setInterval(rotateAll, ROTATE_INTERVAL);
-			}
-		} catch (e) {
-			/* ignore */
-		}
+		} catch (e) { /* */ }
 	});
 
 	onDestroy(() => {
-		if (intervalId) clearInterval(intervalId);
+		if (_interval) clearInterval(_interval);
 	});
 
-	function rotateAll() {
-		offsets = offsets.map((off, i) => {
-			const photos = categories[i]?.photos || [];
-			return photos.length > PHOTOS_PER_ROW ? (off + PHOTOS_PER_ROW) % photos.length : off;
-		});
-	}
+	// Start rotation once categories are loaded
+	$effect(() => {
+		const needsRotation = categories.some((c) => c.photos && c.photos.length > PHOTOS_PER_ROW);
+		if (needsRotation && !_interval) {
+			_interval = setInterval(() => {
+				offsets = offsets.map((off, i) => {
+					const photos = categories[i]?.photos || [];
+					return photos.length > PHOTOS_PER_ROW ? (off + PHOTOS_PER_ROW) % photos.length : off;
+				});
+			}, ROTATE_INTERVAL);
+		}
+	});
 </script>
 
 {#if categories.length > 0}
