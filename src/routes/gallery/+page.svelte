@@ -3,7 +3,11 @@
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { Separator } from '$lib/components/ui/separator';
 	import { t } from '$lib/stores/i18n';
+	import { ChevronLeft, ChevronRight, Image, SlidersHorizontal } from '@lucide/svelte';
 
 	let tFn = $derived($t);
 
@@ -22,29 +26,20 @@
 		{ key: 'night', label: '夜拍' }
 	];
 
-	const sortOptions = [
-		{ value: 'latest', label: '最新上传' },
-		{ value: 'popular', label: '最受欢迎' },
-		{ value: 'random', label: '随机' }
-	];
-
-	onMount(() => {
-		loadGallery();
-	});
+	onMount(() => loadGallery());
 
 	async function loadGallery() {
 		loading = true;
 		try {
-			const queryParams = new URLSearchParams();
-			if (currentFilter !== 'all') queryParams.append('type', currentFilter);
-			queryParams.append('sort', currentSort);
-			queryParams.append('page', String(currentPage));
-			queryParams.append('limit', '20');
-
-			const r = await api(`/api/photos/gallery?${queryParams.toString()}`);
-			const data = await r.json();
-			photos = data.photos || [];
-			totalPages = data.totalPages || 1;
+			const q = new URLSearchParams();
+			if (currentFilter !== 'all') q.append('type', currentFilter);
+			q.append('sort', currentSort);
+			q.append('page', String(currentPage));
+			q.append('limit', '20');
+			const r = await api(`/api/photos/gallery?${q.toString()}`);
+			const d = await r.json();
+			photos = d.photos || [];
+			totalPages = d.totalPages || 1;
 		} catch (e) {
 			photos = [];
 		} finally {
@@ -52,72 +47,75 @@
 		}
 	}
 
-	function setFilter(filter) {
-		currentFilter = filter;
-		currentPage = 1;
-		loadGallery();
-	}
-
-	function setSort(e) {
-		currentSort = e.target.value;
-		currentPage = 1;
-		loadGallery();
-	}
-
-	function goToPage(page) {
-		if (page >= 1 && page <= totalPages && page !== currentPage) {
-			currentPage = page;
-			loadGallery();
+	function setFilter(f) { currentFilter = f; currentPage = 1; loadGallery(); }
+	function goToPage(p) {
+		if (p >= 1 && p <= totalPages && p !== currentPage) {
+			currentPage = p; loadGallery();
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		}
 	}
 
-	function getPaginationPages() {
-		const pages = [];
-		const maxVisible = 5;
-		let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-		let end = Math.min(totalPages, start + maxVisible - 1);
-		if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-		for (let i = start; i <= end; i++) pages.push(i);
-		return pages;
+	function paginationPages() {
+		const p = [];
+		const mv = 5;
+		let s = Math.max(1, currentPage - Math.floor(mv / 2));
+		const e = Math.min(totalPages, s + mv - 1);
+		if (e - s < mv - 1) s = Math.max(1, e - mv + 1);
+		for (let i = s; i <= e; i++) p.push(i);
+		return p;
 	}
 </script>
 
 <div class="container mx-auto max-w-[1400px] px-5 py-8">
+	<!-- Header -->
 	<div class="mb-8 text-center">
-		<h1 class="text-3xl font-bold">{@html tFn('gallery.title')}</h1>
+		<div class="mb-3 inline-flex items-center gap-2 rounded-full border bg-secondary/50 px-3 py-1 text-xs font-medium">
+			<Image class="h-3 w-3" /> 图库
+		</div>
+		<h1 class="text-3xl font-bold tracking-tight">{@html tFn('gallery.title')}</h1>
 		<p class="mt-2 text-muted-foreground">{@html tFn('gallery.subtitle')}</p>
 	</div>
 
-	<!-- Filters & Sort -->
-	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-		<div class="flex flex-wrap gap-2">
-			{#each filters as f}
-				<Button
-					variant={currentFilter === f.key ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => setFilter(f.key)}
-				>
-					{f.label}
-				</Button>
-			{/each}
+	<!-- Filters Bar -->
+	<div class="mb-8 flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="flex items-center gap-2">
+			<SlidersHorizontal class="h-4 w-4 text-muted-foreground" />
+			<div class="flex flex-wrap gap-1.5">
+				{#each filters as f}
+					<Button
+						variant={currentFilter === f.key ? 'default' : 'ghost'}
+						size="sm"
+						onclick={() => setFilter(f.key)}
+					>
+						{f.label}
+					</Button>
+				{/each}
+			</div>
 		</div>
-		<select
-			value={currentSort}
-			onchange={setSort}
-			class="rounded-lg border bg-background px-3 py-2 text-sm"
-		>
-			{#each sortOptions as opt}
-				<option value={opt.value}>{opt.label}</option>
-			{/each}
-		</select>
+		<Separator class="sm:hidden" />
+		<div class="flex items-center gap-2 sm:ml-auto">
+			<span class="text-xs text-muted-foreground">排序</span>
+			<select
+				value={currentSort}
+				onchange={(e) => { currentSort = e.target.value; currentPage = 1; loadGallery(); }}
+				class="rounded-lg border bg-background px-3 py-1.5 text-sm"
+			>
+				<option value="latest">最新上传</option>
+				<option value="popular">最受欢迎</option>
+				<option value="random">随机</option>
+			</select>
+		</div>
 	</div>
 
-	<!-- Photo Grid -->
+	<!-- Results -->
 	{#if loading}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each Array(8) as _}
-				<div class="aspect-video animate-pulse rounded-lg bg-secondary"></div>
+				<div class="space-y-3 rounded-lg border p-3">
+					<Skeleton class="aspect-video w-full rounded-lg" />
+					<Skeleton class="h-4 w-3/4" />
+					<Skeleton class="h-3 w-1/2" />
+				</div>
 			{/each}
 		</div>
 	{:else}
@@ -126,21 +124,22 @@
 
 	<!-- Pagination -->
 	{#if totalPages > 1}
-		<div class="mt-8 flex justify-center gap-2">
-			<Button variant="outline" size="sm" disabled={currentPage === 1} onclick={() => goToPage(currentPage - 1)}>
-				«
+		<div class="mt-10 flex items-center justify-center gap-1.5">
+			<Button variant="outline" size="icon" class="h-9 w-9" disabled={currentPage === 1} onclick={() => goToPage(currentPage - 1)}>
+				<ChevronLeft class="h-4 w-4" />
 			</Button>
-			{#each getPaginationPages() as page}
+			{#each paginationPages() as p}
 				<Button
-					variant={page === currentPage ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => goToPage(page)}
+					variant={p === currentPage ? 'default' : 'outline'}
+					size="icon"
+					class="h-9 w-9 text-sm"
+					onclick={() => goToPage(p)}
 				>
-					{page}
+					{p}
 				</Button>
 			{/each}
-			<Button variant="outline" size="sm" disabled={currentPage === totalPages} onclick={() => goToPage(currentPage + 1)}>
-				»
+			<Button variant="outline" size="icon" class="h-9 w-9" disabled={currentPage === totalPages} onclick={() => goToPage(currentPage + 1)}>
+				<ChevronRight class="h-4 w-4" />
 			</Button>
 		</div>
 	{/if}
