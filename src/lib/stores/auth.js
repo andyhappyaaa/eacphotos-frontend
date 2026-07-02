@@ -100,7 +100,8 @@ export function clearSession() {
 export async function restoreFromCookie() {
 	if (!browser) return;
 	try {
-		const r = await fetch('/api/auth/me', { credentials: 'include' });
+		const { buildUrl } = await import('$lib/api');
+			const r = await fetch(buildUrl('/api/auth/me'), { credentials: 'include' });
 		if (!r.ok) return;
 		const d = await r.json();
 		if (d.authenticated && d.user) {
