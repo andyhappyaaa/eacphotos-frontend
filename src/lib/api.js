@@ -1,12 +1,13 @@
-import { authSession, clearSession } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 import { browser } from '$app/environment';
 
 /**
- * API helper - ported from original auth.js Auth.api()
+ * API helper.
  *
  * Dev mode (localhost): builds relative URLs, Vite dev server proxies /api → backend
  * Production: routes through /api/proxy Vercel serverless function
+ *
+ * NOTE: Lazy-loads auth stores to avoid circular dependency (auth.js ↔ api.js).
  */
 
 export function useProxy() {
@@ -17,10 +18,8 @@ export function useProxy() {
 
 export function buildUrl(endpoint) {
 	if (useProxy()) {
-		// Production: route through /api/proxy Vercel serverless function
 		return '/api/proxy' + endpoint.slice(4);
 	}
-	// Dev: relative URL, Vite dev server proxies /api to backend
 	return endpoint;
 }
 
@@ -31,7 +30,6 @@ async function generateTOTP(secret, timeOffset = 0) {
 	const ts = Math.floor(Date.now() / 1000) + timeOffset;
 	const step = Math.floor(ts / 30);
 
-	// Base32 decode the secret
 	const key = await crypto.subtle.importKey(
 		'raw',
 		new TextEncoder().encode(secret),
@@ -77,8 +75,9 @@ export async function getAuthHeaders(bypassSession = false) {
 		}
 	}
 
-	// Bearer token from session
+	// Bearer token from session — lazy-load to avoid circular dep
 	if (!bypassSession && browser) {
+		const { authSession } = await import('$lib/stores/auth');
 		const session = get(authSession);
 		if (session && session.token) {
 			headers['Authorization'] = `Bearer ${session.token}`;
@@ -106,6 +105,7 @@ export async function api(endpoint, options = {}) {
 
 	if (r.status === 401) {
 		if (browser) {
+			const { clearSession } = await import('$lib/stores/auth');
 			clearSession();
 		}
 		if (!options.noRedirect && browser) {
@@ -119,10 +119,6 @@ export async function api(endpoint, options = {}) {
 
 /**
  * Upload a file with progress tracking
- * @param {string} endpoint
- * @param {FormData} formData
- * @param {function} onProgress
- * @returns {Promise<any>}
  */
 export async function uploadWithProgress(endpoint, formData, onProgress) {
 	return new Promise(async (resolve, reject) => {
@@ -131,8 +127,8 @@ export async function uploadWithProgress(endpoint, formData, onProgress) {
 		xhr.open('POST', url);
 		xhr.withCredentials = useProxy();
 
-		// Add auth headers for dev mode
 		if (!useProxy() && browser) {
+			const { authSession } = await import('$lib/stores/auth');
 			const session = get(authSession);
 			if (session && session.token) {
 				xhr.setRequestHeader('Authorization', `Bearer ${session.token}`);
