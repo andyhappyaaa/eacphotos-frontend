@@ -24,15 +24,15 @@ if (initialSession && isSessionExpired(initialSession) && browser) localStorage.
 
 export const authSession = writable(initialSession && !isSessionExpired(initialSession) ? initialSession : null);
 
-export const isLoggedIn = derived(authSession, ($s) => {
+export const isLoggedIn = derived([authSession, reviewerInfo], ([$s, $r]) => {
 	if ($s && !isSessionExpired($s)) return true;
-	return isReviewerLoggedIn();
+	return !!$r?.authenticated;
 });
 
-export const currentUser = derived(authSession, ($s) => {
+export const currentUser = derived([authSession, reviewerInfo], ([$s, $r]) => {
 	if ($s && $s.user) return $s.user;
-	const rs = getReviewerSession();
-	return rs ? rs.user : null;
+	if ($r?.authenticated) return { username: $r.username, email: $r.email, role: $r.role };
+	return null;
 });
 
 // ── Reviewer ──
@@ -46,6 +46,25 @@ function getReviewerSession() {
 	} catch (e) { return null; }
 }
 function isReviewerLoggedIn() { return !!getReviewerSession(); }
+
+// ── OAuth reviewer (cookie-based) ──
+export const reviewerInfo = writable(null);
+
+export const isReviewer = derived(reviewerInfo, ($r) => !!$r?.authenticated);
+export const reviewerRole = derived(reviewerInfo, ($r) => $r?.role || null);
+export const isAdmin = derived(reviewerInfo, ($r) => $r?.is_admin || false);
+export const isSuperAdmin = derived(reviewerInfo, ($r) => $r?.is_super_admin || false);
+
+export async function refreshReviewerInfo() {
+	if (!browser) return;
+	try {
+		const r = await fetch('/api/oauth-userinfo', { credentials: 'include' });
+		const d = await r.json();
+		reviewerInfo.set(d?.authenticated ? d : null);
+	} catch (e) {
+		reviewerInfo.set(null);
+	}
+}
 
 // ── Helpers ──
 function bufToB64u(buf) {
@@ -201,6 +220,7 @@ export async function deletePasskey(id) { return (await apiCall(`/api/webauthn/p
 // ── Init ──
 if (browser) {
 	restoreFromCookie();
+	refreshReviewerInfo();
 	setInterval(() => {
 		let session; authSession.subscribe((s) => (session = s))();
 		if (session && isSessionExpired(session)) clearSession();

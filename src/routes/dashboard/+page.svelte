@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, currentUser } from '$lib/stores/auth';
+	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole } from '$lib/stores/auth';
 	import { api } from '$lib/api';
 	import { setup2FA, enable2FA, disable2FA, sendEmailCode, passkeyRegisterOptions, passkeyRegisterVerify, listPasskeys, deletePasskey } from '$lib/stores/auth';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
@@ -16,12 +16,15 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let tFn = $derived($t);
 	let user = $derived($currentUser);
 	let activeTab = $state('overview');
+	let isRev = $derived($isReviewer);
+	let isAdm = $derived($isAdmin);
+	let isSuper = $derived($isSuperAdmin);
 	let sidebarOpen = $state(false);
 
 	let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
@@ -132,7 +135,7 @@
 		catch (err) { showToast(err.message || '发送失败', 'error'); }
 	}
 
-	const tabItems = [
+	const userTabs = [
 		{ value: 'overview', label: '总览', icon: LayoutDashboard },
 		{ value: 'upload', label: '上传图片', icon: Upload },
 		{ value: 'pending', label: '审核中', icon: Clock },
@@ -140,6 +143,22 @@
 		{ value: 'rejected', label: '未过审', icon: XCircle },
 		{ value: 'settings', label: '账号设置', icon: Settings }
 	];
+
+	const reviewerTabs = [
+		{ value: 'review-queue', label: '审核队列', icon: ClipboardCheck },
+		{ value: 'review-photos', label: '图片管理', icon: Image },
+		{ value: 'review-settings', label: '系统设置', icon: SlidersHorizontal }
+	];
+
+	const adminTabs = [
+		{ value: 'review-users', label: '用户管理', icon: Users }
+	];
+
+	let tabItems = $derived([
+		...userTabs,
+		...(isRev ? reviewerTabs : []),
+		...(isAdm ? adminTabs : [])
+	]);
 </script>
 
 <div class="container mx-auto max-w-[1200px] px-4 py-6">
@@ -303,6 +322,56 @@
 								</div>
 							</CardContent></Card>
 
+
+					<!-- ── 审核队列（仅审核员）── -->
+					<TabsContent value="review-queue">
+						<h2 class="mb-1 text-xl font-bold">📋 审核队列</h2>
+						<p class="mb-6 text-sm text-muted-foreground">查看并审核用户提交的照片</p>
+						<div class="flex flex-col items-center justify-center py-16 text-muted-foreground">
+							<ClipboardCheck class="mb-3 h-12 w-12 opacity-30" />
+							<p class="text-sm">审核队列功能即将上线</p>
+							<Button variant="outline" size="sm" class="mt-3" href="/review/queue">打开审核面板</Button>
+						</div>
+					</TabsContent>
+
+					<!-- ── 图片管理（仅审核员）── -->
+					<TabsContent value="review-photos">
+						<h2 class="mb-1 text-xl font-bold">🖼️ 图片管理</h2>
+						<p class="mb-6 text-sm text-muted-foreground">搜索、编辑和管理所有照片</p>
+						<div class="flex flex-col items-center justify-center py-16 text-muted-foreground">
+							<Image class="mb-3 h-12 w-12 opacity-30" />
+							<p class="text-sm">图片管理功能即将上线</p>
+							<Button variant="outline" size="sm" class="mt-3" href="/review/photos">打开图片管理</Button>
+						</div>
+					</TabsContent>
+
+					<!-- ── 系统设置（仅审核员）── -->
+					<TabsContent value="review-settings">
+						<h2 class="mb-1 text-xl font-bold">⚙️ 系统设置</h2>
+						<p class="mb-6 text-sm text-muted-foreground">站点配置、公告管理和轮播图设置</p>
+						<div class="space-y-4">
+							<Card><CardContent class="flex items-start gap-4 p-5">
+								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><SlidersHorizontal class="h-5 w-5 text-primary" /></div>
+								<div class="flex-1"><h3 class="font-semibold">📢 站点公告</h3><p class="text-sm text-muted-foreground">管理全站公告弹窗内容和 GitHub 更新展示。</p></div>
+							</CardContent></Card>
+							<Card><CardContent class="flex items-start gap-4 p-5">
+								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div>
+								<div class="flex-1"><h3 class="font-semibold">🎞️ 首页轮播图</h3><p class="text-sm text-muted-foreground">配置首页 Hero 区域的轮播图片。</p></div>
+							</CardContent></Card>
+							<Button variant="outline" size="sm" class="mt-2" href="/review/settings">打开系统设置</Button>
+						</div>
+					</TabsContent>
+
+					<!-- ── 用户管理（仅管理员）── -->
+					<TabsContent value="review-users">
+						<h2 class="mb-1 text-xl font-bold">👥 用户管理</h2>
+						<p class="mb-6 text-sm text-muted-foreground">管理用户账号、权限和审核员分配</p>
+						<div class="flex flex-col items-center justify-center py-16 text-muted-foreground">
+							<Users class="mb-3 h-12 w-12 opacity-30" />
+							<p class="text-sm">用户管理功能即将上线</p>
+							<Button variant="outline" size="sm" class="mt-3" href="/review/users">打开用户管理</Button>
+						</div>
+					</TabsContent>
 							<!-- Avatar -->
 							<Card><CardContent class="flex items-start gap-4 p-5">
 								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div>

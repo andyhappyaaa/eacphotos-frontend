@@ -146,15 +146,16 @@ export default async function handler(req, res) {
     // 前端 JS 永远不接触 token 明文，杜绝 XSS 窃取
 
     const COOKIE_NAME = 'eac_session';
+    const OAUTH_COOKIE_NAME = 'eac_oauth';
     const COOKIE_OPTS = 'HttpOnly; Secure; SameSite=Lax; Path=/';
 
     // 从 cookie 提取 token，注入 Authorization header
-    function extractTokenFromCookie(cookieHeader) {
+    function extractTokenFromCookie(cookieHeader, name) {
         if (!cookieHeader) return null;
         const cookies = cookieHeader.split(';').map(c => c.trim());
         for (const c of cookies) {
-            if (c.startsWith(COOKIE_NAME + '=')) {
-                return decodeURIComponent(c.substring(COOKIE_NAME.length + 1));
+            if (c.startsWith(name + '=')) {
+                return decodeURIComponent(c.substring(name.length + 1));
             }
         }
         return null;
@@ -169,10 +170,16 @@ export default async function handler(req, res) {
         'Content-Type': req.headers['content-type'] || 'application/json'
     };
 
-    // 从 HttpOnly cookie 提取用户 token（优先），回退到 Authorization header（向后兼容）
-    const cookieToken = extractTokenFromCookie(req.headers.cookie);
+    // 从 HttpOnly cookie 提取 token（优先 eac_session），回退到 Authorization header
+    // 同时检查 eac_oauth（审核员 OAuth cookie）— 用于 /api/admin/* 等管理员端点
+    const cookieToken = extractTokenFromCookie(req.headers.cookie, COOKIE_NAME);
+    const oauthToken = extractTokenFromCookie(req.headers.cookie, OAUTH_COOKIE_NAME);
+
     if (cookieToken) {
         forwardHeaders['Authorization'] = `Bearer ${cookieToken}`;
+    } else if (oauthToken) {
+        // OAuth 审核员 token — 通过 cookie 自动带到 proxy
+        forwardHeaders['Authorization'] = `Bearer ${oauthToken}`;
     } else if (req.headers['authorization']) {
         forwardHeaders['Authorization'] = req.headers['authorization'];
     }

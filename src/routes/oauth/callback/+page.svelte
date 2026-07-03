@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { refreshReviewerInfo } from '$lib/stores/auth';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Loader2, CheckCircle, XCircle } from '@lucide/svelte';
@@ -25,41 +26,24 @@
 				status = 'error'; message = 'state 验证失败，可能是 CSRF 攻击'; return;
 			}
 
-			// Exchange code for token via Vercel proxy
+			// Exchange code for token via Vercel proxy (token stored in HttpOnly cookie)
 			const tokenResp = await fetch('/api/oauth-token-exchange', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ code })
 			});
 			const tokenData = await tokenResp.json();
-			if (!tokenResp.ok || !tokenData.access_token) {
+			if (!tokenResp.ok || !tokenData.success) {
 				status = 'error';
 				message = tokenData.error_description || tokenData.error || '换取 token 失败';
 				return;
 			}
 
-			// Store reviewer session
-			const reviewerSession = {
-				accessToken: tokenData.access_token,
-				expiresAt: Date.now() + (tokenData.expires_in || 3600) * 1000,
-				tokenType: tokenData.token_type || 'Bearer',
-				scope: tokenData.scope || '',
-				type: 'oauth-reviewer'
-			};
-
-			// Fetch userinfo
-			try {
-				const uiResp = await fetch('/api/oauth-userinfo', {
-					headers: { 'Authorization': 'Bearer ' + tokenData.access_token }
-				});
-				const userInfo = await uiResp.json();
-				if (uiResp.ok) reviewerSession.user = userInfo;
-			} catch (e) { /* userinfo optional */ }
-
-			localStorage.setItem('eacphoto_reviewer_session', JSON.stringify(reviewerSession));
+			// Refresh reviewer info from the cookie-based API
+			await refreshReviewerInfo();
 
 			status = 'success';
-			message = '欢迎回来，' + (reviewerSession.user?.username || '审核员') + '！正在跳转...';
+			message = '欢迎回来，审核员！正在跳转到仪表盘...';
 			setTimeout(() => { window.location.href = '/dashboard'; }, 1200);
 		} catch (e) {
 			status = 'error';
