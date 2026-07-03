@@ -161,7 +161,7 @@
 					<TabsList class="flex w-full flex-col gap-0.5">
 						{#each tabItems as ti}
 							{@const isCurrent = activeTab === ti.value}
-							<TabsTrigger value={ti.value} class={`w-full justify-start gap-2 ${isCurrent ? 'bg-primary text-primary-foreground font-medium' : ''}`} onclick={() => loadTab(ti.value)}>
+							<TabsTrigger value={ti.value} class={`w-full justify-start gap-2 ${isCurrent ? 'font-bold text-foreground' : ''}`} onclick={() => loadTab(ti.value)}>
 								<ti.icon class="h-4 w-4" /> {ti.label}
 							</TabsTrigger>
 						{/each}

@@ -6,8 +6,17 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { t } from '$lib/stores/i18n';
 
-	let { children } = $props();
+	// Ensure window.APP_CONFIG exists early (needed by Turnstile / legacy code)
+	if (typeof window !== 'undefined' && !window.APP_CONFIG) {
+		window.APP_CONFIG = {};
+		if (window.__ENV__) {
+			window.APP_CONFIG.API_URL = window.__ENV__.VITE_API_URL || '';
+			window.APP_CONFIG.AUTH_SECRET = window.__ENV__.VITE_AUTH_SECRET || '';
+			window.APP_CONFIG.TURNSTILE_SITE_KEY = window.__ENV__.VITE_TURNSTILE_SITE_KEY || '';
+		}
+	}
 
+	let { children } = $props();
 	let tFn = $derived($t);
 </script>
 
