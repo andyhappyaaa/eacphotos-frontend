@@ -35,7 +35,7 @@ async function generateTOTP(secret, timeOffset = 0) {
 	const key = await crypto.subtle.importKey(
 		'raw',
 		new TextEncoder().encode(secret),
-		{ name: 'HMAC', hash: 'SHA-1' },
+		{ name: 'HMAC', hash: 'SHA-256' },
 		false,
 		['sign']
 	);
