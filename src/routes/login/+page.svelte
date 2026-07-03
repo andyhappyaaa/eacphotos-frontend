@@ -26,8 +26,8 @@
 		e.preventDefault(); error = ''; loading = true;
 		try {
 			const result = await login(username, password, rememberMe);
-			if (result.requires2FA) { goto('/2fa'); return; }
-			goto('/dashboard');
+			if (result.requires2FA) { window.location.href = '/2fa'; return; }
+			window.location.href = '/dashboard';
 		} catch (err) { error = err.message || '登录失败'; } finally { loading = false; }
 	}
 
@@ -39,7 +39,7 @@
 			const cred = await navigator.credentials.get({ publicKey: opts.publicKey });
 			if (!cred) { passkeyError = '用户取消'; passkeyLoading = false; return; }
 			await passkeyLoginVerify(cred, false);
-			goto('/dashboard');
+			window.location.href = '/dashboard';
 		} catch (err) { passkeyError = err.message || 'Passkey 登录失败'; } finally { passkeyLoading = false; }
 	}
 </script>

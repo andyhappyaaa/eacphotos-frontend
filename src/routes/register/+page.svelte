@@ -28,7 +28,7 @@
 		if (password !== confirmPassword) { error = '两次密码不一致'; return; }
 		if (!agreeTerms) { error = '请同意服务条款和隐私政策'; return; }
 		loading = true;
-		try { await register(username, email, password, emailCode, agreeTerms); goto('/'); }
+		try { await register(username, email, password, emailCode, agreeTerms); window.location.href = '/dashboard'; }
 		catch (err) { error = err.message || '注册失败'; } finally { loading = false; }
 	}
 </script>

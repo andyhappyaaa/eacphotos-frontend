@@ -10,7 +10,7 @@
 
 	async function handleVerify(e) {
 		e.preventDefault(); error = ''; loading = true;
-		try { await verify2FA(code); goto('/'); }
+		try { await verify2FA(code); window.location.href = '/dashboard'; }
 		catch (err) { error = err.message || '验证失败'; } finally { loading = false; }
 	}
 </script>
