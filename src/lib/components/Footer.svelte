@@ -19,7 +19,7 @@
 			<!-- Brand -->
 			<div class="md:col-span-1">
 				<a href="/" class="inline-block">
-					<img src={logoUrl} alt="EAC Photo" class="mb-4 h-9 w-auto" />
+					<img src={logoUrl} alt="" class="mb-4 h-9 w-auto" />
 				</a>
 				<p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
 					{tVal('footer.description')}

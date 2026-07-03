@@ -43,7 +43,7 @@
 			<SheetContent side="left" class="w-[280px] p-0">
 				<div class="flex h-full flex-col">
 					<div class="flex items-center gap-3 border-b px-5 py-4">
-						<img src={logoUrl} alt="EAC Photo" class="h-8 w-auto" />
+						<img src={logoUrl} alt="" class="h-8 w-auto" />
 						<span class="text-sm font-semibold">EAC Photo</span>
 					</div>
 					<nav class="flex-1 space-y-1 overflow-y-auto p-3">
@@ -85,7 +85,7 @@
 
 		<!-- Logo -->
 		<a href="/" class="flex shrink-0 items-center gap-2">
-			<img src={logoUrl} alt="EAC Photo" class="h-9 w-auto" />
+			<img src={logoUrl} alt="" class="h-9 w-auto" />
 		</a>
 
 		<!-- Desktop Nav -->

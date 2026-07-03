@@ -17,6 +17,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
 	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus } from '@lucide/svelte';
+	import QRCode from '$lib/components/QRCode.svelte';
 
 	let tFn = $derived($t);
 	let user = $derived($currentUser);
@@ -28,7 +29,7 @@
 	let tabLoading = $state(false);
 
 	// 2FA state
-	let tfaEnabled = $state(false); let tfaSecret = $state(''); let tfaQrUrl = $state(''); let tfaSetupCode = $state('');
+	let tfaEnabled = $state(false); let tfaSecret = $state(''); let tfaSetupCode = $state('');
 	let tfaLoading = $state(false); let tfaError = $state('');
 	let showTfaSetup = $state(false); let showTfaDisable = $state(false); let tfaDisableCode = $state(''); let tfaDisablePass = $state('');
 
@@ -73,7 +74,7 @@
 		tfaLoading = true; tfaError = '';
 		try {
 			const data = await setup2FA();
-			tfaSecret = data.secret; tfaQrUrl = `otpauth://totp/EACPhoto:${user?.username}?secret=${data.secret}&issuer=EACPhoto`;
+			tfaSecret = data.secret;
 			showTfaSetup = true;
 		} catch (err) { tfaError = err.message || '设置失败'; }
 		finally { tfaLoading = false; }
@@ -257,7 +258,7 @@
 									{#if showTfaSetup && tfaSecret}
 										<div class="mt-4 space-y-3 rounded-lg bg-secondary/50 p-4">
 											<p class="text-sm">请使用验证器扫描下方二维码或手动输入密钥：</p>
-											<div class="rounded bg-white p-2 inline-block"><img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={encodeURIComponent(tfaQrUrl)}" alt="QR Code" class="h-[180px] w-[180px]" /></div>
+											<QRCode text={`otpauth://totp/EACPhoto:${user?.username}?secret=${tfaSecret}&issuer=EACPhoto`} size={180} />
 											<p class="text-sm">密钥：<code class="rounded bg-secondary px-2 py-0.5 text-xs font-mono select-all">{tfaSecret}</code></p>
 											<div class="flex gap-2"><Input type="text" bind:value={tfaSetupCode} maxlength="6" placeholder="000000" class="h-9 w-24 text-center" /><Button size="sm" onclick={handleEnable2FA} disabled={tfaLoading}>验证并完成</Button><Button size="sm" variant="ghost" onclick={() => { showTfaSetup = false; tfaSecret = ''; }}>取消</Button></div>
 										</div>
