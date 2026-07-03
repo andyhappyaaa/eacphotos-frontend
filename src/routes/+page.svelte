@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -9,7 +10,7 @@
 	import { t } from '$lib/stores/i18n';
 	import { Camera, Users, Plane, PlaneTakeoff, ArrowRight, Sparkles } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 
 	let statPhotos = $state(0);
 	let statUsers = $state(0);

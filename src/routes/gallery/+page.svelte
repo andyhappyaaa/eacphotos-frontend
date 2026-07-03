@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
@@ -8,7 +9,7 @@
 	import { t } from '$lib/stores/i18n';
 	import { ChevronLeft, ChevronRight, Image, SlidersHorizontal } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 
 	let photos = $state([]);
 	let currentFilter = $state('all');

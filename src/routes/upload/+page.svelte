@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn } from '$lib/stores/auth';
@@ -12,7 +13,7 @@
 	import { t } from '$lib/stores/i18n';
 	import { Upload, X } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 	let title = $state(''); let photoDate = $state(''); let registration = $state('');
 	let airline = $state(''); let aircraftType = $state(''); let location = $state('');
 	let serialNumber = $state(''); let description = $state(''); let message = $state('');

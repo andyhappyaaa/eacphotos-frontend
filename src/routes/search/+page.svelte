@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -9,7 +10,7 @@
 	import { t } from '$lib/stores/i18n';
 	import { Search as SearchIcon, RotateCcw, SlidersHorizontal } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 	let photos = $state([]);
 	let loading = $state(false);
 	let searched = $state(false);

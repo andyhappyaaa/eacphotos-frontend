@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { page } from '$app/state';
 	import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
 	import { lang, setLanguage } from '$lib/stores/i18n';
@@ -13,9 +14,9 @@
 
 	let { t } = $props();
 	let logoUrl = $derived(getLogoUrl($theme));
-	let isAuth = $derived($isLoggedIn);
-	let user = $derived($currentUser);
-	let currentLang = $derived($lang);
+	let isAuth = $derived(get(isLoggedIn));
+	let user = $derived(get(currentUser));
+	let currentLang = $derived(get(lang));
 	let mobileOpen = $state(false);
 
 	const navLinks = [

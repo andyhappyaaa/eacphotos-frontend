@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { register, sendEmailCode } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -11,7 +12,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { UserPlus, Mail, Lock, AlertCircle } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 	let username = $state(''); let email = $state(''); let emailCode = $state('');
 	let password = $state(''); let confirmPassword = $state(''); let agreeTerms = $state(false);
 	let error = $state(''); let loading = $state(false); let sendingCode = $state(false);

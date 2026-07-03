@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { login, passkeyLoginOptions, passkeyLoginVerify } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -12,7 +13,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { LogIn, Lock, Mail, Eye, EyeOff, AlertCircle, Fingerprint, Loader2 } from '@lucide/svelte';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 
 	let username = $state(''); let password = $state(''); let rememberMe = $state(false);
 	let error = $state(''); let loading = $state(false); let showPassword = $state(false);

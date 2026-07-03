@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole } from '$lib/stores/auth';
@@ -19,12 +20,12 @@
 	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
-	let tFn = $derived($t);
-	let user = $derived($currentUser);
+	let tFn = $derived(get(t));
+	let user = $derived(get(currentUser));
 	let activeTab = $state('overview');
-	let isRev = $derived($isReviewer);
-	let isAdm = $derived($isAdmin);
-	let isSuper = $derived($isSuperAdmin);
+	let isRev = $derived(get(isReviewer));
+	let isAdm = $derived(get(isAdmin));
+	let isSuper = $derived(get(isSuperAdmin));
 	let sidebarOpen = $state(false);
 
 	let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });

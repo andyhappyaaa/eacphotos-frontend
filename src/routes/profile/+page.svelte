@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/state';
 	import { api } from '$lib/api';
@@ -6,7 +7,7 @@
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { t } from '$lib/stores/i18n';
 
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 	let profile = $state(null);
 	let photos = $state([]);
 

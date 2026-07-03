@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import '../app.css';
@@ -23,7 +24,7 @@
 	});
 
 	let { children } = $props();
-	let tFn = $derived($t);
+	let tFn = $derived(get(t));
 </script>
 
 <Toaster />

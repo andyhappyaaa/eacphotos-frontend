@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser } from '$lib/stores/auth';
@@ -10,7 +11,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
 
-	let user = $derived($currentUser);
+	let user = $derived(get(currentUser));
 	let bio = $state('');
 	let newPassword = $state('');
 	let confirmPassword = $state('');
