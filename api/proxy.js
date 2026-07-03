@@ -22,7 +22,7 @@ import crypto from 'crypto';
 // 生成 TOTP 验证码（服务端实现）
 function generateTOTP(secret, timestamp = Date.now()) {
     const timeStep = Math.floor(timestamp / 1000 / 30);
-    const hmac = crypto.createHmac('sha1', secret);
+    const hmac = crypto.createHmac('sha256', secret);
 
     const timeBuffer = Buffer.alloc(8);
     timeBuffer.writeUInt32BE(0, 0);
