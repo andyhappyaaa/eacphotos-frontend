@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'invalid_request', error_description: '缺少 code 参数' });
     }
 
-    const redirectUri = PUBLIC_SITE_URL.replace(/\/$/, '') + '/oauth/callback.html';
+    const redirectUri = PUBLIC_SITE_URL.replace(/\/$/, '') + '/oauth/callback';
 
     try {
         const r = await fetch(BACKEND_URL.replace(/\/$/, '') + '/oauth/token', {
