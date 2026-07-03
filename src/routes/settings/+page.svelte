@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser } from '$lib/stores/auth';

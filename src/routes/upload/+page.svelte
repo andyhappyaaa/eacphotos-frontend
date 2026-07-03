@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn } from '$lib/stores/auth';
@@ -13,7 +12,6 @@
 	import { t } from '$lib/stores/i18n';
 	import { Upload, X } from '@lucide/svelte';
 
-	let tFn = $derived(get(t));
 	let title = $state(''); let photoDate = $state(''); let registration = $state('');
 	let airline = $state(''); let aircraftType = $state(''); let location = $state('');
 	let serialNumber = $state(''); let description = $state(''); let message = $state('');
@@ -50,8 +48,8 @@
 <div class="container mx-auto max-w-[1200px] px-5 py-8">
 	<div class="mb-8 text-center">
 		<div class="mb-3 inline-flex items-center gap-2 rounded-full border bg-secondary/50 px-3 py-1 text-xs font-medium"><Upload class="h-3 w-3" /> 上传</div>
-		<h1 class="text-3xl font-bold tracking-tight">{@html tFn('upload.title')}</h1>
-		<p class="mt-2 text-muted-foreground">{@html tFn('upload.subtitle')}</p>
+		<h1 class="text-3xl font-bold tracking-tight">{@html $t('upload.title')}</h1>
+		<p class="mt-2 text-muted-foreground">{@html $t('upload.subtitle')}</p>
 	</div>
 
 	<form onsubmit={handleSubmit}>
@@ -73,25 +71,25 @@
 			</div>
 
 			<div class="space-y-4">
-				<div class="space-y-1.5"><Label for="title">{@html tFn('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required /></div>
+				<div class="space-y-1.5"><Label for="title">{@html $t('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required /></div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="date">{@html tFn('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required /></div>
-					<div class="space-y-1.5"><Label for="reg">{@html tFn('upload.registration')}</Label><Input id="reg" bind:value={registration} required /></div>
+					<div class="space-y-1.5"><Label for="date">{@html $t('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required /></div>
+					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required /></div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="airline">{@html tFn('upload.airline')}</Label><Input id="airline" bind:value={airline} required /></div>
-					<div class="space-y-1.5"><Label for="acType">{@html tFn('upload.aircraftType')}</Label><Input id="acType" bind:value={aircraftType} required /></div>
+					<div class="space-y-1.5"><Label for="airline">{@html $t('upload.airline')}</Label><Input id="airline" bind:value={airline} required /></div>
+					<div class="space-y-1.5"><Label for="acType">{@html $t('upload.aircraftType')}</Label><Input id="acType" bind:value={aircraftType} required /></div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="loc">{@html tFn('upload.location')}</Label><Input id="loc" bind:value={location} required /></div>
-					<div class="space-y-1.5"><Label for="sn">{@html tFn('upload.serialNumber')}</Label><Input id="sn" bind:value={serialNumber} /></div>
+					<div class="space-y-1.5"><Label for="loc">{@html $t('upload.location')}</Label><Input id="loc" bind:value={location} required /></div>
+					<div class="space-y-1.5"><Label for="sn">{@html $t('upload.serialNumber')}</Label><Input id="sn" bind:value={serialNumber} /></div>
 				</div>
-				<div class="space-y-1.5"><Label for="desc">{@html tFn('upload.description')}</Label><textarea id="desc" bind:value={description} rows="3" class="w-full rounded-lg border bg-background px-3 py-2 text-sm"></textarea></div>
-				<div class="flex items-center gap-2"><Checkbox id="isHot" bind:checked={isHot} /><Label for="isHot" class="text-sm">{@html tFn('upload.markAsHot')}</Label></div>
-				<div class="flex items-center gap-2"><Checkbox id="agreeTerms" bind:checked={agreeTerms} /><Label for="agreeTerms" class="text-sm">{@html tFn('upload.socialShare')}</Label></div>
+				<div class="space-y-1.5"><Label for="desc">{@html $t('upload.description')}</Label><textarea id="desc" bind:value={description} rows="3" class="w-full rounded-lg border bg-background px-3 py-2 text-sm"></textarea></div>
+				<div class="flex items-center gap-2"><Checkbox id="isHot" bind:checked={isHot} /><Label for="isHot" class="text-sm">{@html $t('upload.markAsHot')}</Label></div>
+				<div class="flex items-center gap-2"><Checkbox id="agreeTerms" bind:checked={agreeTerms} /><Label for="agreeTerms" class="text-sm">{@html $t('upload.socialShare')}</Label></div>
 				<Turnstile containerId="upload-turnstile" onSuccess={(tk) => (tsToken = tk)} onExpired={() => (tsToken = null)} />
 				{#if uploading}<div class="h-2 overflow-hidden rounded-full bg-secondary"><div class="h-full bg-primary transition-all" style="width:{uploadProgress}%"></div></div>{/if}
-				<Button type="submit" size="lg" class="w-full" disabled={uploading}>{uploading ? '上传中...' : tFn('upload.submit')}</Button>
+				<Button type="submit" size="lg" class="w-full" disabled={uploading}>{uploading ? '上传中...' : $t('upload.submit')}</Button>
 			</div>
 		</div>
 	</form>

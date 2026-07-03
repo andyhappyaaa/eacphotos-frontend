@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
@@ -9,7 +8,6 @@
 	import { t } from '$lib/stores/i18n';
 	import { ChevronLeft, ChevronRight, Image, SlidersHorizontal } from '@lucide/svelte';
 
-	let tFn = $derived(get(t));
 
 	let photos = $state([]);
 	let currentFilter = $state('all');
@@ -72,8 +70,8 @@
 		<div class="mb-3 inline-flex items-center gap-2 rounded-full border bg-secondary/50 px-3 py-1 text-xs font-medium">
 			<Image class="h-3 w-3" /> 图库
 		</div>
-		<h1 class="text-3xl font-bold tracking-tight">{@html tFn('gallery.title')}</h1>
-		<p class="mt-2 text-muted-foreground">{@html tFn('gallery.subtitle')}</p>
+		<h1 class="text-3xl font-bold tracking-tight">{@html $t('gallery.title')}</h1>
+		<p class="mt-2 text-muted-foreground">{@html $t('gallery.subtitle')}</p>
 	</div>
 
 	<div class="mb-8 flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">

@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { page } from '$app/state';
 	import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
 	import { lang, setLanguage } from '$lib/stores/i18n';
@@ -13,10 +12,6 @@
 	import { Sun, Moon, Globe, Menu, Home, Image, LayoutDashboard, Search, Newspaper, LogOut, User, Settings } from '@lucide/svelte';
 
 	let { t } = $props();
-	let logoUrl = $derived(getLogoUrl($theme));
-	let isAuth = $derived(get(isLoggedIn));
-	let user = $derived(get(currentUser));
-	let currentLang = $derived(get(lang));
 	let mobileOpen = $state(false);
 
 	const navLinks = [
@@ -34,39 +29,30 @@
 
 <nav class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 	<div class="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-5">
-		<!-- Mobile menu trigger (left side) -->
 		<Sheet bind:open={mobileOpen}>
 			<SheetTrigger asChild>
-				<Button variant="ghost" size="icon" class="md:hidden" aria-label="Menu">
-					<Menu class="h-[18px] w-[18px]" />
-				</Button>
+				<Button variant="ghost" size="icon" class="md:hidden" aria-label="Menu"><Menu class="h-[18px] w-[18px]" /></Button>
 			</SheetTrigger>
 			<SheetContent side="left" class="w-[280px] p-0">
 				<div class="flex h-full flex-col">
 					<div class="flex items-center gap-3 border-b px-5 py-4">
-						<img src={logoUrl} alt="" class="h-8 w-auto" />
+						<img src={getLogoUrl($theme)} alt="" class="h-8 w-auto" />
 						<span class="text-sm font-semibold">EAC Photo</span>
 					</div>
 					<nav class="flex-1 space-y-1 overflow-y-auto p-3">
 						{#each navLinks as link}
 							{@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
-							<button
-								onclick={() => { mobileOpen = false; handleNav(link.href); }}
-								class={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-									isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-								}`}
-							>
-								<link.icon class="h-4 w-4" />
-								{@html tVal(link.key)}
+							<button onclick={() => { mobileOpen = false; handleNav(link.href); }} class={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}>
+								<link.icon class="h-4 w-4" />{@html tVal(link.key)}
 							</button>
 						{/each}
 					</nav>
 					<Separator />
-					{#if isAuth && user}
+					{#if $isLoggedIn && $currentUser}
 						<div class="p-3">
 							<div class="mb-3 flex items-center gap-3 rounded-lg bg-secondary p-3">
-								<Avatar class="h-10 w-10"><AvatarImage src={user.avatar} alt="" /><AvatarFallback>{user.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
-								<div><p class="text-sm font-medium">{user.username}</p><p class="text-xs text-muted-foreground">{user.email}</p></div>
+								<Avatar class="h-10 w-10"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback>{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+								<div><p class="text-sm font-medium">{$currentUser.username}</p><p class="text-xs text-muted-foreground">{$currentUser.email}</p></div>
 							</div>
 							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/dashboard'); }}><LayoutDashboard class="mr-2 h-4 w-4" /> {tVal('nav.dashboard')}</Button>
 							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/profile'); }}><User class="mr-2 h-4 w-4" /> {tVal('nav.profile')}</Button>
@@ -84,12 +70,10 @@
 			</SheetContent>
 		</Sheet>
 
-		<!-- Logo -->
 		<a href="/" class="flex shrink-0 items-center gap-2">
-			<img src={logoUrl} alt="" class="h-9 w-auto" />
+			<img src={getLogoUrl($theme)} alt="" class="h-9 w-auto" />
 		</a>
 
-		<!-- Desktop Nav -->
 		<div class="hidden items-center gap-1 md:flex">
 			{#each navLinks as link}
 				{@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
@@ -101,29 +85,26 @@
 
 		<div class="flex-1"></div>
 
-		<!-- Right Actions -->
 		<div class="flex items-center gap-1.5">
 			<Button variant="ghost" size="icon" onclick={toggleTheme} aria-label="Toggle theme">
 				{#if $theme === 'dark'}<Sun class="h-[18px] w-[18px]" />{:else}<Moon class="h-[18px] w-[18px]" />{/if}
 			</Button>
 
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" size="icon" aria-label="Language"><Globe class="h-[18px] w-[18px]" /></Button>
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Language"><Globe class="h-[18px] w-[18px]" /></Button></DropdownMenuTrigger>
 				<DropdownMenuContent align="end" class="min-w-[120px]">
-					<DropdownMenuItem onclick={() => setLanguage('zh')} class={currentLang === 'zh' ? 'bg-secondary' : ''}>🇨🇳 中文</DropdownMenuItem>
-					<DropdownMenuItem onclick={() => setLanguage('en')} class={currentLang === 'en' ? 'bg-secondary' : ''}>🇺🇸 English</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => setLanguage('zh')} class={$lang === 'zh' ? 'bg-secondary' : ''}>🇨🇳 中文</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => setLanguage('en')} class={$lang === 'en' ? 'bg-secondary' : ''}>🇺🇸 English</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
 			<div class="hidden md:flex md:items-center md:gap-1.5">
-				{#if isAuth && user}
+				{#if $isLoggedIn && $currentUser}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button variant="ghost" class="h-8 gap-2 rounded-full px-2">
-								<Avatar class="h-7 w-7"><AvatarImage src={user.avatar} alt="" /><AvatarFallback class="text-xs">{user.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
-								<span class="text-sm font-medium">{user.username}</span>
+								<Avatar class="h-7 w-7"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback class="text-xs">{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+								<span class="text-sm font-medium">{$currentUser.username}</span>
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" class="w-48">

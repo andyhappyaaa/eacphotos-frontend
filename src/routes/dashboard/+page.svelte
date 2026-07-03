@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole } from '$lib/stores/auth';
@@ -20,7 +19,6 @@
 	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
-	let tFn = $derived(get(t));
 	let user = $derived(get(currentUser));
 	let activeTab = $state('overview');
 	let isRev = $derived(get(isReviewer));

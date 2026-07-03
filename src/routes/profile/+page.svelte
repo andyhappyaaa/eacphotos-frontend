@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/state';
 	import { api } from '$lib/api';
@@ -7,7 +6,6 @@
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { t } from '$lib/stores/i18n';
 
-	let tFn = $derived(get(t));
 	let profile = $state(null);
 	let photos = $state([]);
 
@@ -40,9 +38,9 @@
 				<div class="pb-4 text-center sm:text-left">
 					<h1 class="text-2xl font-bold">{profile.username || ''}</h1>
 					<div class="mt-1 flex gap-4 text-sm text-muted-foreground">
-						<span>📸 {profile.photoCount || 0} {tFn('profile.photos')}</span>
-						<span>❤ {profile.totalLikes || 0} {tFn('profile.likes')}</span>
-						<span>👁 {profile.totalViews || 0} {tFn('profile.views')}</span>
+						<span>📸 {profile.photoCount || 0} {$t('profile.photos')}</span>
+						<span>❤ {profile.totalLikes || 0} {$t('profile.likes')}</span>
+						<span>👁 {profile.totalViews || 0} {$t('profile.views')}</span>
 						<span>📅 {profile.joined ? new Date(profile.joined).toLocaleDateString() : ''}</span>
 					</div>
 				</div>
@@ -50,18 +48,18 @@
 
 			<Tabs defaultValue="photos" class="mt-6">
 				<TabsList>
-					<TabsTrigger value="photos">{tFn('profile.tab.photos')}</TabsTrigger>
-					<TabsTrigger value="about">{tFn('profile.tab.about')}</TabsTrigger>
+					<TabsTrigger value="photos">{$t('profile.tab.photos')}</TabsTrigger>
+					<TabsTrigger value="about">{$t('profile.tab.about')}</TabsTrigger>
 				</TabsList>
 				<TabsContent value="photos" class="mt-4">
 					<PhotoGrid {photos} />
 				</TabsContent>
 				<TabsContent value="about" class="mt-4">
 					<div class="rounded-lg border p-5">
-						<h3 class="font-semibold">{tFn('profile.about')}</h3>
+						<h3 class="font-semibold">{$t('profile.about')}</h3>
 						<p class="mt-2 text-muted-foreground">{profile.bio || '暂无介绍'}</p>
 						{#if profile.equipment}
-							<h3 class="mt-4 font-semibold">{tFn('profile.equipment')}</h3>
+							<h3 class="mt-4 font-semibold">{$t('profile.equipment')}</h3>
 							<p class="mt-2 text-muted-foreground">{profile.equipment}</p>
 						{/if}
 					</div>

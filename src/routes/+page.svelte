@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -10,7 +9,6 @@
 	import { t } from '$lib/stores/i18n';
 	import { Camera, Users, Plane, PlaneTakeoff, ArrowRight, Sparkles } from '@lucide/svelte';
 
-	let tFn = $derived(get(t));
 
 	let statPhotos = $state(0);
 	let statUsers = $state(0);
@@ -65,7 +63,7 @@
 </script>
 
 <!-- Hero Carousel -->
-<Carousel t={tFn} />
+<Carousel t={$t} />
 
 <!-- Stats Section -->
 <section class="relative border-b bg-card py-16">
@@ -77,7 +75,7 @@
 				</div>
 				<div>
 					<div class="text-3xl font-bold tracking-tight tabular-nums">{statPhotos.toLocaleString()}</div>
-					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.photos')}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html $t('stats.photos')}</div>
 				</div>
 			</div>
 			<div class="flex flex-col items-center gap-3 text-center">
@@ -86,7 +84,7 @@
 				</div>
 				<div>
 					<div class="text-3xl font-bold tracking-tight tabular-nums">{statUsers.toLocaleString()}</div>
-					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.users')}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html $t('stats.users')}</div>
 				</div>
 			</div>
 			<div class="flex flex-col items-center gap-3 text-center">
@@ -95,7 +93,7 @@
 				</div>
 				<div>
 					<div class="text-3xl font-bold tracking-tight tabular-nums">{statAirlines.toLocaleString()}</div>
-					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.airlines')}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html $t('stats.airlines')}</div>
 				</div>
 			</div>
 			<div class="flex flex-col items-center gap-3 text-center">
@@ -104,7 +102,7 @@
 				</div>
 				<div>
 					<div class="text-3xl font-bold tracking-tight tabular-nums">{statAircraft.toLocaleString()}</div>
-					<div class="mt-1 text-sm text-muted-foreground">{@html tFn('stats.aircraft')}</div>
+					<div class="mt-1 text-sm text-muted-foreground">{@html $t('stats.aircraft')}</div>
 				</div>
 			</div>
 		</div>
@@ -112,7 +110,7 @@
 </section>
 
 <!-- Featured Photos -->
-<FeaturedGrid t={tFn} />
+<FeaturedGrid t={$t} />
 
 <!-- Category Rows -->
 <CategoryRow />
@@ -146,13 +144,13 @@
 	<div class="container mx-auto max-w-[1400px] px-5">
 		<div class="mb-8 flex items-end justify-between">
 			<div>
-				<h2 class="text-2xl font-bold tracking-tight">{@html tFn('latest.title')}</h2>
+				<h2 class="text-2xl font-bold tracking-tight">{@html $t('latest.title')}</h2>
 				<p class="mt-1 text-sm text-muted-foreground">社区最新上传的航空摄影作品</p>
 			</div>
 			<a href="/gallery" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
 				浏览更多 <ArrowRight class="h-4 w-4" />
 			</a>
 		</div>
-		<PhotoGrid photos={latestPhotos} emptyText={tFn('search.empty')} />
+		<PhotoGrid photos={latestPhotos} emptyText={$t('search.empty')} />
 	</div>
 </section>

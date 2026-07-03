@@ -1,5 +1,4 @@
 <script>
-	import { get } from 'svelte/store';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import '../app.css';
@@ -19,22 +18,15 @@
 		}
 	}
 
-	onMount(() => {
-		initAnalytics();
-	});
+	onMount(() => { initAnalytics(); });
 
 	let { children } = $props();
-	let tFn = $derived(get(t));
 </script>
 
 <Toaster />
-
 <div class="flex min-h-screen flex-col">
-	<Navbar t={tFn} />
-	<main class="flex-1">
-		{@render children()}
-	</main>
-	<Footer t={tFn} />
+	<Navbar t={$t} />
+	<main class="flex-1">{@render children()}</main>
+	<Footer t={$t} />
 </div>
-
 <Announcement />

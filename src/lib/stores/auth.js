@@ -24,17 +24,6 @@ if (initialSession && isSessionExpired(initialSession) && browser) localStorage.
 
 export const authSession = writable(initialSession && !isSessionExpired(initialSession) ? initialSession : null);
 
-export const isLoggedIn = derived([authSession, reviewerInfo], ([$s, $r]) => {
-	if ($s && !isSessionExpired($s)) return true;
-	return !!$r?.authenticated;
-});
-
-export const currentUser = derived([authSession, reviewerInfo], ([$s, $r]) => {
-	if ($s && $s.user) return $s.user;
-	if ($r?.authenticated) return { username: $r.username, email: $r.email, role: $r.role };
-	return null;
-});
-
 // ── Reviewer ──
 function getReviewerSession() {
 	if (!browser) return null;
@@ -48,7 +37,19 @@ function getReviewerSession() {
 function isReviewerLoggedIn() { return !!getReviewerSession(); }
 
 // ── OAuth reviewer (cookie-based) ──
+// ⚠️ 必须定义在 isLoggedIn / currentUser 之前（这两个 derived 引用了它）
 export const reviewerInfo = writable(null);
+
+export const isLoggedIn = derived([authSession, reviewerInfo], ([$s, $r]) => {
+	if ($s && !isSessionExpired($s)) return true;
+	return !!$r?.authenticated;
+});
+
+export const currentUser = derived([authSession, reviewerInfo], ([$s, $r]) => {
+	if ($s && $s.user) return $s.user;
+	if ($r?.authenticated) return { username: $r.username, email: $r.email, role: $r.role };
+	return null;
+});
 
 export const isReviewer = derived(reviewerInfo, ($r) => !!$r?.authenticated);
 export const reviewerRole = derived(reviewerInfo, ($r) => $r?.role || null);
