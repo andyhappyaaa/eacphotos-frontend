@@ -60,7 +60,7 @@
 
 			status = 'success';
 			message = '欢迎回来，' + (reviewerSession.user?.username || '审核员') + '！正在跳转...';
-			setTimeout(() => { goto('/dashboard'); }, 1200);
+			setTimeout(() => { window.location.href = '/dashboard'; }, 1200);
 		} catch (e) {
 			status = 'error';
 			message = '网络错误：' + (e.message || e);
