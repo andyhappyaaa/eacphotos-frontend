@@ -7,16 +7,13 @@
 	 * Ported from turnstile-init.js.
 	 */
 
-	let { containerId = 'turnstile-container', onSuccess = () => {}, onExpired = () => {}, onError = () => {}, submitButton = null } = $props();
+	let { containerId = 'turnstile-container', onSuccess = () => {}, onExpired = () => {}, onError = () => {}, submitButton = null, onReady } = $props();
 
 	let containerEl = $state(null);
 	let widgetId = $state(null);
 	let token = $state(null);
 	let turnstileLoaded = $state(false);
 	let siteKey = $state('');
-
-	// Expose methods via callback
-	let { onReady } = $props();
 
 	function getSiteKey() {
 		if (!browser) return '';
