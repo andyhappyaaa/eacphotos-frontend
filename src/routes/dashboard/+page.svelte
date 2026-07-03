@@ -11,7 +11,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock } from '@lucide/svelte';
 
 	let tFn = $derived($t);
 	let user = $derived($currentUser);
