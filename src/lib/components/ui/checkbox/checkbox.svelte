@@ -27,7 +27,7 @@
 	{#snippet children({ checked, indeterminate })}
 		<div
 			data-slot="checkbox-indicator"
-			class="[&>svg]:size-3.5 grid place-content-center text-current transition-none"
+			class="[&>svg]:size-3.5 grid place-content-center text-current [&>svg]:scale-75 [&>svg]:opacity-0 [&>svg]:transition-all [&>svg]:duration-200 [&>svg]:ease-spring group-data-[state=checked]/checkbox:[&>svg]:scale-100 group-data-[state=checked]/checkbox:[&>svg]:opacity-100"
 		>
 			{#if checked}
 				<CheckIcon  />
