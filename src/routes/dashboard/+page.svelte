@@ -161,8 +161,9 @@
 </script>
 
 <style>
-	#dashboard-sidebar-tabs [data-current="1"] {
-		font-weight: 700;
+	/* 当前选中 tab 加粗 — bits-ui TabsTrigger 激活时自动设置 data-active */
+	#dashboard-sidebar-tabs :global([data-slot="tabs-trigger"][data-active]) {
+		font-weight: 700 !important;
 	}
 </style>
 
@@ -185,8 +186,7 @@
 					<Separator class="mb-3" />
 					<TabsList class="flex w-full flex-col gap-0.5" id="dashboard-sidebar-tabs">
 						{#each tabItems as ti}
-							{@const isCurrent = activeTab === ti.value}
-							<TabsTrigger value={ti.value} class="w-full justify-start gap-2" data-tab={ti.value} data-current={isCurrent ? '1' : null} onclick={() => loadTab(ti.value)}>
+							<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
 								<ti.icon class="h-4 w-4" /> {ti.label}
 							</TabsTrigger>
 						{/each}
