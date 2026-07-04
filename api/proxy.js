@@ -60,7 +60,8 @@ export default async function handler(req, res) {
 	const reqCt = req.headers['content-type'] || '';
 	const isMultipart = reqCt.toLowerCase().includes('multipart/form-data');
 	const forwardHeaders = { ...authHeaders };
-	if (!isMultipart) forwardHeaders['Content-Type'] = reqCt || 'application/json';
+	// multipart: 必须透传原始 Content-Type（含 boundary=...），否则 Worker 无法解析 FormData
+	if (reqCt) forwardHeaders['Content-Type'] = reqCt;
 
 	// — Tokens —
 	const extractToken = (name) => {
