@@ -160,6 +160,12 @@
 	]);
 </script>
 
+<style>
+	#dashboard-sidebar-tabs [data-current="1"] {
+		font-weight: 700;
+	}
+</style>
+
 <div class="container mx-auto max-w-[1200px] px-4 py-6">
 	<!-- Mobile sidebar toggle (fixed left) -->
 	<button onclick={toggleSidebar} class="fixed left-3 top-20 z-[55] rounded-lg border bg-background p-2 shadow-md lg:hidden" aria-label="菜单">
@@ -177,10 +183,10 @@
 						<p class="text-xs text-muted-foreground">{$currentUser?.email || ''}</p>
 					</div>
 					<Separator class="mb-3" />
-					<TabsList class="flex w-full flex-col gap-0.5">
+					<TabsList class="flex w-full flex-col gap-0.5" id="dashboard-sidebar-tabs">
 						{#each tabItems as ti}
 							{@const isCurrent = activeTab === ti.value}
-							<TabsTrigger value={ti.value} class={`w-full justify-start gap-2 ${isCurrent ? 'font-bold text-foreground' : ''}`} onclick={() => loadTab(ti.value)}>
+							<TabsTrigger value={ti.value} class="w-full justify-start gap-2" data-tab={ti.value} data-current={isCurrent ? '1' : null} onclick={() => loadTab(ti.value)}>
 								<ti.icon class="h-4 w-4" /> {ti.label}
 							</TabsTrigger>
 						{/each}
