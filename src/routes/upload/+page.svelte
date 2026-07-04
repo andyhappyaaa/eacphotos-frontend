@@ -79,18 +79,18 @@
 			</div>
 
 			<div class="space-y-4">
-				<div class="space-y-1.5"><Label for="title">{@html $t('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required /></div>
+				<div class="space-y-1.5"><Label for="title">{@html $t('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required class="h-9" /></div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="date">{@html $t('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required /></div>
-					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required /></div>
+					<div class="space-y-1.5"><Label for="date">{@html $t('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required class="h-9" /></div>
+					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required class="h-9" /></div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="airline">{@html $t('upload.airline')}</Label><Input id="airline" bind:value={airline} required /></div>
-					<div class="space-y-1.5"><Label for="acType">{@html $t('upload.aircraftType')}</Label><Input id="acType" bind:value={aircraftType} required /></div>
+					<div class="space-y-1.5"><Label for="airline">{@html $t('upload.airline')}</Label><Input id="airline" bind:value={airline} required class="h-9" /></div>
+					<div class="space-y-1.5"><Label for="acType">{@html $t('upload.aircraftType')}</Label><Input id="acType" bind:value={aircraftType} required class="h-9" /></div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="space-y-1.5"><Label for="loc">{@html $t('upload.location')}</Label><Input id="loc" bind:value={location} required /></div>
-					<div class="space-y-1.5"><Label for="sn">{@html $t('upload.serialNumber')}</Label><Input id="sn" bind:value={serialNumber} /></div>
+					<div class="space-y-1.5"><Label for="loc">{@html $t('upload.location')}</Label><Input id="loc" bind:value={location} required class="h-9" /></div>
+					<div class="space-y-1.5"><Label for="sn">{@html $t('upload.serialNumber')}</Label><Input id="sn" bind:value={serialNumber} class="h-9" /></div>
 				</div>
 				<div class="space-y-1.5"><Label for="desc">{@html $t('upload.description')}</Label><textarea id="desc" bind:value={description} rows="3" class="w-full rounded-lg border bg-background px-3 py-2 text-sm"></textarea></div>
 				<div class="flex items-center gap-2"><Checkbox id="isHot" bind:checked={isHot} /><Label for="isHot" class="text-sm">{@html $t('upload.markAsHot')}</Label></div>
