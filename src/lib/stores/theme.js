@@ -2,18 +2,25 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 /**
- * Theme store - manages dark/light mode.
- * Toggles 'dark' class on <html> element.
+ * Theme store — dark/light mode with system-following.
+ *
+ * Priority: localStorage > system preference > light
+ * When no saved preference exists, follows prefers-color-scheme automatically.
  */
 
 const THEME_KEY = 'eacphoto_theme';
+
+function getSystemTheme() {
+	if (!browser) return 'light';
+	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
 function getInitialTheme() {
 	if (!browser) return 'light';
 	const saved = localStorage.getItem(THEME_KEY);
 	if (saved === 'dark' || saved === 'light') return saved;
-	// Check system preference
-	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	// No saved preference => follow system
+	return getSystemTheme();
 }
 
 export const theme = writable(getInitialTheme());
@@ -23,6 +30,10 @@ function applyTheme(t) {
 	const html = document.documentElement;
 	html.classList.remove('light', 'dark');
 	html.classList.add(t);
+	html.setAttribute('data-theme', t);
+	// Also update <meta name="theme-color"> for mobile browser chrome
+	const meta = document.querySelector('meta[name="theme-color"]');
+	if (meta) meta.content = t === 'dark' ? '#0f172a' : '#2563eb';
 }
 
 export function setTheme(t) {
@@ -31,29 +42,27 @@ export function setTheme(t) {
 	if (browser) {
 		localStorage.setItem(THEME_KEY, t);
 		applyTheme(t);
-		// Dispatch event for external components (e.g., Turnstile)
-		try {
-			window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: t } }));
-		} catch (e) {
-			/* ignore */
-		}
+		window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: t } }));
 	}
 }
 
 export function toggleTheme() {
 	let current;
 	theme.subscribe((t) => (current = t))();
-	setTheme(current === 'light' ? 'dark' : 'light');
+	setTheme(current === 'dark' ? 'light' : 'dark');
 }
 
-// Apply initial theme
+// ── Init ──
 if (browser) {
 	applyTheme(getInitialTheme());
 
-	// Listen for system theme changes
+	// Live system theme following: only when user hasn't manually chosen
 	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-		if (!localStorage.getItem(THEME_KEY)) {
-			setTheme(e.matches ? 'dark' : 'light');
+		const saved = localStorage.getItem(THEME_KEY);
+		if (!saved) {
+			const t = e.matches ? 'dark' : 'light';
+			theme.set(t);
+			applyTheme(t);
 		}
 	});
 }
