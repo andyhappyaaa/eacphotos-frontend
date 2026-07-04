@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn } from '$lib/stores/auth';
+	import { isLoggedIn, verifyTurnstile } from '$lib/stores/auth';
 	import { uploadWithProgress } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -18,6 +18,14 @@
 	let isHot = $state(false); let agreeTerms = $state(true);
 	let selectedFiles = $state([]); let uploading = $state(false); let uploadProgress = $state(0);
 	let tsToken = $state(null); let tsRef = $state(null);
+	let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
+
+	async function verifyTsToken(tk) {
+		tsToken = tk; turnstileVerifying = true;
+		try { await verifyTurnstile(tk); turnstileVerified = true; }
+		catch (err) { showToast('人机验证失败，请重试', 'error'); turnstileVerified = false; }
+		finally { turnstileVerifying = false; }
+	}
 
 	onMount(() => { if (!$isLoggedIn) goto('/login'); });
 
@@ -87,9 +95,9 @@
 				<div class="space-y-1.5"><Label for="desc">{@html $t('upload.description')}</Label><textarea id="desc" bind:value={description} rows="3" class="w-full rounded-lg border bg-background px-3 py-2 text-sm"></textarea></div>
 				<div class="flex items-center gap-2"><Checkbox id="isHot" bind:checked={isHot} /><Label for="isHot" class="text-sm">{@html $t('upload.markAsHot')}</Label></div>
 				<div class="flex items-center gap-2"><Checkbox id="agreeTerms" bind:checked={agreeTerms} /><Label for="agreeTerms" class="text-sm">{@html $t('upload.socialShare')}</Label></div>
-				<Turnstile containerId="upload-turnstile" onSuccess={(tk) => (tsToken = tk)} onExpired={() => (tsToken = null)} />
+				<Turnstile containerId="upload-turnstile" onSuccess={(tk) => verifyTsToken(tk)} onExpired={() => { tsToken = null; turnstileVerified = false; }} />
 				{#if uploading}<div class="h-2 overflow-hidden rounded-full bg-secondary"><div class="h-full bg-primary transition-all" style="width:{uploadProgress}%"></div></div>{/if}
-				<Button type="submit" size="lg" class="w-full" disabled={uploading}>{uploading ? '上传中...' : $t('upload.submit')}</Button>
+				<Button type="submit" size="lg" class="w-full" disabled={uploading || !turnstileVerified}>{uploading ? '上传中...' : turnstileVerifying ? '验证中...' : $t('upload.submit')}</Button>
 			</div>
 		</div>
 	</form>

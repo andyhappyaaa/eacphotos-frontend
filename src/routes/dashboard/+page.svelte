@@ -1,4 +1,5 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole } from '$lib/stores/auth';
@@ -19,11 +20,7 @@
 	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
-	let user = $derived(get(currentUser));
 	let activeTab = $state('overview');
-	let isRev = $derived(get(isReviewer));
-	let isAdm = $derived(get(isAdmin));
-	let isSuper = $derived(get(isSuperAdmin));
 	let sidebarOpen = $state(false);
 
 	let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
@@ -52,7 +49,7 @@
 			else if (tab === 'pending') await loadPending();
 			else if (tab === 'approved') await loadApproved();
 			else if (tab === 'rejected') await loadRejected();
-			else if (tab === 'settings') { tfaEnabled = !!user?.twoFactorEnabled; loadPasskeys(); }
+			else if (tab === 'settings') { tfaEnabled = !!$currentUser?.twoFactorEnabled; loadPasskeys(); }
 			else if (tab === 'upload') { goto('/upload'); return; }
 		} catch (e) {}
 		finally { tabLoading = false; }
@@ -89,7 +86,7 @@
 			await enable2FA(tfaSetupCode);
 			tfaEnabled = true; showTfaSetup = false; showToast('两步验证已启用', 'success');
 			// Update local user
-			if (user) user.twoFactorEnabled = true;
+			if ($currentUser) $currentUser.twoFactorEnabled = true;
 		} catch (err) { tfaError = err.message || '启用失败'; }
 		finally { tfaLoading = false; }
 	}
@@ -101,7 +98,7 @@
 			await disable2FA(tfaDisableCode);
 			tfaEnabled = false; showTfaDisable = false; tfaDisableCode = ''; tfaDisablePass = '';
 			showToast('两步验证已禁用', 'success');
-			if (user) user.twoFactorEnabled = false;
+			if ($currentUser) $currentUser.twoFactorEnabled = false;
 		} catch (err) { tfaError = err.message || '禁用失败'; }
 		finally { tfaLoading = false; }
 	}
@@ -130,7 +127,7 @@
 	}
 
 	async function handleSendPasswordConfirm() {
-		try { await sendEmailCode(user?.email); showToast('确认邮件已发送', 'success'); }
+		try { await sendEmailCode($currentUser?.email); showToast('确认邮件已发送', 'success'); }
 		catch (err) { showToast(err.message || '发送失败', 'error'); }
 	}
 
@@ -155,8 +152,8 @@
 
 	let tabItems = $derived([
 		...userTabs,
-		...(isRev ? reviewerTabs : []),
-		...(isAdm ? adminTabs : [])
+		...(get(isReviewer) ? reviewerTabs : []),
+		...(get(isAdmin) ? adminTabs : [])
 	]);
 </script>
 
@@ -172,9 +169,9 @@
 			<aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start">
 				{#snippet sidebarContent()}
 					<div class="mb-4 text-center">
-						<Avatar class="mx-auto mb-3 h-16 w-16"><AvatarImage src={user?.avatar} alt="" /><AvatarFallback class="text-lg">{user?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
-						<h3 class="font-semibold">{user?.username || '用户'}</h3>
-						<p class="text-xs text-muted-foreground">{user?.email || ''}</p>
+						<Avatar class="mx-auto mb-3 h-16 w-16"><AvatarImage src={$currentUser?.avatar} alt="" /><AvatarFallback class="text-lg">{$currentUser?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+						<h3 class="font-semibold">{$currentUser?.username || '用户'}</h3>
+						<p class="text-xs text-muted-foreground">{$currentUser?.email || ''}</p>
 					</div>
 					<Separator class="mb-3" />
 					<TabsList class="flex w-full flex-col gap-0.5">
@@ -276,7 +273,7 @@
 									{#if showTfaSetup && tfaSecret}
 										<div class="mt-4 space-y-3 rounded-lg bg-secondary/50 p-4">
 											<p class="text-sm">请使用验证器扫描下方二维码或手动输入密钥：</p>
-											<QRCode text={`otpauth://totp/EACPhoto:${user?.username}?secret=${tfaSecret}&issuer=EACPhoto`} size={180} />
+											<QRCode text={`otpauth://totp/EACPhoto:${$currentUser?.username}?secret=${tfaSecret}&issuer=EACPhoto`} size={180} />
 											<p class="text-sm">密钥：<code class="rounded bg-secondary px-2 py-0.5 text-xs font-mono select-all">{tfaSecret}</code></p>
 											<div class="flex gap-2"><Input type="text" bind:value={tfaSetupCode} maxlength="6" placeholder="000000" class="h-9 w-24 text-center" /><Button size="sm" onclick={handleEnable2FA} disabled={tfaLoading}>验证并完成</Button><Button size="sm" variant="ghost" onclick={() => { showTfaSetup = false; tfaSecret = ''; }}>取消</Button></div>
 										</div>

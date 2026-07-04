@@ -1,5 +1,5 @@
 <script>
-	import { login, passkeyLoginOptions, passkeyLoginVerify } from '$lib/stores/auth';
+	import { login, passkeyLoginOptions, passkeyLoginVerify, verifyTurnstile } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -16,10 +16,18 @@
 	let username = $state(''); let password = $state(''); let rememberMe = $state(false);
 	let error = $state(''); let loading = $state(false); let showPassword = $state(false);
 	let tsToken = $state(null);
+	let turnstileVerified = $state(false);
+	let turnstileVerifying = $state(false);
+
+	async function verifyTsToken(tk) {
+		tsToken = tk; turnstileVerifying = true;
+		try { await verifyTurnstile(tk); turnstileVerified = true; }
+		catch (e) { error = '人机验证失败，请重试'; turnstileVerified = false; }
+		finally { turnstileVerifying = false; }
+	}
 
 	// Passkey state
 	let passkeyLoading = $state(false); let passkeyError = $state('');
-	let showPasskeyPrompt = $state(false);
 
 	async function handleSubmit(e) {
 		e.preventDefault(); error = ''; loading = true;
@@ -64,8 +72,8 @@
 				</div>
 				<div class="flex items-center gap-2"><Checkbox id="remember" bind:checked={rememberMe} /><Label for="remember" class="text-sm font-normal">{@html $t('login.remember')}</Label></div>
 				{#if error}<div class="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"><AlertCircle class="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>{/if}
-				<Turnstile containerId="login-turnstile" onSuccess={(tk) => (tsToken = tk)} onExpired={() => (tsToken = null)} />
-				<Button type="submit" class="w-full" disabled={loading}>{#if loading}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}{loading ? '登录中...' : $t('login.submit')}</Button>
+				<Turnstile containerId="login-turnstile" onSuccess={(tk) => verifyTsToken(tk)} onExpired={() => { tsToken = null; turnstileVerified = false; }} />
+				<Button type="submit" class="w-full" disabled={loading || !turnstileVerified}>{#if loading || turnstileVerifying}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}{loading ? '登录中...' : turnstileVerifying ? '验证中...' : $t('login.submit')}</Button>
 			</form>
 
 			<Separator class="my-5">{@html $t('login.or')}</Separator>

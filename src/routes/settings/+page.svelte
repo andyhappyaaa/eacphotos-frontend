@@ -10,7 +10,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
 
-	let user = $derived(get(currentUser));
+	// use $currentUser directly in template
 	let bio = $state('');
 	let newPassword = $state('');
 	let confirmPassword = $state('');
@@ -22,9 +22,9 @@
 	});
 
 	async function loadProfile() {
-		if (!user) return;
+		if (!$currentUser) return;
 		try {
-			const r = await api(`/api/users/${user.id}`);
+			const r = await api(`/api/users/${$currentUser.id}`);
 			const p = await r.json();
 			bio = p.bio || '';
 		} catch (e) { /* */ }

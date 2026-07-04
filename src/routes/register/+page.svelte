@@ -1,5 +1,5 @@
 <script>
-	import { register, sendEmailCode } from '$lib/stores/auth';
+	import { register, sendEmailCode, verifyTurnstile } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -15,6 +15,14 @@
 	let password = $state(''); let confirmPassword = $state(''); let agreeTerms = $state(false);
 	let error = $state(''); let loading = $state(false); let sendingCode = $state(false);
 	let tsToken = $state(null); let tsRef = $state(null);
+	let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
+
+	async function verifyTsToken(tk) {
+		tsToken = tk; turnstileVerifying = true;
+		try { await verifyTurnstile(tk); turnstileVerified = true; }
+		catch (err) { error = '人机验证失败，请重试'; turnstileVerified = false; }
+		finally { turnstileVerifying = false; }
+	}
 
 	async function handleSendCode() {
 		if (!email) return; sendingCode = true;
@@ -65,9 +73,9 @@
 					<Checkbox id="agree" bind:checked={agreeTerms} class="mt-1" />
 					<Label for="agree" class="text-xs">{@html $t('register.agree')}</Label>
 				</div>
-				<Turnstile containerId="register-turnstile" onSuccess={(tk) => (tsToken = tk)} onExpired={() => (tsToken = null)} />
+				<Turnstile containerId="register-turnstile" onSuccess={(tk) => verifyTsToken(tk)} onExpired={() => { tsToken = null; turnstileVerified = false; }} />
 				{#if error}<div class="flex items-start gap-2 rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive"><AlertCircle class="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>{/if}
-				<Button type="submit" class="w-full" disabled={loading}>{loading ? '注册中...' : $t('register.submit')}</Button>
+				<Button type="submit" class="w-full" disabled={loading || !turnstileVerified}>{loading || turnstileVerifying ? (turnstileVerifying ? '验证中...' : '注册中...') : $t('register.submit')}</Button>
 			</form>
 		</CardContent>
 		<CardFooter class="justify-center text-sm text-muted-foreground">
