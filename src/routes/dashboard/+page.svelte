@@ -127,8 +127,11 @@
 	}
 
 	async function handleSendPasswordConfirm() {
-		try { await sendEmailCode($currentUser?.email); showToast('确认邮件已发送', 'success'); }
-		catch (err) { showToast(err.message || '发送失败', 'error'); }
+		try {
+			const r = await api('/api/users/me/request-password-change', { method: 'POST', body: '{}' });
+			const d = await r.json();
+			showToast(d.message || '确认邮件已发送', 'success');
+		} catch (err) { showToast(err.message || '发送失败', 'error'); }
 	}
 
 	const userTabs = [
