@@ -31,12 +31,12 @@
 			class="h-40 w-full object-cover"
 			loading="lazy"
 			onerror={(e) => {
-				e.target.outerHTML = '<div class="flex h-40 items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-3xl text-white">📰</div>';
+				e.target.outerHTML = '<div class="flex h-40 items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-3xl text-white"></div>';
 			}}
 		/>
 	{:else}
-		<div class="flex h-40 items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-3xl text-white">
-			📰
+		<div class="flex h-40 items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg font-semibold">
+			Photo
 		</div>
 	{/if}
 
@@ -50,11 +50,8 @@
 		{/if}
 
 		<div class="mt-2 text-xs text-muted-foreground">
-			📅 {formatDate(news.published_at)}
+			{formatDate(news.published_at)}
 			{news.category ? ` · ${news.category}` : ''}
-			{#if news.gallery_photos}
-				· 🔗 图库匹配
-			{/if}
 		</div>
 	</div>
 </a>

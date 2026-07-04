@@ -15,7 +15,7 @@
 	let statusFilter = $state('all');
 	let searchQuery = $state('');
 
-	onMount(() => { if (!$isAdmin) window.location.href = '/'; });
+	onMount(() => { if (!$isAdmin) window.location.href = '/login'; });
 
 	async function loadPhotos() {
 		loading = true;

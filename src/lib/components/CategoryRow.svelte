@@ -67,7 +67,7 @@
 									<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-white">
 										<strong class="block text-sm">{photo.title || '无标题'}</strong>
 										<span class="text-xs opacity-90">
-											{photo.aircraft_type || ''} · {photo.registration || ''}
+											{photo.aircraft_type || ''} · {photo.registration || ''}{#if photo.photo_date} · {photo.photo_date}{/if}
 										</span>
 									</div>
 								</a>

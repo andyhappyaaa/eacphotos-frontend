@@ -79,12 +79,12 @@
 	}
 </script>
 
-<section class="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-slate-900 text-center text-white">
+<section class="relative flex min-h-[300px] md:min-h-[460px] items-center justify-center overflow-hidden bg-slate-900 text-center text-white">
 	<!-- Slides -->
 	<div class="absolute inset-0 z-[1]" bind:this={trackEl}>
 		{#each slides as slide, i}
 			<div
-				class="absolute inset-0 bg-cover bg-center transition-opacity duration-[1200ms] ease-in-out"
+				class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-[1200ms] ease-in-out"
 				class:opacity-100={i === currentIndex}
 				class:opacity-0={i !== currentIndex}
 				style={slide.image ? `background-image: url('${slide.image}')` : ''}

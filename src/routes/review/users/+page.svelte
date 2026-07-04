@@ -17,7 +17,7 @@
 	let banDays = $state('');
 	let banUserId = $state(null);
 
-	onMount(() => { if (!$isAdmin) { window.location.href = '/'; return; } loadUsers(); });
+	onMount(() => { if (!$isAdmin) { window.location.href = '/login'; return; } loadUsers(); });
 
 	async function loadUsers() {
 		loading = true;

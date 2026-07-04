@@ -17,7 +17,7 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let activeTab = $state('overview');
@@ -36,7 +36,7 @@
 	let passkeys = $state([]); let passkeyLoading = $state(false);
 
 	onMount(async () => {
-		if (!$isLoggedIn) { window.location.href = '/'; return; }
+		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		loadTab('overview');
 	});
 
@@ -134,6 +134,17 @@
 		} catch (err) { showToast(err.message || '发送失败', 'error'); }
 	}
 
+	async function handleDeletePhoto(photoId) {
+		if (!confirm('确定要删除这张照片？此操作不可恢复。')) return;
+		try { await api('/api/photos/' + photoId + '/delete', { method: 'POST', body: '{}' }); showToast('已删除', 'success'); loadTab(activeTab); }
+		catch (err) { showToast(err.message || '删除失败', 'error'); }
+	}
+	async function handleTogglePrivate(photo) {
+		const makePrivate = photo.status !== 'private';
+		try { await api('/api/photos/' + photo.id + '/visibility', { method: 'POST', body: JSON.stringify({ isPrivate: makePrivate }) }); showToast(makePrivate ? '已设为私密' : '已设为公开', 'success'); loadTab(activeTab); }
+		catch (err) { showToast(err.message || '操作失败', 'error'); }
+	}
+
 	const userTabs = [
 		{ value: 'overview', label: '总览', icon: LayoutDashboard },
 		{ value: 'upload', label: '上传图片', icon: Upload },
@@ -169,7 +180,7 @@
 
 <div class="container mx-auto max-w-[1200px] px-4 py-6">
 	<!-- Mobile sidebar toggle (fixed left) -->
-	<button onclick={toggleSidebar} class="fixed left-3 top-20 z-[55] rounded-lg border bg-background p-2 shadow-md lg:hidden" aria-label="菜单">
+	<button onclick={toggleSidebar} class="fixed left-3 top-20 z-[100] rounded-lg border bg-background p-2 shadow-md lg:hidden" aria-label="菜单">
 		<LayoutDashboard class="h-5 w-5" />
 	</button>
 
@@ -199,8 +210,8 @@
 			{#if sidebarOpen}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="fixed inset-0 z-[60] bg-black/50 lg:hidden" onclick={() => (sidebarOpen = false)}></div>
-				<div class="fixed left-0 top-0 z-[61] h-full w-[280px] overflow-y-auto border-r bg-card p-5 shadow-2xl lg:hidden">
+				<div class="fixed inset-0 z-[101] bg-black/50 lg:hidden" onclick={() => (sidebarOpen = false)}></div>
+				<div class="fixed left-0 top-0 z-[102] h-full w-[280px] overflow-y-auto border-r bg-card p-5 shadow-2xl lg:hidden">
 					<button class="mb-4 text-sm text-muted-foreground" onclick={() => (sidebarOpen = false)}>✕ 关闭</button>
 					{@render sidebarContent()}
 				</div>
@@ -223,7 +234,7 @@
 							<div class="mb-3 flex items-center gap-2"><Image class="h-4 w-4 text-muted-foreground" /><h3 class="font-semibold">最近上传</h3></div>
 							<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 								{#each stats.recent as photo}
-									<a href="/photo/{photo.id}" class="group overflow-hidden rounded-lg border bg-secondary"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a>
+									<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>
 								{/each}
 							</div>
 						{/if}
@@ -243,7 +254,7 @@
 
 					<TabsContent value="approved">
 						<h2 class="mb-5 text-xl font-bold">✅ 已通过的图片</h2>
-						{#if approvedPhotos.length}<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">{#each approvedPhotos as photo}<a href="/photo/{photo.id}" class="group overflow-hidden rounded-lg border bg-secondary"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a>{/each}</div>
+						{#if approvedPhotos.length}<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">{#each approvedPhotos as photo}<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>{/each}</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无已过审的照片</p></div>{/if}
 					</TabsContent>
 

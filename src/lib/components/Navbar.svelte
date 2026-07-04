@@ -37,7 +37,7 @@
 				<div class="flex h-full flex-col">
 					<div class="flex items-center gap-3 border-b px-5 py-4">
 						<img src={getLogoUrl($theme)} alt="" class="h-8 w-auto" />
-						<span class="text-sm font-semibold">EAC Photo</span>
+						<span class="text-sm font-semibold">Photo</span>
 					</div>
 					<nav class="flex-1 space-y-1 overflow-y-auto p-3">
 						{#each navLinks as link}
