@@ -1,14 +1,4 @@
-/**
- * Vercel Serverless Function — 后端 API 代理
- *
- * —— 安全模型 ——
- * 1. TOTP 鉴权：服务端生成 X-Auth-Codes (SHA-256)，AUTH_SECRET 不暴露到浏览器
- * 2. CSRF 防护：写操作校验 Origin/Referer 匹配允许域名
- * 3. 路径限制：仅代理 /api/ 路径，含穿越检测
- * 4. 超管端点：额外需要 OAuth Bearer token（来自 HttpOnly cookie）
- * 5. multipart 上传：关闭 Vercel 自动 bodyParser，原始字节透传
- */
-
+// 必须放在所有 import 之前，Vercel 才能识别
 export const config = { api: { bodyParser: false } };
 
 import crypto from 'crypto';
@@ -33,16 +23,6 @@ function getAuthHeaders(secret) {
 	};
 }
 
-/** Collect the raw request body as a Buffer (bodyParser disabled) */
-function readRawBody(req) {
-	return new Promise((resolve, reject) => {
-		const chunks = [];
-		req.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
-		req.on('end', () => resolve(Buffer.concat(chunks)));
-		req.on('error', reject);
-	});
-}
-
 export default async function handler(req, res) {
 	const BACKEND_URL = process.env.BACKEND_URL || process.env.VITE_API_URL || '';
 	const AUTH_SECRET = process.env.AUTH_SECRET || process.env.VITE_AUTH_SECRET || '';
@@ -63,54 +43,46 @@ export default async function handler(req, res) {
 	const hostOk = (v) => { if (!v) return false; try { return allowedHosts.has(new URL(v).host); } catch { return false; } };
 	if (!['GET','HEAD','OPTIONS'].includes(req.method)) {
 		if (!hostOk(origin) && !hostOk(referer)) return res.status(403).json({ error: 'CSRF' });
-	} else {
-		if (origin && !hostOk(origin)) return res.status(403).json({ error: 'origin' });
-		if (referer && !hostOk(referer)) return res.status(403).json({ error: 'referer' });
-		if (!origin && !referer && req.headers['authorization']) return res.status(403).json({ error: 'auth' });
 	}
 
 	// — Path —
 	const targetPath = req.query.path;
 	if (!targetPath || typeof targetPath !== 'string' || !targetPath.startsWith('/api/')) return res.status(400).json({ error: 'bad path' });
-	const decoded = (() => { try { return decodeURIComponent(targetPath); } catch { return targetPath; } })();
-	if (decoded.includes('..')) return res.status(400).json({ error: 'bad path' });
+	if (decodeURIComponent(targetPath).includes('..')) return res.status(400).json({ error: 'bad path' });
 
 	const url = new URL(BACKEND_URL + targetPath);
 	for (const [k, v] of Object.entries(req.query)) {
 		if (k !== 'path') url.searchParams.set(k, Array.isArray(v) ? v[0] : v);
 	}
 
-	// — Auth headers —
+	// — Headers —
 	const authHeaders = getAuthHeaders(AUTH_SECRET);
-	const reqCt = (req.headers['content-type'] || '').toLowerCase();
-	const isMultipart = reqCt.includes('multipart/form-data');
+	const reqCt = req.headers['content-type'] || '';
+	const isMultipart = reqCt.toLowerCase().includes('multipart/form-data');
 	const forwardHeaders = { ...authHeaders };
-	if (req.method !== 'GET' && req.method !== 'HEAD') {
-		forwardHeaders['Content-Type'] = reqCt || 'application/json';
-	}
+	if (!isMultipart) forwardHeaders['Content-Type'] = reqCt || 'application/json';
 
-	// — Tokens from cookies —
+	// — Tokens —
 	const extractToken = (name) => {
 		const c = (req.headers.cookie || '').split(';').map(s => s.trim());
 		for (const kv of c) if (kv.startsWith(name + '=')) return decodeURIComponent(kv.slice(name.length + 1));
 		return null;
 	};
-	const sessionToken = extractToken('eac_session') || extractToken('eac_oauth') || req.headers['authorization']?.replace('Bearer ', '');
+	const sessionToken = extractToken('eac_session') || extractToken('eac_oauth') || (req.headers.authorization || '').replace('Bearer ', '');
 	if (sessionToken) forwardHeaders['Authorization'] = 'Bearer ' + sessionToken;
 
-	// — Body —
+	// — Body: bodyParser=false 时 req.body 已是原始 Buffer，直接透传 —
 	let body;
 	if (req.method !== 'GET' && req.method !== 'HEAD') {
-		if (isMultipart) {
-			// multipart: 读原始 buffer（bodyParser 已关闭，原生 packet 完整）
-			body = await readRawBody(req);
-		} else {
-			body = await readRawBody(req);
-			// 非 multipart: 已收到原始 JSON 字符串，不做额外处理
+		if (req.body && Buffer.isBuffer(req.body)) {
+			body = req.body;
+		} else if (req.body && typeof req.body === 'string') {
+			body = req.body;
+		} else if (req.body && typeof req.body === 'object') {
+			// Vercel 偶尔会用 querystring 预解析 multipart（罕见），回退 JSON
+			body = JSON.stringify(req.body);
 		}
 	}
-
-	console.log(`[proxy] ${req.method} ${targetPath} multipart=${isMultipart} bodyLen=${body ? body.length : 0}`);
 
 	try {
 		const fetchResp = await fetch(url.toString(), { method: req.method, headers: forwardHeaders, body });
