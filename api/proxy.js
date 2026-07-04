@@ -120,11 +120,12 @@ export default async function handler(req, res) {
 
     const authHeaders = getAuthHeaders(AUTH_SECRET);
 
-    const reqContentType = (req.headers['content-type'] || '').toLowerCase();
-    const forwardHeaders = {
-        ...authHeaders,
-        'Content-Type': reqContentType || 'application/json'
-    };
+    const reqContentType = req.headers['content-type'] || '';
+    const forwardHeaders = { ...authHeaders };
+    // 仅在非 GET/HEAD 且有 body 时设置 Content-Type，避免 GET 请求被 Vercel 误判
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+        forwardHeaders['Content-Type'] = reqContentType || 'application/json';
+    }
 
     // Bearer token：优先 HttpOnly cookie → Authorization header
     const cookieToken = extractTokenFromCookie(req.headers.cookie, COOKIE_NAME);
