@@ -1,176 +1,138 @@
 /**
- * Vercel Serverless Function - 后端 API 代理
+ * Vercel Serverless Function — 后端 API 代理
  *
- * ── 安全模型 ──
- * 1. TOTP 鉴权：proxy 服务端生成 X-Auth-Codes（SHA-256 HMAC），浏览器无法获取 AUTH_SECRET
- * 2. CSRF 防护：写操作 (POST/PUT/DELETE) 校验 Origin/Referer 必须匹配允许的域名
- * 3. 路径限制：只允许代理 /api/ 开头的路径，含路径穿越检测
- * 4. 超管端点 (/api/admin/*) 额外需要 OAuth Bearer token（来自 HttpOnly cookie）
- * 5. 业务服务器密钥 (BUSINESS_SERVER_SECRET) 仅 Worker 持有，proxy 不可访问
- * 6. 第三方无法滥用：即使猜到 proxy URL，无合法 Origin 头→403；Origin 校验防止跨站调用
- *
- * 环境变量（Vercel Dashboard 配置）：
- * - BACKEND_URL: 后端 Worker 地址
- * - AUTH_SECRET: 与后端共享的 TOTP 鉴权密钥
- * - ALLOWED_ORIGINS (可选): 额外允许的域名，逗号分隔
+ * —— 安全模型 ——
+ * 1. TOTP 鉴权：服务端生成 X-Auth-Codes (SHA-256)，AUTH_SECRET 不暴露到浏览器
+ * 2. CSRF 防护：写操作校验 Origin/Referer 匹配允许域名
+ * 3. 路径限制：仅代理 /api/ 路径，含穿越检测
+ * 4. 超管端点：额外需要 OAuth Bearer token（来自 HttpOnly cookie）
+ * 5. multipart 上传：关闭 Vercel 自动 bodyParser，原始字节透传
  */
+
+export const config = { api: { bodyParser: false } };
 
 import crypto from 'crypto';
 
-function generateTOTP(secret, timestamp = Date.now()) {
-    const timeStep = Math.floor(timestamp / 1000 / 30);
-    const hmac = crypto.createHmac('sha256', secret);
-    const timeBuffer = Buffer.alloc(8);
-    timeBuffer.writeUInt32BE(0, 0);
-    timeBuffer.writeUInt32BE(timeStep, 4);
-    hmac.update(timeBuffer);
-    const digest = hmac.digest();
-    const offset = digest[digest.length - 1] & 0x0F;
-    const code = (
-        ((digest[offset] & 0x7F) << 24) |
-        ((digest[offset + 1] & 0xFF) << 16) |
-        ((digest[offset + 2] & 0xFF) << 8) |
-        (digest[offset + 3] & 0xFF)
-    ) % 1000000;
-    return code.toString().padStart(6, '0');
+function generateTOTP(secret, timestamp) {
+	const timeStep = Math.floor((timestamp || Date.now()) / 1000 / 30);
+	const hmac = crypto.createHmac('sha256', secret);
+	const timeBuffer = Buffer.alloc(8);
+	timeBuffer.writeUInt32BE(0, 0);
+	timeBuffer.writeUInt32BE(timeStep, 4);
+	hmac.update(timeBuffer);
+	const digest = hmac.digest();
+	const off = digest[digest.length - 1] & 0x0F;
+	return (((digest[off] & 0x7F) << 24) | ((digest[off + 1] & 0xFF) << 16) | ((digest[off + 2] & 0xFF) << 8) | (digest[off + 3] & 0xFF)) % 1000000;
 }
 
 function getAuthHeaders(secret) {
-    const now = Date.now();
-    const codes = [generateTOTP(secret, now - 30000), generateTOTP(secret, now), generateTOTP(secret, now + 30000)];
-    return { 'X-Auth-Codes': codes.join(','), 'X-Auth-Timestamp': now.toString() };
+	const now = Date.now();
+	return {
+		'X-Auth-Codes': [generateTOTP(secret, now - 30000), generateTOTP(secret, now), generateTOTP(secret, now + 30000)].join(','),
+		'X-Auth-Timestamp': String(now)
+	};
+}
+
+/** Collect the raw request body as a Buffer (bodyParser disabled) */
+function readRawBody(req) {
+	return new Promise((resolve, reject) => {
+		const chunks = [];
+		req.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+		req.on('end', () => resolve(Buffer.concat(chunks)));
+		req.on('error', reject);
+	});
 }
 
 export default async function handler(req, res) {
-    const BACKEND_URL = process.env.BACKEND_URL || process.env.VITE_API_URL || process.env.API_URL;
-    const AUTH_SECRET = process.env.AUTH_SECRET || process.env.VITE_AUTH_SECRET;
+	const BACKEND_URL = process.env.BACKEND_URL || process.env.VITE_API_URL || '';
+	const AUTH_SECRET = process.env.AUTH_SECRET || process.env.VITE_AUTH_SECRET || '';
+	if (!BACKEND_URL || !AUTH_SECRET) {
+		return res.status(500).json({ error: '缺少 BACKEND_URL 或 AUTH_SECRET' });
+	}
 
-    if (!BACKEND_URL || !AUTH_SECRET) {
-        return res.status(500).json({ error: '服务端配置错误', message: '请在 Vercel 设置 BACKEND_URL 和 AUTH_SECRET 环境变量' });
-    }
+	// — CSRF —
+	const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+	const origin = req.headers.origin || '';
+	const referer = req.headers.referer || '';
+	const allowedHosts = new Set(host ? [host] : []);
+	if (process.env.ALLOWED_ORIGINS) {
+		process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean).forEach(h => {
+			try { allowedHosts.add(new URL(h.startsWith('http') ? h : 'https://' + h).host); } catch {}
+		});
+	}
+	const hostOk = (v) => { if (!v) return false; try { return allowedHosts.has(new URL(v).host); } catch { return false; } };
+	if (!['GET','HEAD','OPTIONS'].includes(req.method)) {
+		if (!hostOk(origin) && !hostOk(referer)) return res.status(403).json({ error: 'CSRF' });
+	} else {
+		if (origin && !hostOk(origin)) return res.status(403).json({ error: 'origin' });
+		if (referer && !hostOk(referer)) return res.status(403).json({ error: 'referer' });
+		if (!origin && !referer && req.headers['authorization']) return res.status(403).json({ error: 'auth' });
+	}
 
-    // ==================== CSRF 防护 ====================
-    const host = req.headers['x-forwarded-host'] || req.headers.host || '';
-    const origin = req.headers.origin || '';
-    const referer = req.headers.referer || '';
+	// — Path —
+	const targetPath = req.query.path;
+	if (!targetPath || typeof targetPath !== 'string' || !targetPath.startsWith('/api/')) return res.status(400).json({ error: 'bad path' });
+	const decoded = (() => { try { return decodeURIComponent(targetPath); } catch { return targetPath; } })();
+	if (decoded.includes('..')) return res.status(400).json({ error: 'bad path' });
 
-    const allowedHosts = new Set();
-    if (host) allowedHosts.add(host);
-    if (process.env.ALLOWED_ORIGINS) {
-        process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean).forEach(h => {
-            try { allowedHosts.add(new URL(h.startsWith('http') ? h : 'https://' + h).host); } catch {}
-        });
-    }
+	const url = new URL(BACKEND_URL + targetPath);
+	for (const [k, v] of Object.entries(req.query)) {
+		if (k !== 'path') url.searchParams.set(k, Array.isArray(v) ? v[0] : v);
+	}
 
-    function hostAllowed(value) {
-        if (!value) return false;
-        try { return allowedHosts.has(new URL(value).host); } catch { return false; }
-    }
+	// — Auth headers —
+	const authHeaders = getAuthHeaders(AUTH_SECRET);
+	const reqCt = (req.headers['content-type'] || '').toLowerCase();
+	const isMultipart = reqCt.includes('multipart/form-data');
+	const forwardHeaders = { ...authHeaders };
+	if (req.method !== 'GET' && req.method !== 'HEAD') {
+		forwardHeaders['Content-Type'] = reqCt || 'application/json';
+	}
 
-    const writeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-    if (writeMethod) {
-        if (!hostAllowed(origin) && !hostAllowed(referer)) {
-            return res.status(403).json({ error: '请求来源不允许（CSRF 保护）' });
-        }
-    } else {
-        if (origin && !hostAllowed(origin)) return res.status(403).json({ error: '请求来源不允许' });
-        if (referer && !hostAllowed(referer)) return res.status(403).json({ error: '请求来源不允许' });
-        if (!origin && !referer && req.headers['authorization']) {
-            return res.status(403).json({ error: '跨站鉴权请求需 Origin header' });
-        }
-    }
+	// — Tokens from cookies —
+	const extractToken = (name) => {
+		const c = (req.headers.cookie || '').split(';').map(s => s.trim());
+		for (const kv of c) if (kv.startsWith(name + '=')) return decodeURIComponent(kv.slice(name.length + 1));
+		return null;
+	};
+	const sessionToken = extractToken('eac_session') || extractToken('eac_oauth') || req.headers['authorization']?.replace('Bearer ', '');
+	if (sessionToken) forwardHeaders['Authorization'] = 'Bearer ' + sessionToken;
 
-    // ==================== 路径提取与校验 ====================
-    const targetPath = req.query.path;
-    if (!targetPath || typeof targetPath !== 'string') {
-        return res.status(400).json({ error: '缺少 path 参数' });
-    }
-    if (!targetPath.startsWith('/api/')) {
-        return res.status(400).json({ error: '非法的 path' });
-    }
-    const decoded = (() => { try { return decodeURIComponent(targetPath); } catch(e) { return targetPath; } })();
-    const normalized = (() => { try { return new URL('http://x' + decoded).pathname; } catch(e) { return decoded; } })();
-    if (decoded.includes('..') || decoded.includes('%2e%2e') || decoded.includes('%252e')
-        || !/^\/api\/[a-zA-Z0-9_\-\/.%?&=]+$/.test(decoded)
-        || !normalized.startsWith('/api/')) {
-        return res.status(400).json({ error: '非法的 path' });
-    }
+	// — Body —
+	let body;
+	if (req.method !== 'GET' && req.method !== 'HEAD') {
+		if (isMultipart) {
+			// multipart: 读原始 buffer（bodyParser 已关闭，原生 packet 完整）
+			body = await readRawBody(req);
+		} else {
+			body = await readRawBody(req);
+			// 非 multipart: 已收到原始 JSON 字符串，不做额外处理
+		}
+	}
 
-    const url = new URL(BACKEND_URL + targetPath);
-    Object.entries(req.query).forEach(([key, value]) => {
-        if (key !== 'path') {
-            if (Array.isArray(value)) value.forEach(v => url.searchParams.append(key, v));
-            else url.searchParams.set(key, value);
-        }
-    });
+	console.log(`[proxy] ${req.method} ${targetPath} multipart=${isMultipart} bodyLen=${body ? body.length : 0}`);
 
-    // ==================== Cookie 提取 ====================
-    const COOKIE_NAME = 'eac_session';
-    const OAUTH_COOKIE_NAME = 'eac_oauth';
-    const COOKIE_OPTS = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+	try {
+		const fetchResp = await fetch(url.toString(), { method: req.method, headers: forwardHeaders, body });
 
-    function extractTokenFromCookie(cookieHeader, name) {
-        if (!cookieHeader) return null;
-        const cookies = cookieHeader.split(';').map(c => c.trim());
-        for (const c of cookies) {
-            if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
-        }
-        return null;
-    }
+		for (const [k, v] of fetchResp.headers) {
+			if (!['content-encoding','transfer-encoding','connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+		}
 
-    const authHeaders = getAuthHeaders(AUTH_SECRET);
-
-    const reqContentType = req.headers['content-type'] || '';
-    const forwardHeaders = { ...authHeaders };
-    // 仅在非 GET/HEAD 且有 body 时设置 Content-Type，避免 GET 请求被 Vercel 误判
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-        forwardHeaders['Content-Type'] = reqContentType || 'application/json';
-    }
-
-    // Bearer token：优先 HttpOnly cookie → Authorization header
-    const cookieToken = extractTokenFromCookie(req.headers.cookie, COOKIE_NAME);
-    const oauthToken = extractTokenFromCookie(req.headers.cookie, OAUTH_COOKIE_NAME);
-    if (cookieToken) forwardHeaders['Authorization'] = 'Bearer ' + cookieToken;
-    else if (oauthToken) forwardHeaders['Authorization'] = 'Bearer ' + oauthToken;
-    else if (req.headers['authorization']) forwardHeaders['Authorization'] = req.headers['authorization'];
-
-    // ==================== body 处理 ====================
-    // multipart/form-data 必须原样透传（含 boundary），不能 JSON.stringify（会破坏上传）
-    let body;
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-        if (reqContentType.includes('multipart/form-data')) {
-            body = req.body;  // Vercel 已解析为 Buffer/string，保留原始 boundary
-        } else if (req.body) {
-            body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-        }
-    }
-
-    try {
-        const response = await fetch(url.toString(), { method: req.method, headers: forwardHeaders, body });
-
-        response.headers.forEach((value, key) => {
-            if (!['content-encoding', 'transfer-encoding', 'connection'].includes(key.toLowerCase())) {
-                res.setHeader(key, value);
-            }
-        });
-
-        const respContentType = response.headers.get('content-type') || '';
-        if (respContentType.includes('application/json')) {
-            const data = await response.json();
-            const isLogin = targetPath === '/api/auth/login' || targetPath === '/api/auth/register';
-            if (isLogin && data.token) {
-                res.setHeader('Set-Cookie', `${COOKIE_NAME}=${encodeURIComponent(data.token)}; ${COOKIE_OPTS}; Max-Age=${3 * 24 * 60 * 60}`);
-            }
-            if (targetPath === '/api/auth/logout') {
-                res.setHeader('Set-Cookie', `${COOKIE_NAME}=; ${COOKIE_OPTS}; Max-Age=0`);
-            }
-            return res.status(response.status).json(data);
-        } else {
-            const text = await response.text();
-            return res.status(response.status).send(text);
-        }
-    } catch (error) {
-        console.error('代理错误:', error);
-        return res.status(502).json({ error: '代理请求失败', message: error.message });
-    }
+		const COOKIE_OPTS = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+		if (fetchResp.headers.get('content-type')?.includes('application/json')) {
+			const data = await fetchResp.json();
+			if ((targetPath === '/api/auth/login' || targetPath === '/api/auth/register') && data.token) {
+				res.setHeader('Set-Cookie', `eac_session=${encodeURIComponent(data.token)}; ${COOKIE_OPTS}; Max-Age=259200`);
+			}
+			if (targetPath === '/api/auth/logout') {
+				res.setHeader('Set-Cookie', `eac_session=; ${COOKIE_OPTS}; Max-Age=0`);
+			}
+			return res.status(fetchResp.status).json(data);
+		}
+		return res.status(fetchResp.status).send(await fetchResp.text());
+	} catch (e) {
+		console.error('[proxy]', e);
+		return res.status(502).json({ error: 'proxy error', message: e.message });
+	}
 }
