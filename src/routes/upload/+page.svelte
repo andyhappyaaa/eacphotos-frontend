@@ -27,7 +27,7 @@
 		finally { turnstileVerifying = false; }
 	}
 
-	onMount(() => { if (!$isLoggedIn) goto('/login'); });
+	onMount(() => { if (!$isLoggedIn) window.location.href = '/'; });
 
 	function handleFileSelect(e) { selectedFiles = [...selectedFiles, ...Array.from(e.target.files || [])]; }
 	function removeFile(i) { selectedFiles = selectedFiles.filter((_, idx) => idx !== i); }

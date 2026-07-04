@@ -20,7 +20,7 @@
 	let rejectReason = $state('');
 
 	onMount(() => {
-		if (!$isReviewer) { goto('/login'); return; }
+		if (!$isReviewer) { window.location.href = '/'; return; }
 		loadQueue(activeQ);
 	});
 

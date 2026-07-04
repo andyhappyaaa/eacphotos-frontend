@@ -36,7 +36,7 @@
 	let passkeys = $state([]); let passkeyLoading = $state(false);
 
 	onMount(async () => {
-		if (!$isLoggedIn) { goto('/login'); return; }
+		if (!$isLoggedIn) { window.location.href = '/'; return; }
 		loadTab('overview');
 	});
 
@@ -374,7 +374,6 @@
 							<!-- Avatar -->
 							<Card><CardContent class="flex items-start gap-4 p-5">
 								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div>
-								<div class="flex-1"><h3 class="font-semibold">🖼️ 头像</h3><p class="text-sm text-muted-foreground">在设置页面修改头像和个人资料。</p><Button variant="outline" size="sm" class="mt-3" href="/settings">前往设置</Button></div>
 							</CardContent></Card>
 						</div>
 					</TabsContent>

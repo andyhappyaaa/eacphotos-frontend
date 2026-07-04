@@ -1,6 +1,8 @@
 <script>
+	import { get } from 'svelte/store';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/state';
+	import { isLoggedIn } from '$lib/stores/auth';
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';

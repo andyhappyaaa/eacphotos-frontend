@@ -25,7 +25,7 @@
 	let carouselItems = $state('');
 	const placeholderJson = '[{"image":"https://...","title":"标题"}]';
 
-	onMount(() => { if (!$isAdmin) goto('/login'); loadAll(); });
+	onMount(() => { if (!$isAdmin) window.location.href = '/'; loadAll(); });
 
 	async function loadAll() {
 		loading = true;

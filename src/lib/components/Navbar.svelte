@@ -9,7 +9,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet';
 	import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '$lib/components/ui/dropdown-menu';
-	import { Sun, Moon, Globe, Menu, Home, Image, LayoutDashboard, Search, Newspaper, LogOut, User, Settings } from '@lucide/svelte';
+	import { Sun, Moon, Globe, Menu, Home, Image, LayoutDashboard, Search, Newspaper, LogOut, User } from '@lucide/svelte';
 
 	let { t } = $props();
 	let mobileOpen = $state(false);
@@ -56,7 +56,6 @@
 							</div>
 							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/dashboard'); }}><LayoutDashboard class="mr-2 h-4 w-4" /> {tVal('nav.dashboard')}</Button>
 							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/profile'); }}><User class="mr-2 h-4 w-4" /> {tVal('nav.profile')}</Button>
-							<Button variant="outline" class="w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/settings'); }}><Settings class="mr-2 h-4 w-4" /> {tVal('nav.settings')}</Button>
 							<Separator class="my-3" />
 							<Button variant="ghost" class="w-full justify-start text-destructive" onclick={() => { mobileOpen = false; handleLogout(); }}><LogOut class="mr-2 h-4 w-4" /> {tVal('nav.logout')}</Button>
 						</div>
@@ -110,7 +109,6 @@
 						<DropdownMenuContent align="end" class="w-48">
 							<DropdownMenuItem onclick={() => handleNav('/dashboard')}><LayoutDashboard class="mr-2 h-4 w-4" /> {tVal('nav.dashboard')}</DropdownMenuItem>
 							<DropdownMenuItem onclick={() => handleNav('/profile')}><User class="mr-2 h-4 w-4" /> {tVal('nav.profile')}</DropdownMenuItem>
-							<DropdownMenuItem onclick={() => handleNav('/settings')}><Settings class="mr-2 h-4 w-4" /> {tVal('nav.settings')}</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onclick={handleLogout} class="text-destructive focus:text-destructive"><LogOut class="mr-2 h-4 w-4" /> {tVal('nav.logout')}</DropdownMenuItem>
 						</DropdownMenuContent>
