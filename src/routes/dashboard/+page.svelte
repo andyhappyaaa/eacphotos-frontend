@@ -17,7 +17,7 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let activeTab = $state('overview');
@@ -25,6 +25,7 @@
 
 	let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
 	let pendingPhotos = $state([]); let approvedPhotos = $state([]); let rejectedPhotos = $state([]);
+	let allMyPhotos = $state([]);
 	let tabLoading = $state(false);
 
 	// 2FA state
@@ -51,6 +52,7 @@
 			else if (tab === 'pending') await loadPending();
 			else if (tab === 'approved') await loadApproved();
 			else if (tab === 'rejected') await loadRejected();
+			else if (tab === 'manage') await loadAllPhotos();
 			else if (tab === 'settings') { tfaEnabled = !!$currentUser?.twoFactorEnabled; loadPasskeys(); }
 			else if (tab === 'upload') { goto('/upload'); return; }
 		} catch (e) {}
@@ -271,7 +273,29 @@
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无未过审的照片</p></div>{/if}
 					</TabsContent>
 
-					<TabsContent value="settings">
+					<TabsContent value="manage">
+						<h2 class="mb-5 text-xl font-bold">管理我的图片</h2>
+						{#if tabLoading}
+							<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">{#each Array(4) as _}<div class="aspect-video animate-pulse rounded-lg bg-secondary"></div>{/each}</div>
+						{:else if allMyPhotos.length}
+							<div class="space-y-3">
+								{#each allMyPhotos as photo}
+									<div class="flex gap-4 rounded-xl border bg-card p-3.5">
+										<a href="/photo/{photo.id}" class="shrink-0"><img src={photo.thumbnail || photo.url} alt="" class="h-[88px] w-[130px] rounded-lg object-cover" loading="lazy" /></a>
+										<div class="min-w-0 flex-1">
+											<h4 class="truncate font-semibold">{photo.title || '无标题'}</h4>
+											<p class="mt-0.5 text-xs text-muted-foreground">{photo.registration || ''} · {photo.aircraft_type || ''} · {photo.photo_date || ''}</p>
+											<div class="mt-2 flex gap-2">
+												<button class="rounded bg-white/80 px-2 py-1 text-[11px] border hover:bg-secondary" onclick={() => handleTogglePrivate(photo)}>{photo.status === 'private' ? '设为公开' : '设为私密'}</button>
+												<button class="rounded bg-red-50 px-2 py-1 text-[11px] border border-red-200 text-red-600 hover:bg-red-100" onclick={() => handleDeletePhoto(photo.id)}>删除</button>
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无照片</p></div>{/if}
+						</TabsContent>
+						<TabsContent value="settings">
 						<h2 class="mb-5 text-xl font-bold">⚙️ 账号设置</h2>
 						<div class="space-y-4">
 							<!-- Password Change -->
