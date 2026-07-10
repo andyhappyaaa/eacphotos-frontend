@@ -12,7 +12,7 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { Upload, X, Info, CheckCircle2 } from '@lucide/svelte';
+	import { ArrowLeft, Upload, X, Info, CheckCircle2 } from '@lucide/svelte';
 
 	let title = $state(''); let photoDate = $state(''); let registration = $state('');
 	let airline = $state(''); let aircraftType = $state(''); let location = $state('');
@@ -45,7 +45,8 @@
 </script>
 
 <div class="container mx-auto max-w-[1300px] px-5 py-8">
-	<div class="mb-8 text-center">
+	<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>
+		<div class="mb-8 text-center">
 		<h1 class="text-3xl font-bold tracking-tight">{@html $t('upload.title')}</h1>
 		<p class="mt-2 text-muted-foreground">{@html $t('upload.subtitle')}</p>
 	</div>
