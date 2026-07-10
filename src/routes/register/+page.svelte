@@ -1,15 +1,18 @@
 <script>
-	import { register, sendEmailCode, verifyTurnstile } from '$lib/stores/auth';
+	import { isLoggedIn, register, sendEmailCode, verifyTurnstile } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '$lib/components/ui/card';
 	import Turnstile from '$lib/components/Turnstile.svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/stores/i18n';
 	import { showToast } from '$lib/stores/toast';
 	import { UserPlus, Mail, Lock, AlertCircle } from '@lucide/svelte';
+
+	onMount(() => { if ($isLoggedIn) window.location.href = '/dashboard'; });
 
 	let username = $state(''); let email = $state(''); let emailCode = $state('');
 	let password = $state(''); let confirmPassword = $state(''); let agreeTerms = $state(false);

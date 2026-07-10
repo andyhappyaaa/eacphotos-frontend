@@ -1,5 +1,5 @@
 <script>
-	import { login, passkeyLoginOptions, passkeyLoginVerify, verifyTurnstile } from '$lib/stores/auth';
+	import { isLoggedIn, login, passkeyLoginOptions, passkeyLoginVerify, verifyTurnstile } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -7,6 +7,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '$lib/components/ui/card';
 	import Turnstile from '$lib/components/Turnstile.svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/stores/i18n';
 	import { showToast } from '$lib/stores/toast';
@@ -18,6 +19,8 @@
 	let tsToken = $state(null);
 	let turnstileVerified = $state(false);
 	let turnstileVerifying = $state(false);
+
+	onMount(() => { if ($isLoggedIn) window.location.href = '/dashboard'; });
 
 	async function verifyTsToken(tk) {
 		tsToken = tk; turnstileVerifying = true;

@@ -1,11 +1,13 @@
 <script>
-	import { verify2FA } from '$lib/stores/auth';
+	import { isLoggedIn, verify2FA } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Shield } from '@lucide/svelte';
 
+	onMount(() => { if ($isLoggedIn) window.location.href = '/dashboard'; });
 	let code = $state(''); let error = $state(''); let loading = $state(false);
 
 	async function handleVerify(e) {
