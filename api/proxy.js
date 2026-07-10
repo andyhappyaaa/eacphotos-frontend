@@ -1,4 +1,3 @@
-// 必须放在所有 import 之前
 export const config = { api: { bodyParser: false } };
 
 import crypto from 'crypto';
@@ -24,7 +23,6 @@ function getAuthHeaders(secret) {
 	};
 }
 
-/** bodyParser=false 时手动收集原始 body 字节 */
 function collectBody(req) {
 	return new Promise((resolve, reject) => {
 		const chunks = [];
@@ -37,11 +35,8 @@ function collectBody(req) {
 export default async function handler(req, res) {
 	const BACKEND_URL = (process.env.BACKEND_URL || '').trim();
 	const AUTH_SECRET = (process.env.AUTH_SECRET || process.env.VITE_AUTH_SECRET || '').trim();
-	if (!BACKEND_URL || !AUTH_SECRET) {
-		return res.status(500).json({ error: '缺少 BACKEND_URL 或 AUTH_SECRET' });
-	}
+	if (!BACKEND_URL || !AUTH_SECRET) return res.status(500).json({ error: '缺少 BACKEND_URL 或 AUTH_SECRET' });
 
-	// — CSRF —
 	const host = req.headers['x-forwarded-host'] || req.headers.host || '';
 	const origin = req.headers.origin || '';
 	const allowedHosts = new Set(host ? [host] : []);
@@ -55,7 +50,6 @@ export default async function handler(req, res) {
 		if (!hostOk(origin) && !hostOk(req.headers.referer)) return res.status(403).json({ error: 'CSRF' });
 	}
 
-	// — Path —
 	const targetPath = req.query.path;
 	if (!targetPath || typeof targetPath !== 'string' || !targetPath.startsWith('/api/')) return res.status(400).json({ error: 'bad path' });
 
@@ -64,17 +58,13 @@ export default async function handler(req, res) {
 		if (k !== 'path') url.searchParams.set(k, Array.isArray(v) ? v[0] : v);
 	}
 
-	// — 读取原始 body（bodyParser=false）—
 	const reqCt = req.headers['content-type'] || '';
 	const isMultipart = reqCt.toLowerCase().includes('multipart/form-data');
 	const rawBody = await collectBody(req);
 
-	// — Headers —
 	const forwardHeaders = getAuthHeaders(AUTH_SECRET);
-	// multipart：透传原始 Content-Type（含 boundary）
 	if (reqCt) forwardHeaders['Content-Type'] = reqCt;
 
-	// — Token —
 	const extractToken = name => {
 		for (const kv of (req.headers.cookie || '').split(';')) {
 			const [k, v] = kv.trim().split('=');
@@ -83,30 +73,19 @@ export default async function handler(req, res) {
 		return null;
 	};
 	const sessionToken = extractToken('eac_session') || extractToken('eac_oauth') || (req.headers.authorization || '').replace('Bearer ', '');
-  // Turnstile: upload/login/register 的 POST 需要 turnstile_verified cookie
-  const needTurnstile = (targetPath === '/api/photos/upload' || targetPath === '/api/auth/login' || targetPath === '/api/auth/register') && req.method === 'POST';
-  if (needTurnstile && !extractToken('turnstile_verified')) {
-    return res.status(403).json({ error: '请完成人机验证' });
-  }
-
 	if (sessionToken) forwardHeaders['Authorization'] = 'Bearer ' + sessionToken;
 
-	// — Body —
 	let body;
 	if (req.method !== 'GET' && req.method !== 'HEAD') {
-		if (isMultipart) {
-			// multipart: 直接传原始 Buffer
-			body = rawBody;
-		} else if (rawBody.length > 0) {
-			body = rawBody.toString('utf8');
-		}
+		if (isMultipart) body = rawBody;
+		else if (rawBody.length > 0) body = rawBody.toString('utf8');
 	}
 
 	try {
 		const fetchResp = await fetch(url.toString(), { method: req.method, headers: forwardHeaders, body });
 
 		for (const [k, v] of fetchResp.headers) {
-			if (!['content-encoding', 'transfer-encoding', 'connection'].includes(k.toLowerCase())) res.setHeader(k, v);
+			if (!['content-encoding','transfer-encoding','connection'].includes(k.toLowerCase())) res.setHeader(k, v);
 		}
 
 		const COOKIE_OPTS = 'HttpOnly; Secure; SameSite=Lax; Path=/';
@@ -114,13 +93,9 @@ export default async function handler(req, res) {
 		if (ct.includes('application/json')) {
 			const data = await fetchResp.json();
 			if ((targetPath === '/api/auth/login' || targetPath === '/api/auth/register') && data.token)
-t		// Turnstile 验证通过后写入 HttpOnly cookie（5 分钟，SameSite=Strict，Path=/api/auth）
-			if (targetPath === '/api/auth/verify-turnstile' && data.success) {
-				res.setHeader('Set-Cookie', 'turnstile_verified=1; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=300');
-			}
-				res.setHeader('Set-Cookie', `eac_session=${encodeURIComponent(data.token)}; ${COOKIE_OPTS}; Max-Age=259200`);
+				res.setHeader('Set-Cookie', 'eac_session=' + encodeURIComponent(data.token) + '; ' + COOKIE_OPTS + '; Max-Age=259200');
 			if (targetPath === '/api/auth/logout')
-				res.setHeader('Set-Cookie', `eac_session=; ${COOKIE_OPTS}; Max-Age=0`);
+				res.setHeader('Set-Cookie', 'eac_session=; ' + COOKIE_OPTS + '; Max-Age=0');
 			return res.status(fetchResp.status).json(data);
 		}
 		return res.status(fetchResp.status).send(await fetchResp.text());
