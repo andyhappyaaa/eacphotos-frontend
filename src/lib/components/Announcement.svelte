@@ -25,9 +25,9 @@
 	const DISMISS_KEY_PREFIX = 'eacphoto_ann_dismissed_';
 
 	async function loadAnnouncement() {
-		// Skip on critical pages
+		// 仅在首页显示公告
 		const path = page.url.pathname;
-		if (/(login|register|upload)/.test(path)) return;
+		if (path !== '/' && path !== '') return;
 
 		try {
 			const r = await api('/api/site/announcement', { noRedirect: true });

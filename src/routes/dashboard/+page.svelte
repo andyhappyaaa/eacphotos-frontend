@@ -36,6 +36,8 @@
 	let passkeys = $state([]); let passkeyLoading = $state(false);
 
 	onMount(async () => {
+		// 等待 Reviewer cookie 刷新（OAuth 登录后 store 异步初始化）
+		await new Promise(r => setTimeout(r, 800));
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		loadTab('overview');
 	});
