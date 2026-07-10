@@ -83,6 +83,12 @@ export default async function handler(req, res) {
 		return null;
 	};
 	const sessionToken = extractToken('eac_session') || extractToken('eac_oauth') || (req.headers.authorization || '').replace('Bearer ', '');
+  // Turnstile: upload/login/register 的 POST 需要 turnstile_verified cookie
+  const needTurnstile = (targetPath === '/api/photos/upload' || targetPath === '/api/auth/login' || targetPath === '/api/auth/register') && req.method === 'POST';
+  if (needTurnstile && !extractToken('turnstile_verified')) {
+    return res.status(403).json({ error: '请完成人机验证' });
+  }
+
 	if (sessionToken) forwardHeaders['Authorization'] = 'Bearer ' + sessionToken;
 
 	// — Body —
@@ -108,6 +114,10 @@ export default async function handler(req, res) {
 		if (ct.includes('application/json')) {
 			const data = await fetchResp.json();
 			if ((targetPath === '/api/auth/login' || targetPath === '/api/auth/register') && data.token)
+t		// Turnstile 验证通过后写入 HttpOnly cookie（5 分钟，SameSite=Strict，Path=/api/auth）
+			if (targetPath === '/api/auth/verify-turnstile' && data.success) {
+				res.setHeader('Set-Cookie', 'turnstile_verified=1; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=300');
+			}
 				res.setHeader('Set-Cookie', `eac_session=${encodeURIComponent(data.token)}; ${COOKIE_OPTS}; Max-Age=259200`);
 			if (targetPath === '/api/auth/logout')
 				res.setHeader('Set-Cookie', `eac_session=; ${COOKIE_OPTS}; Max-Age=0`);
