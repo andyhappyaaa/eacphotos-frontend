@@ -8,7 +8,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
 	import { showToast } from '$lib/stores/toast';
-	import { Image, Search, Trash2, Loader2 } from '@lucide/svelte';
+	import { ArrowLeft, Image, Search, Trash2, Loader2 } from '@lucide/svelte';
 
 	let photos = $state([]);
 	let loading = $state(false);
@@ -52,6 +52,7 @@
 </script>
 
 <div class="container mx-auto max-w-[1400px] px-5 py-8">
+		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>>
 	<div class="mb-6">
 		<h1 class="text-2xl font-bold">🖼️ 图片管理</h1>
 		<p class="text-sm text-muted-foreground">搜索、查看和删除所有照片</p>

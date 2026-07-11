@@ -11,7 +11,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { showToast } from '$lib/stores/toast';
-	import { ClipboardCheck, CheckCircle, XCircle, Image, Loader2, RefreshCw } from '@lucide/svelte';
+	import { ArrowLeft, ClipboardCheck, CheckCircle, XCircle, Image, Loader2, RefreshCw } from '@lucide/svelte';
 
 	let dashboard = $state(null);
 	let loading = $state(true);
@@ -59,6 +59,7 @@
 </script>
 
 <div class="container mx-auto max-w-[1400px] px-5 py-8">
+		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>
 	<div class="mb-6 flex items-center justify-between">
 		<div>
 			<h1 class="text-2xl font-bold">📋 审核队列</h1>

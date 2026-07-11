@@ -16,7 +16,7 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus } from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let activeTab = $state('overview');
@@ -56,7 +56,6 @@
 			else if (tab === 'approved') await loadApproved();
 			else if (tab === 'rejected') await loadRejected();
 			else if (tab === 'manage') await loadAllPhotos();
-			else if (tab === 'settings') { tfaEnabled = !!$currentUser?.twoFactorEnabled; loadPasskeys(); }
 			else if (tab === 'upload') { goto('/upload'); return; }
 		} catch (e) {}
 		finally { tabLoading = false; }
@@ -167,8 +166,8 @@
 				{ value: 'review-settings', label: '系统管理', icon: SlidersHorizontal }
 	];
 
-	const adminTabs = [
-		{ value: 'review-users', label: '用户管理', icon: Users }
+	const adminMenuItems = [
+		{ href: '/review/users', label: '用户管理', icon: Users }
 	];
 
 </script>
@@ -204,17 +203,21 @@
 							</TabsTrigger>
 						{/each}
 						{#if $isReviewer}
+							<Separator />
+							<span class="px-3 pt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">审核管理</span>
 							{#each reviewerTabs as ti}
-								<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
+								<button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-left" onclick={() => window.location.href = "/review/" + ti.value.split("-")[1]}>
 									<ti.icon class="h-4 w-4" /> {ti.label}
-								</TabsTrigger>
+								</button>
 							{/each}
 						{/if}
 						{#if $isAdmin}
+							<Separator />
+							<span class="px-3 pt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">高级管理</span>
 							{#each adminTabs as ti}
-								<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
+								<button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-left" onclick={() => window.location.href = "/review/users"}>
 									<ti.icon class="h-4 w-4" /> {ti.label}
-								</TabsTrigger>
+								</button>
 							{/each}
 						{/if}
 					</TabsList>

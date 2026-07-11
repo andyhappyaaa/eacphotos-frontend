@@ -11,7 +11,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Switch } from '$lib/components/ui/switch';
 	import { showToast } from '$lib/stores/toast';
-	import { SlidersHorizontal, Image, Newspaper, Loader2, Save, RefreshCw } from '@lucide/svelte';
+	import { ArrowLeft, SlidersHorizontal, Image, Newspaper, Loader2, Save, RefreshCw } from '@lucide/svelte';
 
 	let carousel = $state(null);
 	let announcement = $state(null);
@@ -23,7 +23,7 @@
 
 	// Carousel form
 	let carouselItems = $state('');
-	const placeholderJson = '[{"image":"https://...","title":"标题"}]';
+	let carouselPlaceholder = $state('[{"img":"https://...","title":"标题"}]');
 
 	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isAdmin) window.location.href = '/login'; loadAll(); });
 
@@ -76,6 +76,7 @@
 </script>
 
 <div class="container mx-auto max-w-[1200px] px-5 py-8">
+		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>>
 	<div class="mb-6 flex items-center justify-between">
 		<div><h1 class="text-2xl font-bold">⚙️ 系统设置</h1><p class="text-sm text-muted-foreground">站点配置和内容管理</p></div>
 		<Button variant="outline" size="sm" onclick={loadAll} disabled={loading}><RefreshCw class={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> 刷新</Button>
@@ -85,8 +86,8 @@
 		<!-- Carousel -->
 		<Card>
 			<CardContent class="space-y-4 p-6">
-				<div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div><div><h3 class="font-semibold">🎞️ 首页轮播图</h3><p class="text-sm text-muted-foreground">JSON 格式，每项 { image, title }</p></div></div>
-				<Textarea bind:value={carouselItems} rows={8} placeholder={placeholderJson} class="font-mono text-sm" />
+				<div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div><div><h3 class="font-semibold">🎞️ 首页轮播图</h3><p class="text-sm text-muted-foreground">JSON 格式，每项: img, title</p></div></div>
+				<Textarea bind:value={carouselItems} rows={8} placeholder={carouselPlaceholder} class="font-mono text-sm" />
 				<Button size="sm" onclick={saveCarousel}><Save class="mr-1.5 h-4 w-4" /> 保存轮播图</Button>
 			</CardContent>
 		</Card>

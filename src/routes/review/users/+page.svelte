@@ -10,7 +10,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 	import { showToast } from '$lib/stores/toast';
-	import { Users, Ban, CheckCircle, Loader2 } from '@lucide/svelte';
+	import { ArrowLeft, Users, Ban, CheckCircle, Loader2 } from '@lucide/svelte';
 
 	let users = $state([]);
 	let loading = $state(true);
@@ -49,6 +49,7 @@
 </script>
 
 <div class="container mx-auto max-w-[1400px] px-5 py-8">
+		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>>
 	<div class="mb-6">
 		<h1 class="text-2xl font-bold">👥 用户管理</h1>
 		<p class="text-sm text-muted-foreground">管理用户账号和封禁状态</p>
