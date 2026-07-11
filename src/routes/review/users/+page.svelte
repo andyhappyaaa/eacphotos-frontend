@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 	import { showToast } from '$lib/stores/toast';
 	import { Users, Ban, CheckCircle, Loader2 } from '@lucide/svelte';

@@ -215,11 +215,11 @@ export async function passkeyRegisterVerify(credential) {
 }
 
 export async function listPasskeys() {
-	const r = await apiCall('/api/webauthn/passkeys');
-	return (await r.json()).passkeys || [];
+	const r = await apiCall('/api/webauthn/list');
+	return (await r.json()).credentials || [];
 }
 
-export async function deletePasskey(id) { return (await apiCall(`/api/webauthn/passkeys/${id}`, { method: 'DELETE' })).json(); }
+export async function deletePasskey(id) { return (await apiCall('/api/webauthn/delete', { method: 'POST', body: JSON.stringify({ id }) })).json(); }
 
 // ── Init ──
 if (browser) {
