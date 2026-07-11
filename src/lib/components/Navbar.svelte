@@ -92,8 +92,9 @@
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Language"><Globe class="h-[18px] w-[18px]" /></Button></DropdownMenuTrigger>
 				<DropdownMenuContent align="end" class="min-w-[120px]">
-					<DropdownMenuItem onclick={() => setLanguage('zh')} class={$lang === 'zh' ? 'bg-secondary' : ''}>🇨🇳 中文</DropdownMenuItem>
-					<DropdownMenuItem onclick={() => setLanguage('en')} class={$lang === 'en' ? 'bg-secondary' : ''}>🇺🇸 English</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => setLanguage('zh')} class={$lang === 'zh' ? 'bg-secondary' : ''}>简体中文</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => setLanguage('zh-TW')} class={$lang === 'zh-TW' ? 'bg-secondary' : ''}>繁體中文</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => setLanguage('en')} class={$lang === 'en' ? 'bg-secondary' : ''}>English</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 

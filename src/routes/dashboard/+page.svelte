@@ -164,8 +164,7 @@
 
 	const reviewerTabs = [
 		{ value: 'review-queue', label: '审核', icon: ClipboardCheck },
-		{ value: 'review-photos', label: '图片管理', icon: Image },
-		{ value: 'review-settings', label: '系统管理', icon: SlidersHorizontal }
+				{ value: 'review-settings', label: '系统管理', icon: SlidersHorizontal }
 	];
 
 	const adminTabs = [
@@ -309,77 +308,7 @@
 							</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无照片</p></div>{/if}
 						</TabsContent>
-						<TabsContent value="settings">
-						<h2 class="mb-5 text-xl font-bold">⚙️ 账号设置</h2>
-						<div class="space-y-4">
-							<!-- Password Change -->
-							<Card><CardContent class="flex items-start gap-4 p-5">
-								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Lock class="h-5 w-5 text-primary" /></div>
-								<div class="flex-1"><h3 class="font-semibold">🔐 修改密码</h3><p class="text-sm text-muted-foreground">向您的注册邮箱发送确认链接来修改密码。</p><Button size="sm" class="mt-3" onclick={handleSendPasswordConfirm}>📧 发送确认邮件</Button></div>
-							</CardContent></Card>
-
-							<!-- 2FA Setup -->
-							<Card><CardContent class="flex items-start gap-4 p-5">
-								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Shield class="h-5 w-5 text-primary" /></div>
-								<div class="flex-1">
-									<h3 class="font-semibold">🔒 两步验证（2FA）</h3>
-									<p class="text-sm text-muted-foreground">当前状态：<strong class="text-foreground">{tfaEnabled ? '已启用 ✅' : '未启用'}</strong></p>
-									{#if tfaError}<p class="mt-1 text-xs text-destructive">{tfaError}</p>{/if}
-
-									{#if !tfaEnabled && !showTfaSetup}
-										<Button size="sm" class="mt-3 gap-1" onclick={handleSetup2FA} disabled={tfaLoading}>{#if tfaLoading}<Loader2 class="h-3 w-3 animate-spin" />{/if}启用 2FA</Button>
-									{/if}
-
-									{#if showTfaSetup && tfaSecret}
-										<div class="mt-4 space-y-3 rounded-lg bg-secondary/50 p-4">
-											<p class="text-sm">请使用验证器扫描下方二维码或手动输入密钥：</p>
-											<QRCode text={`otpauth://totp/EACPhoto:${$currentUser?.username}?secret=${tfaSecret}&issuer=EACPhoto`} size={180} />
-											<p class="text-sm">密钥：<code class="rounded bg-secondary px-2 py-0.5 text-xs font-mono select-all">{tfaSecret}</code></p>
-											<div class="flex gap-2"><Input type="text" bind:value={tfaSetupCode} maxlength="6" placeholder="000000" class="h-9 w-24 text-center" /><Button size="sm" onclick={handleEnable2FA} disabled={tfaLoading}>验证并完成</Button><Button size="sm" variant="ghost" onclick={() => { showTfaSetup = false; tfaSecret = ''; }}>取消</Button></div>
-										</div>
-									{/if}
-
-									{#if tfaEnabled && !showTfaDisable}
-										<Button size="sm" variant="destructive" class="mt-3" onclick={() => (showTfaDisable = true)}>取消 2FA</Button>
-									{/if}
-
-									{#if showTfaDisable}
-										<div class="mt-4 space-y-3 rounded-lg bg-destructive/5 border border-destructive/30 p-4">
-											<p class="text-sm">输入验证器验证码确认关闭：</p>
-											<Input type="text" bind:value={tfaDisableCode} maxlength="6" placeholder="000000" class="h-9 w-24 text-center" />
-											<Button size="sm" variant="destructive" onclick={handleDisable2FA} disabled={tfaLoading}>确认关闭 2FA</Button>
-											<Button size="sm" variant="ghost" onclick={() => { showTfaDisable = false; tfaDisableCode = ''; }}>取消</Button>
-										</div>
-									{/if}
-								</div>
-							</CardContent></Card>
-
-							<!-- Passkey -->
-							<Card><CardContent class="flex items-start gap-4 p-5">
-								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Fingerprint class="h-5 w-5 text-primary" /></div>
-								<div class="flex-1">
-									<h3 class="font-semibold">🔐 浏览器通行密钥（Passkey）</h3>
-									<p class="text-sm text-muted-foreground">使用指纹、面容或 PIN 一键登录，无需密码。</p>
-									{#if passkeyLoading}
-										<div class="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 class="h-3 w-3 animate-spin" /> 加载中...</div>
-									{:else}
-										{#if passkeys.length > 0}
-											<div class="mt-3 space-y-1.5">
-												{#each passkeys as pk}
-													<div class="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-1.5 text-sm">
-														<span>🔑 {pk.name || pk.id?.slice(0, 8) || 'Passkey'} {pk.created_at ? `· ${new Date(pk.created_at).toLocaleDateString()}` : ''}</span>
-														<Button variant="ghost" size="icon" class="h-7 w-7 text-muted-foreground hover:text-destructive" onclick={() => handleDeletePasskey(pk.id)}><Trash2 class="h-3.5 w-3.5" /></Button>
-													</div>
-												{/each}
-											</div>
-										{/if}
-										<Button size="sm" class="mt-3 gap-1" onclick={handleAddPasskey}><Plus class="h-3.5 w-3.5" /> 添加新的 Passkey</Button>
-									{/if}
-								</div>
-							</CardContent></Card>
-
-
-					<!-- ── 审核队列（仅审核员）── -->
+						<!-- ── 审核队列（仅审核员）── -->
 					<TabsContent value="review-queue">
 						<h2 class="mb-1 text-xl font-bold">📋 审核队列</h2>
 						<p class="mb-6 text-sm text-muted-foreground">查看并审核用户提交的照片</p>
@@ -391,16 +320,7 @@
 					</TabsContent>
 
 					<!-- ── 图片管理（仅审核员）── -->
-					<TabsContent value="review-photos">
-						<h2 class="mb-1 text-xl font-bold">🖼️ 图片管理</h2>
-						<p class="mb-6 text-sm text-muted-foreground">搜索、编辑和管理所有照片</p>
-						<div class="flex flex-col items-center justify-center py-16 text-muted-foreground">
-							<Image class="mb-3 h-12 w-12 opacity-30" />
-							<p class="text-sm">图片管理功能即将上线</p>
-							<Button variant="outline" size="sm" class="mt-3" href="/review/photos">打开图片管理</Button>
-						</div>
-					</TabsContent>
-
+					
 					<!-- ── 系统设置（仅审核员）── -->
 					<TabsContent value="review-settings">
 						<h2 class="mb-1 text-xl font-bold">⚙️ 系统设置</h2>
@@ -426,12 +346,6 @@
 							<Users class="mb-3 h-12 w-12 opacity-30" />
 							<p class="text-sm">用户管理功能即将上线</p>
 							<Button variant="outline" size="sm" class="mt-3" href="/review/users">打开用户管理</Button>
-						</div>
-					</TabsContent>
-							<!-- Avatar -->
-							<Card><CardContent class="flex items-start gap-4 p-5">
-								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Image class="h-5 w-5 text-primary" /></div>
-							</CardContent></Card>
 						</div>
 					</TabsContent>
 				</CardContent>

@@ -11,8 +11,24 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
+	import { api as loadRulesApi } from '$lib/api';
 	import { t } from '$lib/stores/i18n';
 	import { ArrowLeft, Upload, X, Info, CheckCircle2 } from '@lucide/svelte';
+
+	let uploadRules = $state([]);
+
+	async function loadUploadRules() {
+		try { const r = await loadRulesApi("/api/site/upload-rules", { noRedirect: true }); const d = await r.json(); uploadRules = d.rules || []; }
+		catch (e) { uploadRules = [
+		{ id:1, text: $t('upload.rules.1'), active:true },
+		{ id:2, text: $t('upload.rules.2'), active:true },
+		{ id:3, text: $t('upload.rules.3'), active:true },
+		{ id:4, text: $t('upload.rules.4'), active:true },
+		{ id:5, text: $t('upload.rules.5'), active:true },
+		{ id:6, text: $t('upload.rules.6'), active:true },
+		{ id:7, text: $t('upload.rules.7'), active:true }
+	]; }
+	}
 
 	let title = $state(''); let photoDate = $state(''); let registration = $state('');
 	let airline = $state(''); let aircraftType = $state(''); let location = $state('');
@@ -22,7 +38,8 @@
 	let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
 
 	async function verifyTsToken(tk) { tsToken = tk; turnstileVerifying = true; try { await verifyTurnstile(tk); turnstileVerified = true; } catch (e) { showToast('人机验证失败', 'error'); turnstileVerified = false; } finally { turnstileVerifying = false; } }
-	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isLoggedIn) window.location.href = '/login'; });
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+		loadUploadRules(); if (!$isLoggedIn) window.location.href = '/login'; });
 	function handleFileSelect(e) { selectedFiles = [...selectedFiles, ...Array.from(e.target.files || [])]; }
 	function removeFile(i) { selectedFiles = selectedFiles.filter((_, idx) => idx !== i); }
 
@@ -59,13 +76,9 @@
 					<div class="flex items-center gap-2 text-sm font-semibold"><Info class="h-4 w-4 text-primary" />{$t('upload.rules.title')}</div>
 					<Separator />
 					<ul class="space-y-2.5 text-xs text-muted-foreground">
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.1')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.2')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.3')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.4')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.5')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.6')}</span></li>
-						<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{$t('upload.rules.7')}</span></li>
+						{#each uploadRules.filter(r => r.active !== false) as rule}
+							<li class="flex items-start gap-2"><CheckCircle2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" /><span>{rule.text}</span></li>
+						{/each}
 					</ul>
 				</CardContent>
 			</Card>
