@@ -1,8 +1,7 @@
 <script>
-	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading } from '$lib/stores/auth';
+	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading, refreshReviewerInfo } from '$lib/stores/auth';
 	import { api } from '$lib/api';
 	import { setup2FA, enable2FA, disable2FA, sendEmailCode, passkeyRegisterOptions, passkeyRegisterVerify, listPasskeys, deletePasskey } from '$lib/stores/auth';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
@@ -42,13 +41,15 @@
 			const unsub = authLoading.subscribe(loading => { if (!loading) { unsub(); resolve(); } });
 		});
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
+		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
+		await refreshReviewerInfo();
 		loadTab('overview');
 	});
 
 	function toggleSidebar() { sidebarOpen = !sidebarOpen; }
 
 	async function loadTab(tab) {
-		activeTab = tab; tabLoading = true; sidebarOpen = false;
+		activeTab = tab; tabLoading = true;
 		try {
 			if (tab === 'overview') await loadOverview();
 			else if (tab === 'pending') await loadPending();
@@ -71,7 +72,7 @@
 		try { const r = await api('/api/users/me/photos?status=approved', { noRedirect: true }); const d = await r.json(); approvedPhotos = d.photos || []; } catch (e) {}
 	}
 	async function loadRejected() {
-		try { const r = await api('/api/users/me/photos?status=rejected', { noRedirect: true }); const d = await r.json(); rejectedPhotos = d.photos || []; } catch (e) {}
+		try { const r = await api('/api/users/me/photos?status=rejected,ai_rejected', { noRedirect: true }); const d = await r.json(); rejectedPhotos = d.photos || []; } catch (e) {}
 	}
 
 	// ── 2FA ──
@@ -145,6 +146,7 @@
 		try { await api('/api/photos/' + photoId + '/delete', { method: 'POST', body: '{}' }); showToast('已删除', 'success'); loadTab(activeTab); }
 		catch (err) { showToast(err.message || '删除失败', 'error'); }
 	}
+	async function handleAppeal(photoId) { window.location.href = "/appeal/" + photoId; }
 	async function handleTogglePrivate(photo) {
 		const makePrivate = photo.status !== 'private';
 		try { await api('/api/photos/' + photo.id + '/visibility', { method: 'POST', body: JSON.stringify({ isPrivate: makePrivate }) }); showToast(makePrivate ? '已设为私密' : '已设为公开', 'success'); loadTab(activeTab); }
@@ -161,20 +163,15 @@
 	];
 
 	const reviewerTabs = [
-		{ value: 'review-queue', label: '审核队列', icon: ClipboardCheck },
+		{ value: 'review-queue', label: '审核', icon: ClipboardCheck },
 		{ value: 'review-photos', label: '图片管理', icon: Image },
-		{ value: 'review-settings', label: '系统设置', icon: SlidersHorizontal }
+		{ value: 'review-settings', label: '系统管理', icon: SlidersHorizontal }
 	];
 
 	const adminTabs = [
 		{ value: 'review-users', label: '用户管理', icon: Users }
 	];
 
-	let tabItems = $derived([
-		...userTabs,
-		...(get(isReviewer) ? reviewerTabs : []),
-		...(get(isAdmin) ? adminTabs : [])
-	]);
 </script>
 
 <style>
@@ -202,11 +199,25 @@
 					</div>
 					<Separator class="mb-3" />
 					<TabsList class="flex w-full flex-col gap-0.5" id="dashboard-sidebar-tabs">
-						{#each tabItems as ti}
+						{#each userTabs as ti}
 							<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
 								<ti.icon class="h-4 w-4" /> {ti.label}
 							</TabsTrigger>
 						{/each}
+						{#if $isReviewer}
+							{#each reviewerTabs as ti}
+								<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
+									<ti.icon class="h-4 w-4" /> {ti.label}
+								</TabsTrigger>
+							{/each}
+						{/if}
+						{#if $isAdmin}
+							{#each adminTabs as ti}
+								<TabsTrigger value={ti.value} class="w-full justify-start gap-2" onclick={() => loadTab(ti.value)}>
+									<ti.icon class="h-4 w-4" /> {ti.label}
+								</TabsTrigger>
+							{/each}
+						{/if}
 					</TabsList>
 				{/snippet}
 				<Card><CardContent class="p-5">{@render sidebarContent()}</CardContent></Card>
@@ -269,7 +280,8 @@
 						{#if rejectedPhotos.length}
 							<div class="space-y-3">
 								{#each rejectedPhotos as p}
-									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={p.thumbnail || p.url} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover opacity-80" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p>{#if p.reject_reason}<p class="mt-1 text-xs text-destructive">原因：{p.reject_reason}</p>{/if}</div><Badge variant="destructive" class="shrink-0 self-start">未过审</Badge></div>
+									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={p.thumbnail || p.url} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover opacity-80" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p>{#if p.reject_reason}<p class="mt-1 text-xs text-destructive">原因：{p.reject_reason}</p>{/if}
+									<div class="mt-2"><button class="rounded bg-amber-50 px-2 py-1 text-[11px] border border-amber-200 text-amber-700 hover:bg-amber-100" onclick={() => handleAppeal(p.id)}>申诉</button></div></div><Badge variant="destructive" class="shrink-0 self-start">未过审</Badge></div>
 								{/each}
 							</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无未过审的照片</p></div>{/if}
