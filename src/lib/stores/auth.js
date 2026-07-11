@@ -40,6 +40,9 @@ function isReviewerLoggedIn() { return !!getReviewerSession(); }
 // ⚠️ 必须定义在 isLoggedIn / currentUser 之前（这两个 derived 引用了它）
 export const reviewerInfo = writable(null);
 
+// authLoading: true = 正在检查登录状态（OAuth cookie / restore），此时应显示加载中而不是跳走
+export const authLoading = writable(true);
+
 export const isLoggedIn = derived([authSession, reviewerInfo], ([$s, $r]) => {
 	if ($s && !isSessionExpired($s)) return true;
 	return !!$r?.authenticated;
@@ -220,8 +223,11 @@ export async function deletePasskey(id) { return (await apiCall(`/api/webauthn/p
 
 // ── Init ──
 if (browser) {
-	restoreFromCookie();
-	refreshReviewerInfo();
+	// 等待 restoreFromCookie + refreshReviewerInfo 两者都完成后标记 authLoading = false
+	Promise.allSettled([restoreFromCookie(), refreshReviewerInfo()]).finally(() => {
+		authLoading.set(false);
+	});
+
 	setInterval(() => {
 		let session; authSession.subscribe((s) => (session = s))();
 		if (session && isSessionExpired(session)) clearSession();

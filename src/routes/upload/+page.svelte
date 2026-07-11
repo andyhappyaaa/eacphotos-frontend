@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, verifyTurnstile } from '$lib/stores/auth';
+	import { isLoggedIn, verifyTurnstile, authLoading } from '$lib/stores/auth';
 	import { uploadWithProgress } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -22,7 +22,7 @@
 	let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
 
 	async function verifyTsToken(tk) { tsToken = tk; turnstileVerifying = true; try { await verifyTurnstile(tk); turnstileVerified = true; } catch (e) { showToast('人机验证失败', 'error'); turnstileVerified = false; } finally { turnstileVerifying = false; } }
-	onMount(() => { if (!$isLoggedIn) window.location.href = '/login'; });
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isLoggedIn) window.location.href = '/login'; });
 	function handleFileSelect(e) { selectedFiles = [...selectedFiles, ...Array.from(e.target.files || [])]; }
 	function removeFile(i) { selectedFiles = selectedFiles.filter((_, idx) => idx !== i); }
 

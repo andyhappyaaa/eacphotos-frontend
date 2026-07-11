@@ -2,7 +2,7 @@
 	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole } from '$lib/stores/auth';
+	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading } from '$lib/stores/auth';
 	import { api } from '$lib/api';
 	import { setup2FA, enable2FA, disable2FA, sendEmailCode, passkeyRegisterOptions, passkeyRegisterVerify, listPasskeys, deletePasskey } from '$lib/stores/auth';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
@@ -37,8 +37,10 @@
 	let passkeys = $state([]); let passkeyLoading = $state(false);
 
 	onMount(async () => {
-		// 等待 Reviewer cookie 刷新（OAuth 登录后 store 异步初始化）
-		await new Promise(r => setTimeout(r, 800));
+		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载）
+		await new Promise(resolve => {
+			const unsub = authLoading.subscribe(loading => { if (!loading) { unsub(); resolve(); } });
+		});
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		loadTab('overview');
 	});

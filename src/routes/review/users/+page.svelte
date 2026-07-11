@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isAdmin } from '$lib/stores/auth';
+	import { isAdmin, authLoading } from "$lib/stores/auth";
 	import { api } from '$lib/api';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -17,7 +17,7 @@
 	let banDays = $state('');
 	let banUserId = $state(null);
 
-	onMount(() => { if (!$isAdmin) { window.location.href = '/login'; return; } loadUsers(); });
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isAdmin) { window.location.href = '/login'; return; } loadUsers(); });
 
 	async function loadUsers() {
 		loading = true;

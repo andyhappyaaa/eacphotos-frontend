@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isAdmin } from '$lib/stores/auth';
+	import { isAdmin, authLoading } from "$lib/stores/auth";
 	import { api } from '$lib/api';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -15,7 +15,7 @@
 	let statusFilter = $state('all');
 	let searchQuery = $state('');
 
-	onMount(() => { if (!$isAdmin) window.location.href = '/login'; });
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isAdmin) window.location.href = '/login'; });
 
 	async function loadPhotos() {
 		loading = true;

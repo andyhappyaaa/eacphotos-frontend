@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isReviewer } from '$lib/stores/auth';
+	import { isReviewer, authLoading } from "$lib/stores/auth";
 	import { api } from '$lib/api';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -19,7 +19,7 @@
 	let rejectId = $state(null);
 	let rejectReason = $state('');
 
-	onMount(() => {
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
 		if (!$isReviewer) { window.location.href = '/login'; return; }
 		loadQueue(activeQ);
 	});
