@@ -98,7 +98,9 @@ export default async function handler(req, res) {
 				res.setHeader('Set-Cookie', 'eac_session=; ' + COOKIE_OPTS + '; Max-Age=0');
 			return res.status(fetchResp.status).json(data);
 		}
-		return res.status(fetchResp.status).send(await fetchResp.text());
+		// 非 JSON 响应（图片等二进制数据）→ 原始字节透传，不转 text（会损坏二进制）
+		const buffer = await fetchResp.arrayBuffer();
+		return res.status(fetchResp.status).send(Buffer.from(buffer));
 	} catch (e) {
 		console.error('[proxy]', e);
 		return res.status(502).json({ error: 'proxy error', message: e.message });
