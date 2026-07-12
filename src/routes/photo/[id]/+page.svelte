@@ -8,7 +8,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { formatDate } from '$lib/utils/helpers';
 	import { Download, Share2, Heart } from '@lucide/svelte';
-	import WatermarkedImage from '$lib/components/WatermarkedImage.svelte';
+	
 
 	let photo = $state(null);
 	let id = $derived(page.params.id);
@@ -38,7 +38,7 @@
 	<div class="container mx-auto max-w-[1200px] px-5 py-8">
 		<div class="grid gap-8 lg:grid-cols-[1fr_380px]">
 			<div class="flex items-center justify-center rounded-xl bg-secondary p-5">
-				<WatermarkedImage src={photo.url} alt={photo.title} photographer={photo.photographer_name || ''} className="max-h-[70vh] max-w-full rounded-lg object-contain" />
+				<img src={photo.url} alt={photo.title} class="max-h-[70vh] max-w-full rounded-lg object-contain" />
 			</div>
 			<div class="space-y-5">
 				<h1 class="text-2xl font-bold">{photo.title || 'Untitled'}</h1>
