@@ -24,11 +24,11 @@
 
 	async function handleDownload() {
 		if (!isOwner()) { showToast('仅照片作者可下载原图', 'error'); return; }
-		try {
-			const r = await api('/api/photos/' + id + '/download');
-			const d = await r.json();
-			const a = document.createElement('a'); a.href = d.downloadUrl; a.download = d.filename || 'photo.jpg'; a.click();
-		} catch (e) { showToast('下载失败', 'error'); }
+		// 直接用 photo.url（R2 公开地址）下载
+		const a = document.createElement('a');
+		a.href = photo.url || '';
+		a.download = photo.filename?.split('/').pop() || 'photo.jpg';
+		a.click();
 	}
 	function handleShare() { navigator.clipboard.writeText(window.location.href).then(() => showToast('链接已复制', 'success')); }
 </script>
