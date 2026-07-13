@@ -55,6 +55,7 @@
 			else if (tab === 'pending') await loadPending();
 			else if (tab === 'approved') await loadApproved();
 			else if (tab === 'rejected') await loadRejected();
+			else if (tab === 'appeals') { window.location.href = '/appeal'; }
 			else if (tab === 'manage') await loadAllPhotos();
 			else if (tab === 'upload') { goto('/upload'); return; }
 		} catch (e) {}
@@ -188,8 +189,8 @@
 	<Tabs value={activeTab}>
 		<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
 			<!-- Desktop Sidebar -->
-			<aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start">
-				{#snippet sidebarContent()}
+				<aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start"><Card><CardContent class="p-5">{@render sidebarContent()}</CardContent></Card></aside>
+			{#snippet sidebarContent()}
 					<div class="mb-4 text-center">
 						<Avatar class="mx-auto mb-3 h-16 w-16"><AvatarImage src={$currentUser?.avatar} alt="" /><AvatarFallback class="text-lg">{$currentUser?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
 						<h3 class="font-semibold">{$currentUser?.username || '用户'}</h3>
@@ -222,8 +223,6 @@
 						{/if}
 					</TabsList>
 				{/snippet}
-				<Card><CardContent class="p-5">{@render sidebarContent()}</CardContent></Card>
-			</aside>
 
 			<!-- Mobile Sidebar overlay -->
 			{#if sidebarOpen}
