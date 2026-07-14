@@ -56,7 +56,7 @@
 			if (description) fd.append('description', description); if (message) fd.append('message', message);
 			if (isHot) fd.append('isHot', 'true'); if (tsToken) fd.append('turnstileToken', tsToken);
 			await uploadWithProgress('/api/photos/upload', fd, p => uploadProgress = p);
-			showToast('上传成功', 'success'); goto('/dashboard');
+			showToast('上传成功', 'success'); window.location.href = '/dashboard';
 		} catch (e) { showToast(e.message || '上传失败', 'error'); } finally { uploading = false; uploadProgress = 0; }
 	}
 </script>

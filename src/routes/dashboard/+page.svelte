@@ -228,8 +228,9 @@
 			{#if sidebarOpen}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="fixed inset-0 z-[101] bg-black/50 lg:hidden" onclick={() => (sidebarOpen = false)}></div>
-				<div class="fixed left-0 top-0 z-[102] h-full w-[280px] overflow-y-auto border-r bg-card p-5 shadow-2xl lg:hidden">
+				<div class="fixed inset-0 z-[101] bg-black/50 transition-opacity duration-300 lg:hidden" class:opacity-0={!sidebarOpen} class:opacity-100={sidebarOpen} class:pointer-events-none={!sidebarOpen} onclick={() => (sidebarOpen = false)}></div>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div class="fixed left-0 top-0 z-[102] h-full w-[280px] overflow-y-auto border-r bg-card p-5 shadow-2xl transition-transform duration-300 ease-out lg:hidden" style="transform: {sidebarOpen ? "translateX(0)" : "translateX(-100%)"}">
 					<button class="mb-4 text-sm text-muted-foreground" onclick={() => (sidebarOpen = false)}>✕ 关闭</button>
 					{@render sidebarContent()}
 				</div>
