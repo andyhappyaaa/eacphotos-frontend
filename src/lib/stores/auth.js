@@ -135,7 +135,11 @@ export async function loginByEmailCode(email, code, rememberMe) {
 export async function logout() {
 	try { await apiCall('/api/auth/logout', { method: 'POST' }); } catch (e) {}
 	clearSession();
-	if (browser) window.location.href = '/';
+	if (browser) {
+		// 同时清除 OAuth HttpOnly cookie（通过 Vercel proxy）
+		try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (e) {}
+		window.location.href = '/';
+	}
 }
 
 export async function verify2FA(code) {
