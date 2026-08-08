@@ -4,25 +4,29 @@
   import { isAdmin, isSuperAdmin, authLoading } from "$lib/stores/auth";
   import { api } from '$lib/api';
   import { showToast } from '$lib/stores/toast';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import { Textarea } from '$lib/components/ui/textarea';
+  import { Card, CardContent } from '$lib/components/ui/card';
+  import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+  import { Badge } from '$lib/components/ui/badge';
+  import { Separator } from '$lib/components/ui/separator';
+  import { Checkbox } from '$lib/components/ui/checkbox';
+  import { Label } from '$lib/components/ui/label';
+  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '$lib/components/ui/select';
+  import { Switch } from '$lib/components/ui/switch';
   import { ArrowLeft, RefreshCw, Save, Plus, Trash2, Image, Newspaper, SlidersHorizontal, Users, Shield, Briefcase } from '@lucide/svelte';
 
   let activeTab = $state('carousel');
   let loading = $state(false);
-
-  // Carousel
   let carouselItems = $state('');
-  // Announcement
   let ann = $state({ title:'',content:'',layout:'default',show_github_updates:false,github_repo:'',is_active:true });
-  // Upload rules
   let rules = $state([]);
   let newRuleText = $state('');
-  // User bans
   let banSearch = $state(''); let banResult = $state(null);
   let banReason = $state(''); let banDays = $state(7);
-  // Reviewers
   let reviewers = $state([]);
   let newRv = $state({username:'',email:'',password:'',role:'reviewer'});
-  // Jobs
   let jobs = $state([]);
   let jobForm = $state({id:'',title:'',department:'',location:'',employment_type:'Full-time',salary_min:'',salary_max:'',description:'',requirements:'',is_active:true,sort_order:0});
   let showJobForm = $state(false);
@@ -41,10 +45,9 @@
           api('/api/admin/carousel', { method:'POST', body: JSON.stringify({}) }),
           api('/api/admin/announcement', { method:'POST', body: JSON.stringify({}) })
         ]);
-        const cd = await cr.json(); carouselItems = JSON.stringify(cd.carousel||[], null, 2);
+        carouselItems = JSON.stringify((await cr.json()).carousel||[], null, 2);
         const ad = await ar.json();
-        if (ad.announcement) { ann = { ...ad.announcement }; }
-        if (ad.announcement?.github_repo) ann.github_repo = ad.announcement.github_repo;
+        if (ad.announcement) { ann = { ...ad.announcement }; if (ad.announcement.github_repo) ann.github_repo = ad.announcement.github_repo; }
       }
       if (tab === 'rules') { const r = await api('/api/admin/upload-rules', { method:'POST', body:JSON.stringify({}) }); rules = (await r.json()).rules || []; }
       if (tab === 'reviewers') { const r = await api('/api/admin/reviewers', { method:'POST', body:'{}'}); reviewers = (await r.json()).reviewers || []; }
@@ -53,26 +56,18 @@
     finally { loading = false; }
   }
 
-  async function saveCarousel() { try { JSON.parse(carouselItems); await api('/api/admin/carousel', { method:'POST', body: JSON.stringify({ carousel: JSON.parse(carouselItems) }) }); showToast('已保存','success'); } catch(e) { showToast('JSON格式错误','error'); } }
+  async function saveCarousel() { try { JSON.parse(carouselItems); await api('/api/admin/carousel', { method:'POST', body: JSON.stringify({ carousel: JSON.parse(carouselItems) }) }); showToast('已保存','success'); } catch(e) { showToast('JSON 格式错误','error'); } }
   async function saveAnnouncement() { try { await api('/api/admin/announcement', { method:'POST', body: JSON.stringify({...ann, action:'set'}) }); showToast('已保存','success'); } catch(e) { showToast('保存失败','error'); } }
   async function fetchNews() { try { const r = await api('/api/admin/fetch-news', { method:'POST', body:'{}'}); showToast((await r.json()).message,'success'); } catch(e) { showToast('拉取失败','error'); } }
-
-  // Rules
   async function addRule() { if (!newRuleText) return; try { const r = await api('/api/admin/upload-rules', { method:'POST', body:JSON.stringify({action:'add',text:newRuleText})}); rules = (await r.json()).rules||[]; newRuleText=''; } catch(e) { showToast('添加失败','error'); } }
   async function toggleRule(id) { try { const r = await api('/api/admin/upload-rules', { method:'POST', body:JSON.stringify({action:'toggle',id})}); rules = (await r.json()).rules||[]; } catch(e) { showToast('操作失败','error'); } }
   async function deleteRule(id) { if (!confirm('删除此规则？')) return; try { const r = await api('/api/admin/upload-rules', { method:'POST', body:JSON.stringify({action:'delete',id})}); rules = (await r.json()).rules||[]; } catch(e) { showToast('删除失败','error'); } }
-
-  // Bans
   async function searchBan() { if (!banSearch) return; try { const r = await api('/api/admin/users/bans', { method:'POST', body:JSON.stringify({action:'search',username:banSearch})}); banResult = await r.json(); } catch(e) { showToast('搜索失败','error'); } }
   async function banUser(uid) { if (!banReason) { showToast('请输入原因','error'); return; } try { await api('/api/admin/users/bans', { method:'POST', body:JSON.stringify({action:'ban',userId:uid,reason:banReason,durationDays:banDays})}); showToast('已封禁','success'); banResult=null; banSearch=''; banReason=''; } catch(e) { showToast('操作失败','error'); } }
   async function unbanUser(uid) { try { await api('/api/admin/users/bans', { method:'POST', body:JSON.stringify({action:'unban',userId:uid})}); showToast('已解封','success'); searchBan(); } catch(e) { showToast('操作失败','error'); } }
-
-  // Reviewers
   async function createReviewer() { if (!newRv.username||!newRv.email||!newRv.password) { showToast('请填写完整','error'); return; } try { await api('/api/admin/create-reviewer', { method:'POST', body:JSON.stringify(newRv)}); showToast('已创建','success'); newRv={username:'',email:'',password:'',role:'reviewer'}; loadTab('reviewers'); } catch(e) { showToast('创建失败','error'); } }
   async function updateRole(rid, role) { try { await api('/api/admin/update-role', { method:'POST', body:JSON.stringify({reviewerId:rid,role})}); showToast('已更新','success'); loadTab('reviewers'); } catch(e) { showToast('更新失败','error'); } }
   async function deleteReviewer(rid) { if (!confirm('确定删除该审核员？')) return; try { await api('/api/admin/delete-reviewer', { method:'POST', body:JSON.stringify({reviewerId:rid})}); showToast('已删除','success'); loadTab('reviewers'); } catch(e) { showToast('删除失败','error'); } }
-
-  // Jobs
   async function saveJob() { try { await api('/api/admin/job-positions', { method:'POST', body:JSON.stringify({action:jobForm.id?'update':'create',position:jobForm})}); showToast('已保存','success'); showJobForm=false; jobForm={id:'',title:'',department:'',location:'',employment_type:'Full-time',salary_min:'',salary_max:'',description:'',requirements:'',is_active:true,sort_order:0}; loadTab('jobs'); } catch(e) { showToast('保存失败','error'); } }
   async function deleteJob(jid) { if (!confirm('删除该职位？')) return; try { await api('/api/admin/job-positions', { method:'POST', body:JSON.stringify({action:'delete',id:jid})}); showToast('已删除','success'); loadTab('jobs'); } catch(e) { showToast('删除失败','error'); } }
   function editJob(j) { jobForm={...j}; showJobForm=true; }
@@ -89,205 +84,183 @@
   ];
 </script>
 
-<svelte:head>
-	<link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-</svelte:head>
-
 <div class="container mx-auto px-4 py-4" style="max-width:1200px;">
-  <div class="d-flex align-items-center gap-2 mb-3">
-    <button class="btn btn-sm btn-ghost d-flex align-items-center gap-1" onclick={() => goto('/dashboard')}><ArrowLeft class="h-4 w-4"/>返回仪表盘</button>
-    <h1 class="fs-4 fw-bold mb-0">系统设置</h1>
-    <button class="btn btn-sm btn-outline-secondary ms-auto" onclick={()=>loadTab(activeTab)} disabled={loading}><RefreshCw class="h-4 w-4 {loading?'animate-spin':''}"/></button>
+  <div class="flex items-center gap-2 mb-4">
+    <Button variant="ghost" size="sm" class="h-8 gap-1 text-xs" onclick={() => goto('/dashboard')}><ArrowLeft class="h-4 w-4"/>返回仪表盘</Button>
+    <h1 class="m-0 text-xl font-bold">系统设置</h1>
+    <Button variant="outline" size="sm" class="ml-auto h-8" onclick={()=>loadTab(activeTab)} disabled={loading}><RefreshCw class="mr-1 h-3.5 w-3.5 {loading?'animate-spin':''}"/></Button>
   </div>
 
-  <!-- Tabs -->
-  <ul class="nav nav-tabs mb-3 flex-wrap">
+  <div class="flex flex-wrap gap-1 mb-4 border-b pb-2">
     {#each tabs as t}
-      <li class="nav-item"><button class="nav-link {activeTab===t.key?'active':''}" onclick={()=>loadTab(t.key)}><t.icon class="h-4 w-4 me-1"/>{t.label}</button></li>
+      <Button variant={activeTab===t.key?'secondary':'ghost'} size="sm" class="h-7 text-xs gap-1" onclick={()=>loadTab(t.key)}><t.icon class="h-3.5 w-3.5"/>{t.label}</Button>
     {/each}
-  </ul>
+  </div>
 
   <div style="min-height:400px;">
-    <!-- Carousel -->
     {#if activeTab === 'carousel'}
-      <div class="card"><div class="card-body">
-        <h3 class="card-title fs-6 fw-semibold">首页轮播图</h3>
-        <p class="text-muted small">JSON格式: [ img: url, title: title ]</p>
-        <textarea class="form-control font-monospace small" rows="8" bind:value={carouselItems}></textarea>
-        <button class="btn btn-primary btn-sm mt-2" onclick={saveCarousel}><Save class="h-4 w-4 me-1"/>保存</button>
-      </div></div>
+      <Card><CardContent class="p-4 space-y-3">
+        <h3 class="text-sm font-semibold">首页轮播图</h3>
+        <p class="text-xs text-muted-foreground">JSON 格式: [{'"img":"url","title":"标题"'}]</p>
+        <textarea class="w-full rounded-lg border bg-background px-3 py-2 font-mono text-xs" rows="8" bind:value={carouselItems}></textarea>
+        <Button size="sm" onclick={saveCarousel}><Save class="mr-1 h-3.5 w-3.5"/>保存</Button>
+      </CardContent></Card>
     {/if}
 
-    <!-- Announcement -->
     {#if activeTab === 'announcement'}
-      <div class="card"><div class="card-body">
-        <h3 class="card-title fs-6 fw-semibold">站点公告</h3>
-        <input class="form-control form-control-sm mb-2" placeholder="标题" bind:value={ann.title}/>
-        <textarea class="form-control form-control-sm mb-2 font-monospace small" rows="6" placeholder="HTML内容" bind:value={ann.content}></textarea>
-        <div class="d-flex gap-3 flex-wrap align-items-center mb-2">
-          <select class="form-select form-select-sm w-auto" bind:value={ann.layout}><option value="default">默认</option><option value="compact">紧凑</option></select>
-          <label class="form-check-label small"><input type="checkbox" class="form-check-input" bind:checked={ann.show_github_updates}/> GitHub更新</label>
+      <Card><CardContent class="p-4 space-y-3">
+        <h3 class="text-sm font-semibold">站点公告</h3>
+        <Input class="h-8 text-sm" placeholder="标题" bind:value={ann.title}/>
+        <textarea class="w-full rounded-lg border bg-background px-3 py-2 font-mono text-xs" rows="6" placeholder="HTML 内容" bind:value={ann.content}></textarea>
+        <div class="flex flex-wrap items-center gap-3">
+          <select class="h-8 rounded-lg border bg-background px-2 text-xs" bind:value={ann.layout}><option value="default">默认</option><option value="compact">紧凑</option></select>
+          <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="h-3.5 w-3.5 rounded" bind:checked={ann.show_github_updates}/> GitHub 更新</label>
           {#if ann.show_github_updates}
-            <input class="form-control form-control-sm w-auto" placeholder="owner/repo (逗号分隔多仓库)" bind:value={ann.github_repo} style="width:280px;"/>
+            <Input class="h-8 w-72 text-xs" placeholder="owner/repo (逗号分隔多仓库)" bind:value={ann.github_repo}/>
           {/if}
-          <label class="form-check-label small"><input type="checkbox" class="form-check-input" bind:checked={ann.is_active}/> 启用</label>
+          <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="h-3.5 w-3.5 rounded" bind:checked={ann.is_active}/> 启用</label>
         </div>
-        <button class="btn btn-primary btn-sm" onclick={saveAnnouncement}><Save class="h-4 w-4 me-1"/>保存公告</button>
-      </div></div>
+        <Button size="sm" onclick={saveAnnouncement}><Save class="mr-1 h-3.5 w-3.5"/>保存公告</Button>
+      </CardContent></Card>
     {/if}
 
-    <!-- News -->
     {#if activeTab === 'news'}
-      <div class="card"><div class="card-body d-flex align-items-center justify-content-between">
-        <div><h3 class="card-title fs-6 fw-semibold mb-1">拉取新闻</h3><p class="text-muted small mb-0">从Bing+AeroRoutes RSS获取最新航空新闻</p></div>
-        <button class="btn btn-primary btn-sm" onclick={fetchNews}><RefreshCw class="h-4 w-4 me-1"/>立即拉取</button>
-      </div></div>
+      <Card><CardContent class="flex items-center justify-between p-4">
+        <div><h3 class="text-sm font-semibold">拉取新闻</h3><p class="text-xs text-muted-foreground">从 Bing + AeroRoutes RSS 获取最新航空新闻</p></div>
+        <Button size="sm" onclick={fetchNews}><RefreshCw class="mr-1 h-3.5 w-3.5"/>立即拉取</Button>
+      </CardContent></Card>
     {/if}
 
-    <!-- Upload Rules -->
     {#if activeTab === 'rules'}
-      <div class="card"><div class="card-body">
-        <h3 class="card-title fs-6 fw-semibold">上传规则</h3>
-        <div class="d-flex gap-2 mb-3">
-          <input class="form-control form-control-sm" placeholder="新规则内容" bind:value={newRuleText}/>
-          <button class="btn btn-primary btn-sm" onclick={addRule}><Plus class="h-4 w-4 me-1"/>添加</button>
+      <Card><CardContent class="p-4 space-y-3">
+        <h3 class="text-sm font-semibold">上传规则</h3>
+        <div class="flex gap-2">
+          <Input class="h-8 flex-1 text-sm" placeholder="新规则内容" bind:value={newRuleText}/>
+          <Button size="sm" onclick={addRule}><Plus class="mr-1 h-3.5 w-3.5"/>添加</Button>
         </div>
         {#each rules as r}
-          <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge {r.active!==false?'bg-success':'bg-secondary'}" style="cursor:pointer" onclick={()=>toggleRule(r.id)}>{r.active!==false?'✓ 启用':'✗ 禁用'}</span>
-              <span class="small">{r.text}</span>
+          <div class="flex items-center justify-between border-b py-2">
+            <div class="flex items-center gap-2">
+              <Badge variant={r.active!==false?'default':'secondary'} class="cursor-pointer text-[10px]" onclick={()=>toggleRule(r.id)}>{r.active!==false?'启用':'禁用'}</Badge>
+              <span class="text-xs">{r.text}</span>
             </div>
-            <button class="btn btn-ghost btn-sm text-danger" onclick={()=>deleteRule(r.id)}><Trash2 class="h-3 w-3"/></button>
+            <Button variant="ghost" size="icon" class="h-7 w-7 text-muted-foreground hover:text-destructive" onclick={()=>deleteRule(r.id)}><Trash2 class="h-3 w-3"/></Button>
           </div>
         {/each}
-      </div></div>
+      </CardContent></Card>
     {/if}
 
-    <!-- User Bans -->
     {#if activeTab === 'bans'}
-      <div class="card"><div class="card-body">
-        <h3 class="card-title fs-6 fw-semibold">用户封禁</h3>
-        <div class="d-flex gap-2 mb-3">
-          <input class="form-control form-control-sm" placeholder="搜索用户名" bind:value={banSearch} style="max-width:250px;"/>
-          <button class="btn btn-primary btn-sm" onclick={searchBan}>搜索</button>
+      <Card><CardContent class="p-4 space-y-3">
+        <h3 class="text-sm font-semibold">用户封禁</h3>
+        <div class="flex gap-2">
+          <Input class="h-8 w-60 text-sm" placeholder="搜索用户名" bind:value={banSearch}/>
+          <Button size="sm" onclick={searchBan}>搜索</Button>
         </div>
         {#if banResult?.user}
-          <div class="alert alert-secondary">
-            <strong>{banResult.user.username}</strong> ({banResult.user.email})
-            <span class="ms-2">封禁记录: {banResult.bans?.length||0}次</span>
+          <div class="rounded-lg bg-secondary/50 p-3 text-sm">
+            <strong>{banResult.user.username}</strong> ({banResult.user.email}) · 封禁记录: {banResult.bans?.length||0} 次
           </div>
           {#each banResult.bans||[] as b}
-            <div class="d-flex justify-content-between py-1 border-bottom small">
+            <div class="flex justify-between border-b py-1 text-xs">
               <span>{b.reason||'无原因'} · {new Date(b.banned_at||b.created_at).toLocaleDateString()}{b.expires_at?' → '+new Date(b.expires_at).toLocaleDateString():' · 永久'}</span>
-              <span class="badge {b.is_active?'bg-danger':'bg-secondary'}">{b.is_active?'活跃':'已解除'}</span>
+              <Badge variant={b.is_active?'destructive':'secondary'} class="text-[10px]">{b.is_active?'活跃':'已解除'}</Badge>
             </div>
           {/each}
-          <div class="d-flex gap-2 mt-3">
-            <input class="form-control form-control-sm" placeholder="封禁原因" bind:value={banReason} style="max-width:200px;"/>
-            <select class="form-select form-select-sm w-auto" bind:value={banDays}><option value={7}>7天</option><option value={30}>30天</option><option value={365}>1年</option><option value={0}>永久</option></select>
-            <button class="btn btn-danger btn-sm" onclick={()=>banUser(banResult.user.id)}>封禁</button>
-            <button class="btn btn-warning btn-sm" onclick={()=>unbanUser(banResult.user.id)}>解封当前</button>
+          <div class="flex gap-2 flex-wrap items-center">
+            <Input class="h-8 w-48 text-xs" placeholder="封禁原因" bind:value={banReason}/>
+            <select class="h-8 rounded-lg border bg-background px-2 text-xs" bind:value={banDays}><option value={7}>7 天</option><option value={30}>30 天</option><option value={365}>1 年</option><option value={0}>永久</option></select>
+            <Button variant="destructive" size="sm" onclick={()=>banUser(banResult.user.id)}>封禁</Button>
+            <Button variant="secondary" size="sm" onclick={()=>unbanUser(banResult.user.id)}>解封</Button>
           </div>
         {:else if banResult?.error}
-          <p class="text-danger small">{banResult.error}</p>
+          <p class="text-xs text-destructive">{banResult.error}</p>
         {/if}
-      </div></div>
+      </CardContent></Card>
     {/if}
 
-    <!-- Reviewers -->
     {#if activeTab === 'reviewers'}
-      <div class="card"><div class="card-body">
-        <h3 class="card-title fs-6 fw-semibold">审核员管理</h3>
+      <Card><CardContent class="p-4 space-y-3">
+        <h3 class="text-sm font-semibold">审核员管理</h3>
         {#if $isSuperAdmin}
-          <div class="d-flex gap-2 mb-3 flex-wrap">
-            <input class="form-control form-control-sm" placeholder="用户名" bind:value={newRv.username} style="width:130px;"/>
-            <input class="form-control form-control-sm" placeholder="邮箱" bind:value={newRv.email} style="width:180px;"/>
-            <input class="form-control form-control-sm" type="password" placeholder="密码" bind:value={newRv.password} style="width:130px;"/>
-            <select class="form-select form-select-sm w-auto" bind:value={newRv.role}><option value="reviewer">审核员</option><option value="admin">管理员</option><option value="superadmin">超管</option></select>
-            <button class="btn btn-primary btn-sm" onclick={createReviewer}><Plus class="h-4 w-4 me-1"/>添加</button>
+          <div class="flex flex-wrap gap-2">
+            <Input class="h-8 w-28 text-xs" placeholder="用户名" bind:value={newRv.username}/>
+            <Input class="h-8 w-44 text-xs" placeholder="邮箱" bind:value={newRv.email}/>
+            <Input class="h-8 w-28 text-xs" type="password" placeholder="密码" bind:value={newRv.password}/>
+            <select class="h-8 rounded-lg border bg-background px-2 text-xs" bind:value={newRv.role}><option value="reviewer">审核员</option><option value="admin">管理员</option><option value="superadmin">超管</option></select>
+            <Button size="sm" onclick={createReviewer}><Plus class="mr-1 h-3.5 w-3.5"/>添加</Button>
           </div>
         {/if}
-        <table class="table table-sm">
-          <thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>2FA</th><th>操作</th></tr></thead>
+        <table class="w-full text-sm">
+          <thead><tr class="border-b text-left text-xs text-muted-foreground"><th class="py-1.5">用户名</th><th class="py-1.5">邮箱</th><th class="py-1.5">角色</th><th class="py-1.5">2FA</th><th class="py-1.5">操作</th></tr></thead>
           <tbody>
             {#each reviewers as rv}
-              <tr>
-                <td>{rv.username}</td><td class="small">{rv.email}</td>
-                <td>
+              <tr class="border-b">
+                <td class="py-1.5">{rv.username}</td><td class="py-1.5 text-xs">{rv.email}</td>
+                <td class="py-1.5">
                   {#if $isSuperAdmin}
-                    <select class="form-select form-select-sm" style="width:100px;" value={rv.role} onchange={(e)=>updateRole(rv.id,e.target.value)}>
+                    <select class="h-7 rounded border bg-background px-1 text-xs" value={rv.role} onchange={(e)=>updateRole(rv.id,e.target.value)}>
                       <option value="reviewer">审核员</option><option value="admin">管理员</option><option value="superadmin">超管</option>
                     </select>
-                  {:else}
-                    <span class="badge bg-secondary">{rv.role}</span>
-                  {/if}
+                  {:else}<Badge variant="secondary" class="text-[10px]">{rv.role}</Badge>{/if}
                 </td>
-                <td>{rv.two_factor_enabled?'✅':'❌'}</td>
-                <td>{#if $isSuperAdmin}<button class="btn btn-ghost btn-sm text-danger" onclick={()=>deleteReviewer(rv.id)}><Trash2 class="h-3 w-3"/></button>{/if}</td>
+                <td class="py-1.5">{rv.two_factor_enabled?'✓':'—'}</td>
+                <td class="py-1.5">{#if $isSuperAdmin}<Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground hover:text-destructive" onclick={()=>deleteReviewer(rv.id)}><Trash2 class="h-3 w-3"/></Button>{/if}</td>
               </tr>
             {/each}
           </tbody>
         </table>
-      </div></div>
+      </CardContent></Card>
     {/if}
 
-    <!-- Jobs -->
     {#if activeTab === 'jobs'}
-      <div class="card"><div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3 class="card-title fs-6 fw-semibold mb-0">招聘职位</h3>
-          {#if $isSuperAdmin}<button class="btn btn-primary btn-sm" onclick={()=>{jobForm={id:'',title:'',department:'',location:'',employment_type:'Full-time',salary_min:'',salary_max:'',description:'',requirements:'',is_active:true,sort_order:0};showJobForm=true;}}><Plus class="h-4 w-4 me-1"/>新增</button>{/if}
+      <Card><CardContent class="p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold">招聘职位</h3>
+          {#if $isSuperAdmin}<Button size="sm" onclick={()=>{jobForm={id:'',title:'',department:'',location:'',employment_type:'Full-time',salary_min:'',salary_max:'',description:'',requirements:'',is_active:true,sort_order:0};showJobForm=true;}}><Plus class="mr-1 h-3.5 w-3.5"/>新增</Button>{/if}
         </div>
         {#each jobs as j}
-          <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-            <div>
-              <span class="fw-medium">{j.title}</span>
-              <span class="text-muted small ms-2">{j.department} · {j.location} · {j.employment_type}</span>
-              <span class="badge {j.is_active?'bg-success':'bg-secondary'} ms-2">{j.is_active?'启用':'停用'}</span>
+          <div class="flex items-center justify-between border-b py-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium">{j.title}</span>
+              <span class="text-xs text-muted-foreground">{j.department} · {j.location} · {j.employment_type}</span>
+              <Badge variant={j.is_active?'default':'secondary'} class="text-[10px]">{j.is_active?'启用':'停用'}</Badge>
             </div>
             <div>{#if $isSuperAdmin}
-              <button class="btn btn-ghost btn-sm" onclick={editJob(j)}>编辑</button>
-              <button class="btn btn-ghost btn-sm text-danger" onclick={()=>deleteJob(j.id)}><Trash2 class="h-3 w-3"/></button>
+              <Button variant="ghost" size="sm" class="h-7 text-xs" onclick={()=>editJob(j)}>编辑</Button>
+              <Button variant="ghost" size="icon" class="h-7 w-7 text-muted-foreground hover:text-destructive" onclick={()=>deleteJob(j.id)}><Trash2 class="h-3 w-3"/></Button>
             {/if}</div>
           </div>
         {/each}
-      </div></div>
+      </CardContent></Card>
 
       {#if showJobForm && $isSuperAdmin}
-        <div class="card mt-3"><div class="card-body">
-          <h4 class="fs-6 fw-semibold mb-3">{jobForm.id?'编辑':'新增'}职位</h4>
-          <div class="row g-2">
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="职位名称*" bind:value={jobForm.title}/></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="部门" bind:value={jobForm.department}/></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="地点" bind:value={jobForm.location}/></div>
-            <div class="col-md-3"><select class="form-select form-select-sm" bind:value={jobForm.employment_type}><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Volunteer</option></select></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="薪资下限" bind:value={jobForm.salary_min}/></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="薪资上限" bind:value={jobForm.salary_max}/></div>
-            <div class="col-12"><textarea class="form-control form-control-sm" rows="3" placeholder="职位描述" bind:value={jobForm.description}></textarea></div>
-            <div class="col-12"><textarea class="form-control form-control-sm" rows="2" placeholder="任职要求" bind:value={jobForm.requirements}></textarea></div>
+        <Card class="mt-3"><CardContent class="p-4 space-y-3">
+          <h3 class="text-sm font-semibold">{jobForm.id?'编辑':'新增'}职位</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <Input class="h-8 text-xs" placeholder="职位名称*" bind:value={jobForm.title}/>
+            <Input class="h-8 text-xs" placeholder="部门" bind:value={jobForm.department}/>
+            <Input class="h-8 text-xs" placeholder="地点" bind:value={jobForm.location}/>
+            <select class="h-8 rounded-lg border bg-background px-2 text-xs" bind:value={jobForm.employment_type}><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Volunteer</option></select>
+            <Input class="h-8 text-xs" placeholder="薪资下限" bind:value={jobForm.salary_min}/>
+            <Input class="h-8 text-xs" placeholder="薪资上限" bind:value={jobForm.salary_max}/>
           </div>
-          <div class="d-flex gap-2 mt-3">
-            <button class="btn btn-primary btn-sm" onclick={saveJob}>保存</button>
-            <button class="btn btn-outline-secondary btn-sm" onclick={()=>showJobForm=false}>取消</button>
+          <textarea class="w-full rounded-lg border bg-background px-3 py-2 text-xs" rows="3" placeholder="职位描述" bind:value={jobForm.description}></textarea>
+          <textarea class="w-full rounded-lg border bg-background px-3 py-2 text-xs" rows="2" placeholder="任职要求" bind:value={jobForm.requirements}></textarea>
+          <div class="flex gap-2">
+            <Button size="sm" onclick={saveJob}>保存</Button>
+            <Button variant="outline" size="sm" onclick={()=>showJobForm=false}>取消</Button>
           </div>
-        </div></div>
+        </CardContent></Card>
       {/if}
     {/if}
 
-    <!-- Photos -->
     {#if activeTab === 'photos'}
-      <div class="card"><div class="card-body text-center">
-        <h3 class="card-title fs-6 fw-semibold">图片管理</h3>
-        <p class="text-muted small">搜索、查看和删除所有照片</p>
-        <button class="btn btn-primary btn-sm" onclick={()=>goto('/review/photos')}>打开图片管理</button>
-      </div></div>
+      <Card><CardContent class="flex flex-col items-center gap-2 p-6">
+        <h3 class="text-sm font-semibold">图片管理</h3>
+        <p class="text-xs text-muted-foreground">搜索、查看和删除所有照片</p>
+        <Button variant="outline" size="sm" onclick={()=>goto('/review/photos')}>打开图片管理</Button>
+      </CardContent></Card>
     {/if}
   </div>
 </div>
-
-<style>
-  .btn-ghost { background:transparent; color:var(--bs-secondary-color); border:none; }
-  .btn-ghost:hover { background:var(--bs-tertiary-bg); color:var(--bs-body-color); }
-  .nav-link { cursor:pointer; }
-</style>
