@@ -3,7 +3,6 @@
   import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
   import { lang, setLanguage } from '$lib/stores/i18n';
   import { theme, toggleTheme } from '$lib/stores/theme';
-  import { getLogoUrl } from '$lib/utils/helpers';
   import { Button } from '$lib/components/ui/button';
   import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
   import { Separator } from '$lib/components/ui/separator';
@@ -11,6 +10,7 @@
 
   let { t } = $props();
   let mobileOpen = $state(false);
+  let logoSrc = $derived($theme === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 
   const navLinks = [
     { href: '/', key: 'nav.home' },
