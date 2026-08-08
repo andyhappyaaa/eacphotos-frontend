@@ -24,6 +24,8 @@ export default function handler(req, res) {
         OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID || 'mainsite',
         // 主站需要主后端地址来启动 OAuth 授权（浏览器直连，所以必须暴露）
         BACKEND_URL: process.env.BACKEND_URL || '',
+		SUPABASE_URL: process.env.SUPABASE_URL || '',
+		SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
         // 站点分析（公开 ID）
         GA_MEASUREMENT_ID: (process.env.GA_MEASUREMENT_ID || '').trim(),
         CLARITY_PROJECT_ID: (process.env.CLARITY_PROJECT_ID || '').trim()

@@ -13,7 +13,6 @@
   import { Separator } from '$lib/components/ui/separator';
   import { Checkbox } from '$lib/components/ui/checkbox';
   import { Label } from '$lib/components/ui/label';
-  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '$lib/components/ui/select';
   import { Switch } from '$lib/components/ui/switch';
   import { ArrowLeft, RefreshCw, Save, Plus, Trash2, Image, Newspaper, SlidersHorizontal, Users, Shield, Briefcase } from '@lucide/svelte';
 
