@@ -7,7 +7,7 @@
 	let { t } = $props();
 	let logoUrl = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 	onMount(() => {
-		const setLogo = (t: string) => { logoUrl = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
+		const setLogo = (t) => { logoUrl = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
 		const unsub = theme.subscribe(setLogo);
 		return unsub;
 	});

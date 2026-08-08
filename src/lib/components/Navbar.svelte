@@ -15,7 +15,7 @@
   let logoSrc = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 
   onMount(() => {
-    const setLogo = (t: string) => { logoSrc = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
+    const setLogo = (t) => { logoSrc = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
     const unsub = theme.subscribe(setLogo);
     return unsub;
   });

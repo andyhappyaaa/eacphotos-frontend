@@ -6,7 +6,7 @@
   let containerEl = $state(null);
   let rendered = $state(false);
   let siteKey = $state('');
-  let widgetId: any = null;
+  let widgetId = null;
 
   function getSiteKey() { return String((window.APP_CONFIG?.TURNSTILE_SITE_KEY) || '').trim(); }
 
@@ -19,9 +19,9 @@
       widgetId = window.turnstile.render(containerEl, {
         sitekey: key,
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
-        callback: (tk: string) => { onSuccess(tk); },
+        callback: (tk) => { onSuccess(tk); },
         'expired-callback': () => { onExpired(); },
-        'error-callback': (err: any) => { onError?.(String(err)); }
+        'error-callback': (err) => { onError?.(String(err)); }
       });
       rendered = true;
     } catch(e) { console.error('[Turnstile] render:', e); }
