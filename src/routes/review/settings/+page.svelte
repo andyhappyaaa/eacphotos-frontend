@@ -108,7 +108,7 @@
     {#if activeTab === 'carousel'}
       <div class="card"><div class="card-body">
         <h3 class="card-title fs-6 fw-semibold">首页轮播图</h3>
-        <p class="text-muted small">JSON格式: [{"img":"url","title":"标题"}]</p>
+        <p class="text-muted small">JSON格式: [{&quot;img&quot;:&quot;url&quot;,&quot;title&quot;:&quot;标题&quot;}]</p>
         <textarea class="form-control font-monospace small" rows="8" bind:value={carouselItems}></textarea>
         <button class="btn btn-primary btn-sm mt-2" onclick={saveCarousel}><Save class="h-4 w-4 me-1"/>保存</button>
       </div></div>
