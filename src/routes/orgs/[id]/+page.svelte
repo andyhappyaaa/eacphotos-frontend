@@ -51,6 +51,12 @@
   async function toggleJoin() { try { const r = await api('/api/orgs/'+orgId+'/toggle-join', {method:'POST'}); const d = await r.json(); showToast(d.is_open?'已开放加入':'已关闭加入','success'); loadOrg(); } catch(e) { showToast('操作失败','error'); } }
 </script>
 
+<svelte:head>
+	<link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+</svelte:head>
+
+
+
 {#if loading}
   <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
 {:else if org}

@@ -89,6 +89,10 @@
   ];
 </script>
 
+<svelte:head>
+	<link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+</svelte:head>
+
 <div class="container mx-auto px-4 py-4" style="max-width:1200px;">
   <div class="d-flex align-items-center gap-2 mb-3">
     <button class="btn btn-sm btn-ghost d-flex align-items-center gap-1" onclick={() => goto('/dashboard')}><ArrowLeft class="h-4 w-4"/>返回仪表盘</button>

@@ -55,6 +55,12 @@
   }
 </script>
 
+<svelte:head>
+	<link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+</svelte:head>
+
+
+
 <div class="container mx-auto max-w-[1100px] px-4 py-6">
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div class="d-flex align-items-center gap-2">
