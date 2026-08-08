@@ -1,10 +1,11 @@
 <script>
-	import { getLogoUrl } from '$lib/utils/helpers';
+	import { get } from 'svelte/store';
 	import { theme } from '$lib/stores/theme';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let { t } = $props();
-	let logoUrl = $derived(getLogoUrl($theme));
+	let logoUrl = $state('https://r2.eacof.org/logo-light.png');
+	$effect(() => { logoUrl = get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; });
 	function tVal(key) { return t ? t(key) : key; }
 </script>
 

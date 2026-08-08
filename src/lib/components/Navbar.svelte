@@ -1,5 +1,6 @@
 <script>
   import { page } from '$app/state';
+  import { get } from 'svelte/store';
   import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
   import { lang, setLanguage } from '$lib/stores/i18n';
   import { theme, toggleTheme } from '$lib/stores/theme';
@@ -10,7 +11,8 @@
 
   let { t } = $props();
   let mobileOpen = $state(false);
-  let logoSrc = $derived($theme === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+  let logoSrc = $state('https://r2.eacof.org/logo-light.png');
+  $effect(() => { logoSrc = get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; });
 
   const navLinks = [
     { href: '/', key: 'nav.home' },
