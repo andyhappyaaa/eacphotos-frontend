@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, verifyTurnstile, authLoading } from '$lib/stores/auth';
+	import { isLoggedIn, verifyTurnstile, authLoading, isReviewer } from '$lib/stores/auth';
 	import { uploadWithProgress } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -16,6 +16,8 @@
 	import { ArrowLeft, Upload, X, Info, CheckCircle2 } from '@lucide/svelte';
 
 	let uploadRules = $state([]);
+
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (! && !) { window.location.href = "/login"; return; } });
 
 	async function loadUploadRules() {
 		try { const r = await loadRulesApi("/api/site/upload-rules", { noRedirect: true }); const d = await r.json(); uploadRules = d.rules || []; }
@@ -70,10 +72,7 @@
 
 	<form onsubmit={handleSubmit}>
 		<div class="grid gap-8 lg:grid-cols-[260px_1fr]">
-			<!-- Left sidebar: upload rules -->
-			<Card class="self-start lg:sticky lg:top-20">
-				<CardContent class="p-5 space-y-4">
-					<div class="flex items-center gap-2 text-sm font-semibold"><Info class="h-4 w-4 text-primary" />{$t('upload.rules.title')}</div>
+			
 					<Separator />
 					<ul class="space-y-2.5 text-xs text-muted-foreground">
 						{#each uploadRules.filter(r => r.active !== false) as rule}

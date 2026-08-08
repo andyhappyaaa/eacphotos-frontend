@@ -101,6 +101,10 @@
 	}
 	async function loadRejected() {
 		try { const r = await api('/api/users/me/photos?status=rejected,ai_rejected', { noRedirect: true }); const d = await r.json(); rejectedPhotos = d.photos || []; } catch (e) {}
+		async function loadAllPhotos() {
+			try { const r = await api("/api/users/me/photos?status=approved,pending,manual_review,rejected,ai_rejected,private", { noRedirect: true }); const d = await r.json(); allMyPhotos = d.photos || []; } catch (e) {}
+		}
+
 	}
 
 	// ── 2FA ──

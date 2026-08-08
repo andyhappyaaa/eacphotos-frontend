@@ -101,9 +101,11 @@ export async function restoreFromCookie() {
 }
 
 export async function login(username, password, rememberMe, totpCode = null) {
+		// Clear old session to prevent multi-token conflicts
+		clearSession();
 	const r = await apiCall('/api/auth/login', { method: 'POST', bypassSession: true, body: JSON.stringify({ username, password, rememberMe, totpCode }) });
 	const data = await r.json();
-	if (!r.ok) throw new Error(data.message || data.error || 'Login failed');
+	if (!r.ok) throw new Error(data.error || data.message || "Login failed");
 	if (data.requires2FA) return { requires2FA: true };
 	const expireMs = data.expiresIn ? data.expiresIn * 1000 : SESSION_DURATION;
 	const session = { token: data.token, user: data.user, expiresAt: Date.now() + expireMs, rememberMe };
@@ -114,7 +116,7 @@ export async function login(username, password, rememberMe, totpCode = null) {
 export async function register(username, email, password, emailCode, agreeTerms) {
 	const r = await apiCall('/api/auth/register', { method: 'POST', bypassSession: true, body: JSON.stringify({ username, email, password, emailCode, agreeTerms }) });
 	const data = await r.json();
-	if (!r.ok) throw new Error(data.message || data.error || 'Registration failed');
+	if (!r.ok) throw new Error(data.error || data.message || "Registration failed");
 	if (data.token) {
 		const session = { token: data.token, user: data.user || { id: data.userId, username, email }, expiresAt: Date.now() + SESSION_DURATION };
 		authSession.set(session); saveSession(session);
@@ -125,7 +127,7 @@ export async function register(username, email, password, emailCode, agreeTerms)
 export async function loginByEmailCode(email, code, rememberMe) {
 	const r = await apiCall('/api/auth/login-by-email-code', { method: 'POST', bypassSession: true, body: JSON.stringify({ email, code, rememberMe }) });
 	const data = await r.json();
-	if (!r.ok) throw new Error(data.message || data.error || '登录失败');
+	if (!r.ok) throw new Error(data.error || data.message || "登录失败");
 	const expireMs = data.expiresIn ? data.expiresIn * 1000 : SESSION_DURATION;
 	const session = { token: data.token, user: data.user, expiresAt: Date.now() + expireMs, rememberMe };
 	authSession.set(session); saveSession(session);
@@ -199,7 +201,7 @@ export async function passkeyLoginVerify(credential, rememberMe) {
 	};
 	const r = await apiCall('/api/webauthn/login-verify', { method: 'POST', bypassSession: true, body: JSON.stringify({ credential: credJSON, rememberMe }) });
 	const data = await r.json();
-	if (!r.ok) throw new Error(data.message || data.error || 'Passkey login failed');
+	if (!r.ok) throw new Error(data.error || data.message || "Passkey login failed");
 	const expireMs = data.expiresIn ? data.expiresIn * 1000 : SESSION_DURATION;
 	const session = { token: data.token, user: data.user, expiresAt: Date.now() + expireMs, rememberMe };
 	authSession.set(session); saveSession(session);

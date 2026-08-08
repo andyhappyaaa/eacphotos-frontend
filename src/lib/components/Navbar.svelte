@@ -103,7 +103,7 @@
 	<div class="offcanvas-header border-bottom">
 		<div class="d-flex align-items-center gap-2">
 			<img src={getLogoUrl($theme)} alt="" class="h-7 w-auto" />
-			<span class="small fw-semibold">Photo</span>
+			<span class="small fw-semibold">eac photos</span>
 		</div>
 		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 	</div>

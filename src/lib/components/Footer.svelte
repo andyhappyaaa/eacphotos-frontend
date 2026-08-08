@@ -29,13 +29,13 @@
 				</ul>
 			</div>
 			<div>
-				<h3 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Photo</h3>
+				<h3 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">eac photos</h3>
 				<p class="text-sm leading-relaxed text-muted-foreground">致力于为全球航空摄影爱好者提供高质量的作品分享和交流平台，记录每一次飞行的美好瞬间。</p>
 			</div>
 		</div>
 		<Separator class="my-8" />
 		<div class="flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
-			<p>&copy; 2026 Photo. All rights reserved.</p>
+			<p>&copy; 2026 eac photos. All rights reserved.</p>
 			<div class="flex gap-6">
 				<a href="/terms" class="hover:text-foreground">服务条款</a>
 				<a href="/privacy" class="hover:text-foreground">隐私政策</a>

@@ -12,7 +12,8 @@
 	onMount(async () => {
 		try {
 			const r = await api(`/api/news/${slug}`, { noRedirect: true });
-			news = await r.json();
+			const data = await r.json();
+			news = data.news || data;  // backend returns {news, related}, or direct object
 		} catch (e) { console.error('News load failed:', e); }
 		finally { loading = false; }
 	});

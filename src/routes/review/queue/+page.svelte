@@ -99,7 +99,7 @@
 				method: 'POST',
 				body: JSON.stringify({ note: reviewNote || undefined })
 			});
-			showToast('已批准', 'success');
+			showToast('已批准', 'success'); try { import('https://gcore.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.js').then(m => { const c = m.default || m; c({ particleCount: 80, spread: 70, origin: { y: 0.6 } }); }).catch(()=>{}); } catch(e) {}
 			removeCurrentAndAdvance();
 		} catch (e) { showToast('操作失败: ' + (e.message || ''), 'error'); }
 	}

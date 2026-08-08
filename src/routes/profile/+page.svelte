@@ -23,6 +23,11 @@
 			photos = d.photos || [];
 		} catch (e) { /* */ }
 	});
+
+	let photoCount = $derived(profile?.photo_count || profile?.photoCount || 0);
+	let totalLikes = $derived(profile?.total_likes || profile?.totalLikes || 0);
+	let totalViews = $derived(profile?.total_views || profile?.totalViews || 0);
+	let joined = $derived(profile?.joined || profile?.created_at || '');
 </script>
 
 {#if profile}
@@ -40,10 +45,10 @@
 				<div class="pb-4 text-center sm:text-left">
 					<h1 class="text-2xl font-bold">{profile.username || ''}</h1>
 					<div class="mt-1 flex gap-4 text-sm text-muted-foreground">
-						<span>📸 {profile.photoCount || 0} {$t('profile.photos')}</span>
-						<span>❤ {profile.totalLikes || 0} {$t('profile.likes')}</span>
-						<span>👁 {profile.totalViews || 0} {$t('profile.views')}</span>
-						<span>📅 {profile.joined ? new Date(profile.joined).toLocaleDateString() : ''}</span>
+						<span>📸 {photoCount} {$t('profile.photos')}</span>
+						<span>❤ {totalLikes} {$t('profile.likes')}</span>
+						<span>👁 {totalViews} {$t('profile.views')}</span>
+						<span>📅 {joined ? new Date(joined).toLocaleDateString() : ''}</span>
 					</div>
 				</div>
 			</div>
