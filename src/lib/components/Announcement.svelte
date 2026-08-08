@@ -38,40 +38,20 @@
 			const key = DISMISS_KEY_PREFIX + a.id + '_' + a.updated_at;
 			if (localStorage.getItem(key)) return;
 
-			// Fetch GitHub updates if configured
-			let ghHtml = '';
-			if (a.show_github_updates && a.github_repo) {
-				try {
-					const gr = await api(
-						`/api/site/github-updates?repo=${encodeURIComponent(a.github_repo)}`,
-						{ noRedirect: true }
-					);
-					const ud = await gr.json();
-					if (ud.updates && ud.updates.length) {
-						ghHtml = `
-							<div class="mt-5 border-t pt-4">
-								<h4 class="mb-3 text-sm font-semibold">
-									🔄 Updates <small class="text-muted-foreground">${a.github_repo}</small>
-								</h4>
-								<ul class="space-y-2">
-									${ud.updates.map((u) => `
-										<li class="border-b pb-2 text-sm last:border-b-0">
-											<a href="${u.url}" target="_blank" rel="noopener" class="text-foreground hover:text-primary">
-												<code class="rounded bg-secondary px-1.5 py-0.5 text-xs">${u.sha?.slice(0,7)}</code> ${u.message}
-											</a>
-											<small class="mt-1 block text-muted-foreground">by ${u.author} · ${formatDateTime(u.date)}</small>
-										</li>
-									`).join('')}
-								</ul>
-							</div>
-						`;
-					}
-				} catch (e) {
-					/* GitHub fetch failed silently */
+			// Fetch GitHub updates — supports comma-separated multi-repo
+				let ghHtml = "";
+				if (a.show_github_updates && a.github_repo) {
+					try {
+						const gr = await api("/api/site/github-updates?repo=" + encodeURIComponent(a.github_repo), { noRedirect: true });
+						const ud = await gr.json();
+						const reposData = ud.repos || (ud.repo ? [{ repo: ud.repo, updates: ud.updates }] : []);
+						if (reposData.some(r => r.updates?.length)) {
+							ghHtml = reposData.filter(r => r.updates?.length).map(r => "<div class="mt-4 border-t pt-3"><h4 class="mb-2 text-sm font-semibold">🔄 " + r.repo + "</h4><ul class="space-y-1.5">" + r.updates.map(u => "<li class="border-b pb-1.5 text-sm last:border-b-0"><a href="" + u.url + "" target="_blank" rel="noopener" class="text-foreground hover:text-primary"><code class="rounded bg-secondary px-1.5 py-0.5 text-xs">" + u.sha + "</code> " + u.message + "</a><small class="mt-0.5 block text-xs text-muted-foreground">by " + u.author + " · " + formatDateTime(u.date) + "</small></li>").join("") + "</ul></div>").join("");
+						}
+					} catch (e) { /* GitHub fetch failed silently */ }
 				}
-			}
 
-			announcement = a;
+				announcement = a;
 			githubHtml = ghHtml;
 			dismissKey = key;
 			open = true;

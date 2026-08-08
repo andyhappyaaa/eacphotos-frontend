@@ -16,7 +16,7 @@
 	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
 	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus } from '@lucide/svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus } , Building2from '@lucide/svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let activeTab = $state('overview');
@@ -191,6 +191,7 @@
 		{ value: 'pending', label: '审核中', icon: Clock },
 		{ value: 'approved', label: '已过审', icon: CheckCircle },
 		{ value: 'rejected', label: '未过审', icon: XCircle },
+			{ value: 'organizations', label: '组织', icon: Building2 },
 		{ value: 'settings', label: '账号设置', icon: Settings }
 	];
 
