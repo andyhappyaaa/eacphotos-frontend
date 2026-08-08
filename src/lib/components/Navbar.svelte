@@ -1,5 +1,6 @@
 <script>
   import { page } from '$app/state';
+  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
   import { lang, setLanguage } from '$lib/stores/i18n';
@@ -11,8 +12,13 @@
 
   let { t } = $props();
   let mobileOpen = $state(false);
-  let logoSrc = $state('https://r2.eacof.org/logo-light.png');
-  $effect(() => { logoSrc = get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; });
+  let logoSrc = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+
+  onMount(() => {
+    const setLogo = (t: string) => { logoSrc = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
+    const unsub = theme.subscribe(setLogo);
+    return unsub;
+  });
 
   const navLinks = [
     { href: '/', key: 'nav.home' },
@@ -35,7 +41,7 @@
 
     <!-- Logo -->
     <a href="/" class="flex shrink-0 items-center gap-2">
-      <img src={getLogoUrl($theme)} alt="" class="h-8 w-auto" />
+      <img src={logoSrc} alt="" class="h-8 w-auto" />
     </a>
 
     <!-- Desktop links -->

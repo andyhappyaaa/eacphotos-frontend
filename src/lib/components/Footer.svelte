@@ -1,11 +1,16 @@
 <script>
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { theme } from '$lib/stores/theme';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let { t } = $props();
-	let logoUrl = $state('https://r2.eacof.org/logo-light.png');
-	$effect(() => { logoUrl = get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; });
+	let logoUrl = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+	onMount(() => {
+		const setLogo = (t: string) => { logoUrl = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
+		const unsub = theme.subscribe(setLogo);
+		return unsub;
+	});
 	function tVal(key) { return t ? t(key) : key; }
 </script>
 
