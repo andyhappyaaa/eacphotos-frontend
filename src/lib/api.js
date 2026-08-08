@@ -51,7 +51,8 @@ export async function api(endpoint, options = {}) {
   delete fetchOpts.noRedirect;
 
   const r = await fetch(url, fetchOpts);
-  if (r.status === 401 && !options.noRedirect) {
+  // Only redirect on 401 if we actually sent credentials (logged-in user's token expired)
+  if (r.status === 401 && !options.noRedirect && headers['Authorization']) {
     if (browser) {
       const { clearSession } = await import('$lib/stores/auth');
       clearSession();
