@@ -1,7 +1,6 @@
 <script>
   import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
   import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
   import { lang, setLanguage } from '$lib/stores/i18n';
   import { theme, toggleTheme } from '$lib/stores/theme';
@@ -12,12 +11,16 @@
 
   let { t } = $props();
   let mobileOpen = $state(false);
-  let logoSrc = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+
+  // Logo: read directly from DOM, no store wrestling
+  let dark = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  let logoSrc = $derived(dark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 
   onMount(() => {
-    const setLogo = (t) => { logoSrc = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
-    const unsub = theme.subscribe(setLogo);
-    return unsub;
+    dark = document.documentElement.classList.contains('dark');
+    const onTheme = () => { dark = document.documentElement.classList.contains('dark'); };
+    window.addEventListener('themechange', onTheme);
+    return () => window.removeEventListener('themechange', onTheme);
   });
 
   const navLinks = [

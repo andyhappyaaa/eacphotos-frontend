@@ -1,15 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
 	import { theme } from '$lib/stores/theme';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let { t } = $props();
-	let logoUrl = $state(get(theme) === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+	let dark = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+	let logoUrl = $derived(dark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
+
 	onMount(() => {
-		const setLogo = (t) => { logoUrl = t === 'dark' ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png'; };
-		const unsub = theme.subscribe(setLogo);
-		return unsub;
+		dark = document.documentElement.classList.contains('dark');
+		const onTheme = () => { dark = document.documentElement.classList.contains('dark'); };
+		window.addEventListener('themechange', onTheme);
+		return () => window.removeEventListener('themechange', onTheme);
 	});
 	function tVal(key) { return t ? t(key) : key; }
 </script>
