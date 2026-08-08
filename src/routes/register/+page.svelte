@@ -1,88 +1,86 @@
 <script>
-	import { isLoggedIn, register, sendEmailCode, verifyTurnstile } from '$lib/stores/auth';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '$lib/components/ui/card';
-	import Turnstile from '$lib/components/Turnstile.svelte';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { t } from '$lib/stores/i18n';
-	import { showToast } from '$lib/stores/toast';
-	import { UserPlus, Mail, Lock, AlertCircle } from '@lucide/svelte';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { isLoggedIn, authLoading, register, verifyTurnstile } from '$lib/stores/auth';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import { Label } from '$lib/components/ui/label';
+  import { Checkbox } from '$lib/components/ui/checkbox';
+  import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
+  import Turnstile from '$lib/components/Turnstile.svelte';
+  import { showToast } from '$lib/stores/toast';
+  import { UserPlus, Mail, Lock, Loader2 } from '@lucide/svelte';
 
-	onMount(() => { if ($isLoggedIn) window.location.href = '/dashboard'; });
+  onMount(async () => {
+    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+    if ($isLoggedIn) { window.location.href = '/dashboard'; }
+  });
 
-	let username = $state(''); let email = $state(''); let emailCode = $state('');
-	let password = $state(''); let confirmPassword = $state(''); let agreeTerms = $state(false);
-	let error = $state(''); let loading = $state(false); let sendingCode = $state(false);
-	let tsToken = $state(null); let tsRef = $state(null);
-	let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
+  let username = $state(''); let email = $state(''); let password = $state('');
+  let confirmPassword = $state(''); let agreeTerms = $state(false);
+  let error = $state(''); let loading = $state(false);
+  let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
 
-	async function verifyTsToken(tk) {
-		tsToken = tk; turnstileVerifying = true;
-		try { await verifyTurnstile(tk); turnstileVerified = true; }
-		catch (err) { error = '人机验证失败，请重试'; turnstileVerified = false; }
-		finally { turnstileVerifying = false; }
-	}
+  async function verifyTsToken(tk) {
+    tsToken = tk; turnstileVerifying = true;
+    try { await verifyTurnstile(tk); turnstileVerified = true; }
+    catch (e) { error = '人机验证失败'; turnstileVerified = false; }
+    finally { turnstileVerifying = false; }
+  }
 
-	async function handleSendCode() {
-		if (!email) return; sendingCode = true;
-		try { await sendEmailCode(email); showToast('验证码已发送', 'success'); }
-		catch (err) { error = err.message || '发送失败'; } finally { sendingCode = false; }
-	}
-
-	async function handleSubmit(e) {
-		e.preventDefault(); error = '';
-		if (password !== confirmPassword) { error = '两次密码不一致'; return; }
-		if (!agreeTerms) { error = '请同意服务条款和隐私政策'; return; }
-		loading = true;
-		try { await register(username, email, password, emailCode, agreeTerms); window.location.href = '/dashboard'; }
-		catch (err) { error = err.message || '注册失败'; } finally { loading = false; }
-	}
+  async function handleSubmit(e) {
+    e.preventDefault(); error = '';
+    if (password !== confirmPassword) { error = '两次密码不一致'; return; }
+    if (!agreeTerms) { error = '请同意服务条款和隐私政策'; return; }
+    loading = true;
+    try {
+      const result = await register(email, password, username);
+      if (result.user && !result.session) {
+        showToast('注册成功！请检查邮箱验证邮件。', 'success');
+        goto('/login');
+      } else {
+        showToast('注册成功！', 'success');
+        goto('/dashboard');
+      }
+    } catch (err) { error = err.message || '注册失败'; }
+    finally { loading = false; }
+  }
 </script>
 
 <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gradient-to-b from-background to-secondary/20 p-5">
-	<Card class="w-full max-w-[440px] shadow-lg">
-		<CardHeader class="space-y-1 text-center pb-4">
-			<div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"><UserPlus class="h-6 w-6 text-primary" /></div>
-			<CardTitle class="text-2xl">{@html $t('register.title')}</CardTitle>
-			<CardDescription>{@html $t('register.subtitle')}</CardDescription>
-		</CardHeader>
-		<CardContent>
-			<form onsubmit={handleSubmit} class="space-y-3.5">
-				<div class="space-y-1.5">
-					<Label for="username" class="text-sm">{@html $t('register.username')}</Label>
-					<Input id="username" type="text" bind:value={username} required class="h-9" />
-				</div>
-				<div class="space-y-1.5">
-					<Label for="email" class="text-sm">{@html $t('register.email')}</Label>
-					<div class="flex gap-2"><Input id="email" type="email" bind:value={email} required class="h-9 flex-1" /><Button type="button" variant="secondary" size="sm" onclick={handleSendCode} disabled={sendingCode || !email}>{sendingCode ? '发送中...' : $t('register.sendCode')}</Button></div>
-				</div>
-				<div class="space-y-1.5">
-					<Label for="emailCode" class="text-sm">{@html $t('register.emailCode')}</Label>
-					<Input id="emailCode" type="text" bind:value={emailCode} maxlength="6" placeholder="000000" class="h-9" />
-				</div>
-				<div class="space-y-1.5">
-					<Label for="password" class="text-sm">{@html $t('register.password')}</Label>
-					<Input id="password" type="password" bind:value={password} required class="h-9" />
-				</div>
-				<div class="space-y-1.5">
-					<Label for="confirmPassword" class="text-sm">{$t('register.confirmPassword')}</Label>
-					<Input id="confirmPassword" type="password" bind:value={confirmPassword} required class="h-9" />
-				</div>
-				<div class="flex items-start gap-2">
-					<Checkbox id="agree" bind:checked={agreeTerms} class="mt-1" />
-					<Label for="agree" class="text-xs">{@html $t('register.agree')}</Label>
-				</div>
-				<Turnstile containerId="register-turnstile" onSuccess={(tk) => verifyTsToken(tk)} onExpired={() => { tsToken = null; turnstileVerified = false; }} />
-				{#if error}<div class="flex items-start gap-2 rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive"><AlertCircle class="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>{/if}
-				<Button type="submit" class="w-full" disabled={loading || !turnstileVerified}>{loading || turnstileVerifying ? (turnstileVerifying ? '验证中...' : '注册中...') : $t('register.submit')}</Button>
-			</form>
-		</CardContent>
-		<CardFooter class="justify-center text-sm text-muted-foreground">
-			<p>{@html $t('register.hasAccount')} <a href="/login" class="font-medium text-primary hover:underline">{@html $t('register.login')}</a></p>
-		</CardFooter>
-	</Card>
+  <Card class="w-full max-w-[420px] shadow-lg">
+    <CardHeader class="space-y-1 text-center pb-4">
+      <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"><UserPlus class="h-6 w-6 text-primary" /></div>
+      <CardTitle class="text-2xl">注册</CardTitle>
+      <CardDescription>创建你的 eac photos 账号</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <form onsubmit={handleSubmit} class="space-y-4">
+        <div class="space-y-1.5">
+          <Label for="username" class="text-sm">用户名</Label>
+          <Input id="username" bind:value={username} required placeholder="你的昵称" />
+        </div>
+        <div class="space-y-1.5">
+          <Label for="email" class="text-sm"><Mail class="mr-1 inline h-3.5 w-3.5 text-muted-foreground" />邮箱</Label>
+          <Input id="email" type="email" bind:value={email} required placeholder="your@email.com" />
+        </div>
+        <div class="space-y-1.5">
+          <Label for="password" class="text-sm"><Lock class="mr-1 inline h-3.5 w-3.5 text-muted-foreground" />密码</Label>
+          <Input id="password" type="password" bind:value={password} required placeholder="至少 8 位" minlength="8" />
+        </div>
+        <div class="space-y-1.5">
+          <Label for="confirm" class="text-sm">确认密码</Label>
+          <Input id="confirm" type="password" bind:value={confirmPassword} required placeholder="再次输入密码" />
+        </div>
+        <div class="flex items-center gap-2">
+          <Checkbox id="terms" bind:checked={agreeTerms} />
+          <Label for="terms" class="text-xs">我同意 <a href="/terms" class="underline" target="_blank">服务条款</a> 和 <a href="/privacy" class="underline" target="_blank">隐私政策</a></Label>
+        </div>
+        <Turnstile containerId="reg-ts" onSuccess={verifyTsToken} onExpired={()=>{tsToken=null;turnstileVerified=false;}} />
+        {#if error}<p class="text-sm text-destructive">{error}</p>{/if}
+        <Button type="submit" class="w-full" disabled={loading||!turnstileVerified}>{#if loading||turnstileVerifying}<Loader2 class="mr-2 h-4 w-4 animate-spin"/>{/if}{loading?'注册中...':'注册'}</Button>
+      </form>
+      <p class="mt-4 text-center text-sm text-muted-foreground">已有账号？<a href="/login" class="font-medium text-primary hover:underline">立即登录</a></p>
+    </CardContent>
+  </Card>
 </div>

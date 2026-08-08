@@ -8,7 +8,7 @@ async function sb() {
   if (!browser) return null;
   const { createClient } = await import('@supabase/supabase-js');
   const url = window.APP_CONFIG?.SUPABASE_URL || '';
-  const key = window.APP_CONFIG?.SUPABASE_ANON_KEY || '';
+  const key = window.APP_CONFIG?.SUPABASE_PUBLISHABLE_KEY || '';
   if (!url || !key) return null;
   _sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
   return _sb;
