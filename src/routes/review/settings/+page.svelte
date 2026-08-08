@@ -76,7 +76,7 @@
 </script>
 
 <div class="container mx-auto max-w-[1200px] px-5 py-8">
-		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>>
+		<a href="/dashboard" class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft class="h-4 w-4" /> 返回仪表盘</a>
 	<div class="mb-6 flex items-center justify-between">
 		<div><h1 class="text-2xl font-bold">⚙️ 系统设置</h1><p class="text-sm text-muted-foreground">站点配置和内容管理</p></div>
 		<Button variant="outline" size="sm" onclick={loadAll} disabled={loading}><RefreshCw class={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> 刷新</Button>

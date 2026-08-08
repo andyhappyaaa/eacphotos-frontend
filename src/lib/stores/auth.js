@@ -153,9 +153,24 @@ export async function verify2FA(code) {
 	return data;
 }
 
-export async function setup2FA() { return (await apiCall('/api/auth/setup-2fa', { method: 'POST' })).json(); }
-export async function enable2FA(code) { return (await apiCall('/api/auth/enable-2fa', { method: 'POST', body: JSON.stringify({ code }) })).json(); }
-export async function disable2FA(code) { return (await apiCall('/api/auth/disable-2fa', { method: 'POST', body: JSON.stringify({ code }) })).json(); }
+export async function setup2FA() {
+  const r = await apiCall('/api/auth/setup-2fa', { method: 'POST' });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || '初始化2FA失败');
+  return d;
+}
+export async function enable2FA(code) {
+  const r = await apiCall('/api/auth/enable-2fa', { method: 'POST', body: JSON.stringify({ code }) });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || '启用2FA失败');
+  return d;
+}
+export async function disable2FA(code) {
+  const r = await apiCall('/api/auth/disable-2fa', { method: 'POST', body: JSON.stringify({ code }) });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || '禁用2FA失败');
+  return d;
+}
 export async function sendEmailCode(email) { return (await apiCall('/api/auth/send-email-code', { method: 'POST', bypassSession: true, body: JSON.stringify({ email }) })).json(); }
 export async function verifyTurnstile(token) { const r = await apiCall('/api/auth/verify-turnstile', { method: 'POST', bypassSession: true, body: JSON.stringify({ token }) }); return (await r.json()).success; }
 

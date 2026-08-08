@@ -7,12 +7,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet';
 	import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '$lib/components/ui/dropdown-menu';
 	import { Sun, Moon, Globe, Menu, Home, Image, LayoutDashboard, Search, Newspaper, LogOut, User } from '@lucide/svelte';
 
 	let { t } = $props();
-	let mobileOpen = $state(false);
 
 	const navLinks = [
 		{ href: '/', key: 'nav.home', icon: Home },
@@ -24,96 +22,73 @@
 
 	function handleLogout() { logout(); }
 	function tVal(key) { return t ? t(key) : key; }
-	function handleNav(href) { window.location.href = href; }
+	function handleNav(href) {
+		// Close Bootstrap offcanvas by clicking backdrop or programmatically
+		const oc = document.querySelector('.navbar-offcanvas');
+		if (oc) {
+			const bs = bootstrap.Offcanvas.getInstance(oc);
+			if (bs) bs.hide();
+		}
+		window.location.href = href;
+	}
 </script>
 
-<nav class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-	<div class="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-5">
-		<Sheet bind:open={mobileOpen}>
-			<SheetTrigger asChild>
-				<Button variant="ghost" size="icon" class="md:hidden" aria-label="Menu"><Menu class="h-[18px] w-[18px]" /></Button>
-			</SheetTrigger>
-			<SheetContent side="left" class="w-[280px] p-0">
-				<div class="flex h-full flex-col">
-					<div class="flex items-center gap-3 border-b px-5 py-4">
-						<img src={getLogoUrl($theme)} alt="" class="h-8 w-auto" />
-						<span class="text-sm font-semibold">Photo</span>
-					</div>
-					<nav class="flex-1 space-y-1 overflow-y-auto p-3">
-						{#each navLinks as link}
-							{@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
-							<button onclick={() => { mobileOpen = false; handleNav(link.href); }} class={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}>
-								<link.icon class="h-4 w-4" />{@html tVal(link.key)}
-							</button>
-						{/each}
-					</nav>
-					<Separator />
-					{#if $isLoggedIn && $currentUser}
-						<div class="p-3">
-							<div class="mb-3 flex items-center gap-3 rounded-lg bg-secondary p-3">
-								<Avatar class="h-10 w-10"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback>{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
-								<div><p class="text-sm font-medium">{$currentUser.username}</p><p class="text-xs text-muted-foreground">{$currentUser.email}</p></div>
-							</div>
-							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/dashboard'); }}><LayoutDashboard class="mr-2 h-4 w-4" /> {tVal('nav.dashboard')}</Button>
-							<Button variant="outline" class="mb-1 w-full justify-start" onclick={() => { mobileOpen = false; handleNav('/profile'); }}><User class="mr-2 h-4 w-4" /> {tVal('nav.profile')}</Button>
-							<Separator class="my-3" />
-							<Button variant="ghost" class="w-full justify-start text-destructive" onclick={() => { mobileOpen = false; handleLogout(); }}><LogOut class="mr-2 h-4 w-4" /> {tVal('nav.logout')}</Button>
-						</div>
-					{:else}
-						<div class="space-y-2 p-3">
-							<Button class="w-full" onclick={() => { mobileOpen = false; handleNav('/login'); }}>{tVal('nav.login')}</Button>
-							<Button variant="outline" class="w-full" onclick={() => { mobileOpen = false; handleNav('/register'); }}>{tVal('nav.register')}</Button>
-						</div>
-					{/if}
-				</div>
-			</SheetContent>
-		</Sheet>
+<nav class="navbar navbar-expand-md sticky-top border-bottom bg-body-tertiary bg-opacity-90 backdrop-blur py-0 px-0" style="z-index:50;">
+	<div class="container-fluid mx-auto px-3" style="max-width:1400px;height:57px;">
+		<!-- Mobile hamburger -->
+		<button class="btn border-0 d-md-none px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="菜单">
+			<Menu class="h-5 w-5" />
+		</button>
 
-		<a href="/" class="flex shrink-0 items-center gap-2">
-			<img src={getLogoUrl($theme)} alt="" class="h-9 w-auto" />
+		<!-- Logo -->
+		<a href="/" class="navbar-brand d-flex align-items-center gap-2 py-0">
+			<img src={getLogoUrl($theme)} alt="" class="h-8 w-auto" />
 		</a>
 
-		<div class="hidden items-center gap-1 md:flex">
+		<!-- Desktop nav links -->
+		<div class="d-none d-md-flex align-items-center gap-1 ms-2">
 			{#each navLinks as link}
 				{@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
-				<a href={link.href} class={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}>
+				<a href={link.href} class="btn btn-sm {isActive ? 'btn-ghost-active' : 'btn-ghost'} d-inline-flex align-items-center gap-1 px-2 py-1 small fw-medium">
 					{@html tVal(link.key)}
 				</a>
 			{/each}
 		</div>
 
-		<div class="flex-1"></div>
+		<div class="flex-1 d-none d-md-block"></div>
 
-		<div class="flex items-center gap-1.5">
-			<Button variant="ghost" size="icon" onclick={toggleTheme} aria-label="Toggle theme">
-				{#if $theme === 'dark'}<Sun class="h-[18px] w-[18px]" />{:else}<Moon class="h-[18px] w-[18px]" />{/if}
-			</Button>
+		<!-- Right icons -->
+		<div class="d-flex align-items-center gap-1">
+			<button class="btn btn-sm btn-ghost px-1" onclick={toggleTheme} aria-label="Toggle theme">
+				{#if $theme === 'dark'}<Sun class="h-4 w-4" />{:else}<Moon class="h-4 w-4" />{/if}
+			</button>
 
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Language"><Globe class="h-[18px] w-[18px]" /></Button></DropdownMenuTrigger>
-				<DropdownMenuContent align="end" class="min-w-[120px]">
-					<DropdownMenuItem onclick={() => setLanguage('zh')} class={$lang === 'zh' ? 'bg-secondary' : ''}>简体中文</DropdownMenuItem>
-					<DropdownMenuItem onclick={() => setLanguage('zh-TW')} class={$lang === 'zh-TW' ? 'bg-secondary' : ''}>繁體中文</DropdownMenuItem>
-					<DropdownMenuItem onclick={() => setLanguage('en')} class={$lang === 'en' ? 'bg-secondary' : ''}>English</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
+			<div class="dropdown">
+				<button class="btn btn-sm btn-ghost px-1" data-bs-toggle="dropdown" aria-label="Language">
+					<Globe class="h-4 w-4" />
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end">
+					<li><button class="dropdown-item {$lang === 'zh' ? 'active' : ''}" onclick={() => setLanguage('zh')}>简体中文</button></li>
+					<li><button class="dropdown-item {$lang === 'zh-TW' ? 'active' : ''}" onclick={() => setLanguage('zh-TW')}>繁體中文</button></li>
+					<li><button class="dropdown-item {$lang === 'en' ? 'active' : ''}" onclick={() => setLanguage('en')}>English</button></li>
+				</ul>
+			</div>
 
-			<div class="hidden md:flex md:items-center md:gap-1.5">
+			<!-- Desktop user menu -->
+			<div class="d-none d-md-flex align-items-center gap-1">
 				{#if $isLoggedIn && $currentUser}
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" class="h-8 gap-2 rounded-full px-2">
-								<Avatar class="h-7 w-7"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback class="text-xs">{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
-								<span class="text-sm font-medium">{$currentUser.username}</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" class="w-48">
-							<DropdownMenuItem onclick={() => handleNav('/dashboard')}><LayoutDashboard class="mr-2 h-4 w-4" /> {tVal('nav.dashboard')}</DropdownMenuItem>
-							<DropdownMenuItem onclick={() => handleNav('/profile')}><User class="mr-2 h-4 w-4" /> {tVal('nav.profile')}</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem onclick={handleLogout} class="text-destructive focus:text-destructive"><LogOut class="mr-2 h-4 w-4" /> {tVal('nav.logout')}</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<div class="dropdown">
+						<button class="btn btn-sm btn-ghost d-flex align-items-center gap-2 rounded-pill px-2" data-bs-toggle="dropdown">
+							<Avatar class="h-7 w-7"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback class="text-xs">{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+							<span class="small fw-medium">{$currentUser.username}</span>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end">
+							<li><button class="dropdown-item" onclick={() => handleNav('/dashboard')}><LayoutDashboard class="me-2 h-4 w-4" /> {tVal('nav.dashboard')}</button></li>
+							<li><button class="dropdown-item" onclick={() => handleNav('/profile')}><User class="me-2 h-4 w-4" /> {tVal('nav.profile')}</button></li>
+							<li><hr class="dropdown-divider" /></li>
+							<li><button class="dropdown-item text-danger" onclick={handleLogout}><LogOut class="me-2 h-4 w-4" /> {tVal('nav.logout')}</button></li>
+						</ul>
+					</div>
 				{:else}
 					<Button variant="outline" size="sm" href="/login">{tVal('nav.login')}</Button>
 					<Button size="sm" href="/register">{tVal('nav.register')}</Button>
@@ -122,3 +97,49 @@
 		</div>
 	</div>
 </nav>
+
+<!-- Bootstrap Offcanvas: mobile sidebar -->
+<div class="offcanvas offcanvas-start navbar-offcanvas" tabindex="-1" id="navbarOffcanvas" aria-labelledby="navbarOffcanvasLabel" style="width:280px;">
+	<div class="offcanvas-header border-bottom">
+		<div class="d-flex align-items-center gap-2">
+			<img src={getLogoUrl($theme)} alt="" class="h-7 w-auto" />
+			<span class="small fw-semibold">Photo</span>
+		</div>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+	</div>
+	<div class="offcanvas-body d-flex flex-column p-0">
+		<nav class="flex-1 overflow-y-auto p-3 d-flex flex-column gap-0.5">
+			{#each navLinks as link}
+				{@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
+				<button onclick={() => handleNav(link.href)} class="btn btn-ghost w-100 text-start d-flex align-items-center gap-3 px-3 py-2 small fw-medium {isActive ? 'btn-ghost-active' : ''}">
+					<link.icon class="h-4 w-4" />{@html tVal(link.key)}
+				</button>
+			{/each}
+		</nav>
+		<Separator />
+		{#if $isLoggedIn && $currentUser}
+			<div class="p-3">
+				<div class="d-flex align-items-center gap-3 rounded-2 p-3 bg-body-secondary mb-3">
+					<Avatar class="h-10 w-10"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback>{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+					<div><p class="mb-0 small fw-medium">{$currentUser.username}</p><p class="mb-0 small text-body-tertiary">{$currentUser.email}</p></div>
+				</div>
+				<button class="btn btn-outline-secondary btn-sm w-100 mb-1 justify-content-start" onclick={() => handleNav('/dashboard')}><LayoutDashboard class="me-2 h-4 w-4" /> {tVal('nav.dashboard')}</button>
+				<button class="btn btn-outline-secondary btn-sm w-100 mb-1 justify-content-start" onclick={() => handleNav('/profile')}><User class="me-2 h-4 w-4" /> {tVal('nav.profile')}</button>
+				<hr class="my-3" />
+				<button class="btn btn-ghost btn-sm w-100 justify-content-start text-danger" onclick={handleLogout}><LogOut class="me-2 h-4 w-4" /> {tVal('nav.logout')}</button>
+			</div>
+		{:else}
+			<div class="d-flex flex-column gap-2 p-3">
+				<button class="btn btn-primary btn-sm w-100" onclick={() => handleNav('/login')}>{tVal('nav.login')}</button>
+				<button class="btn btn-outline-secondary btn-sm w-100" onclick={() => handleNav('/register')}>{tVal('nav.register')}</button>
+			</div>
+		{/if}
+	</div>
+</div>
+
+<style>
+	.btn-ghost { background: transparent; color: var(--bs-secondary-color); border-color: transparent; }
+	.btn-ghost:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+	.btn-ghost-active { background: rgba(var(--bs-primary-rgb, 13,110,253), 0.1); color: var(--bs-primary, #0d6efd); border-color: transparent; }
+	.navbar { --bs-navbar-padding-y: 0; }
+</style>

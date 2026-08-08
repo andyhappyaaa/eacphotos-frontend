@@ -20,9 +20,7 @@
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let activeTab = $state('overview');
-	let sidebarOpen = $state(false);
-
-	let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
+		let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
 	let pendingPhotos = $state([]); let approvedPhotos = $state([]); let rejectedPhotos = $state([]);
 	let allMyPhotos = $state([]);
 	let tabLoading = $state(false);
@@ -76,7 +74,6 @@
 		loadTab('overview');
 	});
 
-	function toggleSidebar() { sidebarOpen = !sidebarOpen; }
 
 	async function loadTab(tab) {
 		activeTab = tab; tabLoading = true;
@@ -213,11 +210,22 @@
 
 <div class="container mx-auto max-w-[1200px] px-4 py-6">
 	<!-- Mobile sidebar toggle (fixed left) -->
-	<button onclick={toggleSidebar} class="fixed left-3 top-20 z-[100] rounded-lg border bg-background p-2 shadow-md lg:hidden" aria-label="菜单">
+	<button class="fixed left-3 top-20 z-[100] rounded-lg border bg-background p-2 shadow-md lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#dashboardSidebar" aria-controls="dashboardSidebar" aria-label="菜单">
 		<LayoutDashboard class="h-5 w-5" />
 	</button>
 
-	<Tabs value={activeTab}>
+		<!-- Bootstrap Offcanvas: mobile sidebar -->
+		<div class="offcanvas offcanvas-start lg:hidden" tabindex="-1" id="dashboardSidebar" aria-labelledby="dashboardSidebarLabel">
+			<div class="offcanvas-header border-b">
+				<h5 class="offcanvas-title small fw-semibold" id="dashboardSidebarLabel">仪表盘菜单</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="offcanvas-body p-0">
+				{@render sidebarContent()}
+			</div>
+		</div>
+
+		<Tabs value={activeTab}>
 		<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
 			<!-- Desktop Sidebar -->
 				<aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start"><Card><CardContent class="p-5">{@render sidebarContent()}</CardContent></Card></aside>
@@ -246,8 +254,8 @@
 						{#if $isAdmin}
 							<Separator />
 							<span class="px-3 pt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">高级管理</span>
-							{#each adminTabs as ti}
-								<button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-left" onclick={() => window.location.href = "/review/users"}>
+							{#each adminMenuItems as ti}
+								<button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-left" onclick={() => window.location.href = ti.href}>
 									<ti.icon class="h-4 w-4" /> {ti.label}
 								</button>
 							{/each}
@@ -255,18 +263,7 @@
 					</TabsList>
 				{/snippet}
 
-			<!-- Mobile Sidebar overlay -->
-			{#if sidebarOpen}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="fixed inset-0 z-[101] bg-black/50 transition-opacity duration-300 lg:hidden" class:opacity-0={!sidebarOpen} class:opacity-100={sidebarOpen} class:pointer-events-none={!sidebarOpen} onclick={() => (sidebarOpen = false)}></div>
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div class="fixed left-0 top-0 z-[102] h-full w-[280px] overflow-y-auto border-r bg-card p-5 shadow-2xl transition-transform duration-300 ease-out lg:hidden" style="transform: {sidebarOpen ? "translateX(0)" : "translateX(-100%)"}">
-					<button class="mb-4 text-sm text-muted-foreground" onclick={() => (sidebarOpen = false)}>✕ 关闭</button>
-					{@render sidebarContent()}
-				</div>
-			{/if}
-
+	
 			<!-- Content -->
 			<Card>
 				<CardContent class="min-h-[400px] p-5 lg:p-7">
@@ -385,7 +382,7 @@
 
 				<!-- ── 账号设置 ── -->
 				<TabsContent value="settings">
-					<h2 class="mb-1 text-xl font-bold">⚙️ 账号设置</h2>
+					<h2 class="mb-1 text-xl font-bold">账号设置</h2>
 					<p class="mb-6 text-sm text-muted-foreground">管理安全设置、通行密钥和账号信息</p>
 
 					<div class="space-y-6">
@@ -426,6 +423,7 @@
 										<div class="mt-4 flex items-center justify-center gap-2">
 											<Input type="text" class="w-[130px] text-center text-lg tracking-[0.3em] font-mono" placeholder="000000" maxlength="6" bind:value={tfaSetupCode} />
 											<Button size="sm" onclick={handleEnable2FA} disabled={tfaLoading || tfaSetupCode.length !== 6}>{tfaLoading ? '验证中...' : '确认启用'}</Button>
+											<Button variant="ghost" size="sm" onclick={() => { showTfaSetup = false; tfaError = ''; tfaSetupCode = ''; }}>取消</Button>
 										</div>
 										{#if tfaError}<p class="mt-2 text-sm text-destructive">{tfaError}</p>{/if}
 									</div>

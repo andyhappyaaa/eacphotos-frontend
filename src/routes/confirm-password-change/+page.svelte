@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { verifyTurnstile } from '$lib/stores/auth';
+	import { api } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -12,7 +13,7 @@
 	import { Loader2, CheckCircle, XCircle, Lock, Shield } from '@lucide/svelte';
 
 	let token = $state('');
-	let phase = $state('loading');   // loading | verified | success | error
+	let phase = $state('loading');
 	let username = $state('');
 	let email = $state('');
 	let message = $state('');
@@ -38,9 +39,8 @@
 		if (!token) { phase = 'error'; message = '缺少验证令牌'; return; }
 
 		try {
-			const r = await fetch('/api/users/me/verify-password-change-token', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+			const r = await api('/api/users/me/verify-password-change-token', {
+				method: 'POST', bypassSession: true,
 				body: JSON.stringify({ token })
 			});
 			const d = await r.json();
@@ -60,9 +60,8 @@
 			const body = { token, newPassword };
 			if (oldPassword) body.oldPassword = oldPassword;
 
-			const r = await fetch('/api/users/me/complete-password-change', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+			const r = await api('/api/users/me/complete-password-change', {
+				method: 'POST', bypassSession: true,
 				body: JSON.stringify(body)
 			});
 			const d = await r.json();
