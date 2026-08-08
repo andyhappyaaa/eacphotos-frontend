@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { isLoggedIn, authLoading, login, verifyTurnstile } from '$lib/stores/auth';
+  import { isLoggedIn, authLoading, login, oauthLogin, verifyTurnstile } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
@@ -8,6 +8,13 @@
   import { Separator } from '$lib/components/ui/separator';
   import Turnstile from '$lib/components/Turnstile.svelte';
   import { LogIn, Lock, Mail, Eye, EyeOff, Loader2 } from '@lucide/svelte';
+
+  let oauthLoading = $state('');
+
+  async function doOAuth(provider) {
+    oauthLoading = provider; error = '';
+    try { await oauthLogin(provider); } catch (err) { error = err.message || 'OAuth 登录失败'; oauthLoading = ''; }
+  }
 
   let email = $state(''); let password = $state(''); let showPassword = $state(false);
   let error = $state(''); let loading = $state(false);
@@ -55,7 +62,17 @@
       </form>
     </CardContent>
     <div class="px-8 pb-6 text-center">
-      <Separator class="my-5">或</Separator>
+      <Separator class="my-5">或使用第三方账号</Separator>
+      <div class="space-y-2">
+        <Button variant="outline" class="w-full" disabled={oauthLoading!==''} onclick={()=>doOAuth('google')}>
+          {oauthLoading==='google'?<Loader2 class="mr-2 h-4 w-4 animate-spin"/>:'🔵'} Google 登录
+        </Button>
+        <Button variant="outline" class="w-full" disabled={oauthLoading!==''} onclick={()=>doOAuth('github')}>
+          {oauthLoading==='github'?<Loader2 class="mr-2 h-4 w-4 animate-spin"/>:'🐙'} GitHub 登录
+        </Button>
+      </div>
+
+      <Separator class="my-5">审核员入口</Separator>
       <Button variant="outline" class="w-full" onclick={()=>{window.location.href='/oauth-start'}}>审核员登录</Button>
       <p class="mt-4 text-sm text-muted-foreground">还没有账号？<a href="/register" class="font-medium text-primary hover:underline">立即注册</a></p>
     </div>

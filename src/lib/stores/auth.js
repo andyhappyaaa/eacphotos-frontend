@@ -45,6 +45,16 @@ export async function login(email, password) {
   return { success: true, user: data.user };
 }
 
+// OAuth login via Supabase provider (Google, GitHub, Discord, etc.)
+export async function oauthLogin(provider) {
+  const s = await sb(); if (!s) throw new Error('Supabase not configured');
+  const { error } = await s.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: window.location.origin + '/dashboard' }
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function register(email, password, username) {
   const s = await sb(); if (!s) throw new Error('Supabase not configured');
   const { data, error } = await s.auth.signUp({ email, password, options: { data: { username } } });
