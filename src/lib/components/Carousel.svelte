@@ -53,7 +53,7 @@
 		}
 
 		if (slides.length === 0) {
-			slides = [{ image: '', title: '欢迎来到 EAC Photo', placeholder: true }];
+			slides = [{ image: '', title: '欢迎来到 eac photos', placeholder: true }];
 		}
 	}
 
