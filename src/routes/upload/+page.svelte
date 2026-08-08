@@ -17,7 +17,7 @@
 
 	let uploadRules = $state([]);
 
-	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (! && !) { window.location.href = "/login"; return; } });
+	onMount(async () => { await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); }); if (!$isLoggedIn && !$isReviewer) { window.location.href = "/login"; return; } });
 
 	async function loadUploadRules() {
 		try { const r = await loadRulesApi("/api/site/upload-rules", { noRedirect: true }); const d = await r.json(); uploadRules = d.rules || []; }
