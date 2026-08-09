@@ -1,80 +1,68 @@
 <script>
   import { onMount } from 'svelte';
-  import { isLoggedIn, authLoading, login, oauthLogin, verifyTurnstile } from '$lib/stores/auth';
+  import { isLoggedIn, authLoading, login } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
   import { Separator } from '$lib/components/ui/separator';
-  import Turnstile from '$lib/components/Turnstile.svelte';
-  import { LogIn, Lock, Mail, Eye, EyeOff, Loader2 } from '@lucide/svelte';
+  import { LogIn } from '@lucide/svelte';
 
-  let oauthLoading = $state('');
-
-  async function doOAuth(provider) {
-    oauthLoading = provider; error = '';
-    try { await oauthLogin(provider); } catch (err) { error = err.message || 'OAuth 登录失败'; oauthLoading = ''; }
-  }
-
-  let email = $state(''); let password = $state(''); let showPassword = $state(false);
-  let error = $state(''); let loading = $state(false);
-  let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
+  let isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.');
 
   onMount(async () => {
     await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
     if ($isLoggedIn) { window.location.href = '/dashboard'; }
   });
-
-  async function verifyTsToken(tk) {
-    tsToken = tk; turnstileVerifying = true;
-    try { await verifyTurnstile(tk); turnstileVerified = true; }
-    catch (e) { error = '人机验证失败'; turnstileVerified = false; }
-    finally { turnstileVerifying = false; }
-  }
-
-  async function doLogin(e) {
-    e.preventDefault(); error = ''; loading = true;
-    try { await login(email, password); window.location.href = '/dashboard'; }
-    catch (err) { error = err.message || '登录失败'; } finally { loading = false; }
-  }
 </script>
 
 <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gradient-to-b from-background to-secondary/20 p-5">
-  <Card class="w-full max-w-[420px] shadow-lg">
-    <CardHeader class="space-y-1 text-center pb-4">
+  <Card class="w-full max-w-[400px] shadow-lg text-center">
+    <CardHeader class="space-y-1 pb-4">
       <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"><LogIn class="h-6 w-6 text-primary" /></div>
       <CardTitle class="text-2xl">登录</CardTitle>
-      <CardDescription>使用邮箱和密码登录 eac photos</CardDescription>
+      <CardDescription>选择登录方式</CardDescription>
     </CardHeader>
-    <CardContent>
-      <form onsubmit={doLogin} class="space-y-4">
-        <div class="space-y-1.5">
-          <Label for="email" class="text-sm">邮箱</Label>
-          <div class="relative"><Mail class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="email" type="email" bind:value={email} required placeholder="your@email.com" class="pl-10" /></div>
-        </div>
-        <div class="space-y-1.5">
-          <div class="flex justify-between"><Label for="pwd" class="text-sm">密码</Label><a href="/forgot-password" class="text-xs text-muted-foreground hover:text-primary">忘记密码？</a></div>
-          <div class="relative"><Lock class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="pwd" type={showPassword?'text':'password'} bind:value={password} required placeholder="••••••••" class="pl-10 pr-10" /><button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onclick={()=>(showPassword=!showPassword)}>{#if showPassword}<EyeOff class="h-4 w-4"/>{:else}<Eye class="h-4 w-4"/>{/if}</button></div>
-        </div>
-        <Turnstile containerId="login-ts" onSuccess={verifyTsToken} onExpired={()=>{tsToken=null;turnstileVerified=false;}}/>
-        {#if error}<p class="text-sm text-destructive">{error}</p>{/if}
-        <Button type="submit" class="w-full" disabled={loading||!turnstileVerified}>{#if loading||turnstileVerifying}<Loader2 class="mr-2 h-4 w-4 animate-spin"/>{/if}{loading?'登录中...':'登录'}</Button>
-      </form>
-    </CardContent>
-    <div class="px-8 pb-6 text-center">
-      <Separator class="my-5">或使用第三方账号</Separator>
+    <CardContent class="space-y-3">
+      <a href="https://auth.eacof.org/login" class="w-full no-underline">
+        <Button class="w-full">✈️ 主站用户登录</Button>
+      </a>
+      <a href="https://auth.eacof.org/login?site=review" class="w-full no-underline">
+        <Button variant="outline" class="w-full">🛡️ 审核员登录</Button>
+      </a>
+      <Separator class="my-3">或</Separator>
       <div class="space-y-2">
-        <Button variant="outline" class="w-full" disabled={oauthLoading!==''} onclick={()=>doOAuth('google')}>
-          {oauthLoading==='google'?<Loader2 class="mr-2 h-4 w-4 animate-spin"/>:'🔵'} Google 登录
-        </Button>
-        <Button variant="outline" class="w-full" disabled={oauthLoading!==''} onclick={()=>doOAuth('github')}>
-          {oauthLoading==='github'?<Loader2 class="mr-2 h-4 w-4 animate-spin"/>:'🐙'} GitHub 登录
-        </Button>
+        <a href="https://auth.eacof.org/register" class="w-full no-underline">
+          <Button variant="ghost" class="w-full text-sm">创建新账号</Button>
+        </a>
       </div>
 
-      <Separator class="my-5">审核员入口</Separator>
-      <Button variant="outline" class="w-full" onclick={()=>{window.location.href='/oauth-start'}}>审核员登录</Button>
-      <p class="mt-4 text-sm text-muted-foreground">还没有账号？<a href="/register" class="font-medium text-primary hover:underline">立即注册</a></p>
-    </div>
+      {#if !isProd}
+        <Separator class="my-3">本地开发</Separator>
+        <p class="text-xs text-muted-foreground">本地开发环境使用 Supabase 直连（非 auth worker）</p>
+        <DevLogin />
+      {/if}
+    </CardContent>
   </Card>
 </div>
+
+{#snippet DevLogin()}
+  <script>
+    let email = $state(''); let password = $state('');
+    let error = $state(''); let loading = $state(false);
+
+    async function doLogin(e) {
+      e.preventDefault(); error = ''; loading = true;
+      try { await login(email, password); window.location.href = '/dashboard'; }
+      catch (err) { error = err.message || '登录失败'; } finally { loading = false; }
+    }
+  </script>
+  <form onsubmit={doLogin} class="space-y-2 text-left">
+    <Label for="dev-email" class="text-xs">邮箱</Label>
+    <Input id="dev-email" type="email" bind:value={email} required placeholder="dev@localhost" class="h-8 text-sm" />
+    <Label for="dev-pwd" class="text-xs">密码</Label>
+    <Input id="dev-pwd" type="password" bind:value={password} required placeholder="••••••" class="h-8 text-sm" />
+    {#if error}<p class="text-xs text-destructive">{error}</p>{/if}
+    <Button type="submit" size="sm" class="w-full" disabled={loading}>{loading?'登录中...':'登录'}</Button>
+  </form>
+{/snippet}
