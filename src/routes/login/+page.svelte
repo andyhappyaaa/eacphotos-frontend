@@ -20,8 +20,9 @@
   onMount(async () => {
     try {
       const supabaseUrl = (window.APP_CONFIG?.SUPABASE_URL || '').replace(/\/$/, '');
-      const clientId = window.APP_CONFIG?.OAUTH_CLIENT_ID || 'mainsite';
+      const clientId = window.APP_CONFIG?.OAUTH_CLIENT_ID || '';
       if (!supabaseUrl) { error = '系统未配置 Supabase'; return; }
+      if (!clientId) { error = '系统未配置 OAuth 客户端 ID'; return; }
 
       // 1. 生成 PKCE
       const verifier = genVerifier();

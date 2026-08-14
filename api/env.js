@@ -21,7 +21,7 @@ export default function handler(req, res) {
     const publicConfig = {
         TURNSTILE_SITE_KEY: siteKey,
         // OAuth 客户端 ID 是公开的（spec 允许暴露），但 secret 仅在服务端
-        OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID || 'mainsite',
+        OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID || '',
         // 主站需要主后端地址来启动 OAuth 授权（浏览器直连，所以必须暴露）
         BACKEND_URL: process.env.BACKEND_URL || '',
 		SUPABASE_URL: process.env.SUPABASE_URL || '',
