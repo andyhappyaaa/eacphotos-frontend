@@ -41,7 +41,7 @@
 		<h2 class="mb-6 text-2xl font-bold">{@html t?.('featured.title') || '🌟 精选作品'}</h2>
 
 		{#if pool.length === 0}
-			<div class="flex min-h-[200px] items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+			<div class="flex min-h-[200px] items-center justify-center rounded-xl bg-secondary text-muted-foreground">
 				暂无精选作品，快来上传第一张照片吧！
 			</div>
 		{:else}

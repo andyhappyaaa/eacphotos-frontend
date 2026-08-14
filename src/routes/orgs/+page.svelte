@@ -71,7 +71,7 @@
         <a href="/orgs/{org.id}" class="no-underline">
           <Card class="h-full overflow-hidden transition-shadow hover:shadow-md">
             <CardContent class="p-0">
-              <div class="h-24 rounded-t-lg bg-gradient-to-br from-primary to-indigo-600" style="background-image:{org.bg_image?'url('+org.bg_image+')':''};background-size:cover;background-position:center;"></div>
+              <div class="h-24 rounded-t-lg bg-gradient-to-br from-slate-700 to-slate-900" style="background-image:{org.bg_image?'url('+org.bg_image+')':''};background-size:cover;background-position:center;"></div>
               <div class="p-3">
                 <h4 class="text-sm font-semibold">{org.name}</h4>
                 <p class="text-xs text-muted-foreground">{org.mc||0} 成员 · {org.role}</p>

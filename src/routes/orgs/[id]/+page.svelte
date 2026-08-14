@@ -43,7 +43,7 @@
   <div class="py-12 text-center"><div class="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div></div>
 {:else if org}
   <div class="pb-5">
-    <div class="flex h-[200px] items-end bg-gradient-to-br from-primary to-indigo-700" style="background-image:{org.bg_image?'url('+org.bg_image+')':''};background-size:cover;background-position:center;">
+    <div class="flex h-[200px] items-end bg-gradient-to-br from-slate-700 to-slate-900" style="background-image:{org.bg_image?'url('+org.bg_image+')':''};background-size:cover;background-position:center;">
       <div class="w-full px-4 pb-4" style="max-width:1100px;margin:0 auto;background:linear-gradient(transparent,rgba(0,0,0,.5));">
         <div class="flex items-end justify-between pt-14">
           <div>

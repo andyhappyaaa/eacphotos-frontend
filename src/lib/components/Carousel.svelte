@@ -89,8 +89,8 @@
 				class:opacity-0={i !== currentIndex}
 				style={slide.image ? `background-image: url('${slide.image}')` : ''}
 				class:bg-gradient-to-br={slide.placeholder}
-				class:from-indigo-500={slide.placeholder}
-				class:to-purple-600={slide.placeholder}
+				class:from-slate-700={slide.placeholder}
+				class:to-slate-900={slide.placeholder}
 			></div>
 		{/each}
 	</div>

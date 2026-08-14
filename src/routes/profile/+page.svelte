@@ -33,7 +33,7 @@
 {#if profile}
 	<div class="pb-10">
 		<!-- Cover -->
-		<div class="h-[200px] bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+		<div class="h-[200px] bg-gradient-to-br from-slate-700 to-slate-900"></div>
 		<!-- Info -->
 		<div class="container mx-auto max-w-[1200px] px-5">
 			<div class="relative -mt-16 flex flex-col items-center gap-6 sm:flex-row sm:items-end">

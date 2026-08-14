@@ -31,7 +31,7 @@
 			class="h-40 w-full object-cover"
 			loading="lazy"
 			onerror={(e) => {
-				e.target.outerHTML = '<div class="flex h-40 items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-3xl text-white"></div>';
+				e.target.outerHTML = '<div class="flex h-40 items-center justify-center bg-secondary text-3xl text-muted-foreground"></div>';
 			}}
 		/>
 	{:else}
