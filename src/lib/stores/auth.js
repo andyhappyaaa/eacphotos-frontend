@@ -69,6 +69,14 @@ export async function logout() {
   clearSession();
   if (browser) {
     try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (e) {}
+    // 同步清 auth.eacof.org 的 Supabase session（iframe 加载 /logout）
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://auth.eacof.org/logout';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      setTimeout(() => iframe.remove(), 3000);
+    } catch (e) {}
     window.location.href = '/';
   }
 }

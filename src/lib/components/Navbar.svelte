@@ -82,7 +82,7 @@
   {#if mobileOpen}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div class="fixed inset-0 top-14 z-40 bg-black/30 md:hidden" onclick={() => (mobileOpen = false)}></div>
-    <div class="fixed left-0 top-14 z-50 h-full w-[280px] overflow-y-auto border-r bg-background p-4 shadow-xl md:hidden">
+    <div class="fixed left-0 top-14 bottom-0 z-50 w-[280px] max-h-[calc(100vh-3.5rem)] overflow-y-auto border-r bg-background p-4 shadow-xl md:hidden">
       {#each navLinks as link}
         {@const isActive = page.url.pathname === link.href || (link.href !== '/' && page.url.pathname.startsWith(link.href))}
         <button class="mb-1 w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium {isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}" onclick={() => go(link.href)}>{tVal(link.key)}</button>
