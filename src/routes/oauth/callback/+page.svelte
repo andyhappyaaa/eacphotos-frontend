@@ -28,6 +28,7 @@
 
       // Exchange code for tokens（Public 客户端：只传 client_id + code_verifier，无 secret）
       const supabaseUrl = (window.APP_CONFIG?.SUPABASE_URL || '').replace(/\/$/, '');
+      const clientId = window.APP_CONFIG?.OAUTH_CLIENT_ID || 'mainsite';
       const redirectUri = window.location.origin + '/oauth/callback';
 
       const resp = await fetch(supabaseUrl + '/auth/v1/oauth/token', {
@@ -36,7 +37,7 @@
         body: new URLSearchParams({
           grant_type: 'authorization_code',
           code,
-          client_id: 'mainsite',
+          client_id: clientId,
           redirect_uri: redirectUri,
           code_verifier: verifier,
         }),

@@ -20,6 +20,7 @@
   onMount(async () => {
     try {
       const supabaseUrl = (window.APP_CONFIG?.SUPABASE_URL || '').replace(/\/$/, '');
+      const clientId = window.APP_CONFIG?.OAUTH_CLIENT_ID || 'mainsite';
       if (!supabaseUrl) { error = '系统未配置 Supabase'; return; }
 
       // 1. 生成 PKCE
@@ -34,7 +35,7 @@
       // 3. 跳转 Supabase 授权端点
       const redirectUri = window.location.origin + '/oauth/callback';
       const url = new URL(supabaseUrl + '/auth/v1/oauth/authorize');
-      url.searchParams.set('client_id', 'mainsite');
+      url.searchParams.set('client_id', clientId);
       url.searchParams.set('redirect_uri', redirectUri);
       url.searchParams.set('response_type', 'code');
       url.searchParams.set('code_challenge', challenge);
