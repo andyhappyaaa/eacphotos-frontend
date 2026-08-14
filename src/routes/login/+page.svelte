@@ -1,11 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
-  import { isLoggedIn, authLoading } from '$lib/stores/auth';
 
-  onMount(async () => {
-    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
-    if (get(isLoggedIn)) { window.location.href = '/dashboard'; return; }
+  onMount(() => {
     window.location.replace('https://auth.eacof.org/login');
   });
 </script>

@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Logo 明暗切换：明确优先级，避免 Tailwind hidden/inline 冲突 */
+.logo-light { display: inline; }
+.logo-dark { display: none; }
+.dark .logo-light { display: none !important; }
+.dark .logo-dark { display: inline !important; }
+
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);

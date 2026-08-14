@@ -10,10 +10,7 @@
 
   let { t } = $props();
   let mobileOpen = $state(false);
-
-  // Logo 跟随 ModeWatcher 的 mode（原生跟随系统）
   let isDark = $derived(mode.current === 'dark');
-  let logoSrc = $derived(isDark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 
   const navLinks = [
     { href: '/', key: 'nav.home' },
@@ -34,9 +31,10 @@
       {#if mobileOpen}<X class="h-5 w-5" />{:else}<Menu class="h-5 w-5" />{/if}
     </button>
 
-    <!-- Logo -->
+    <!-- Logo：双 img，CSS .dark class 切换 -->
     <a href="/" class="flex shrink-0 items-center gap-2">
-      <img src={logoSrc} alt="" class="h-8 w-auto" />
+      <img src="https://r2.eacof.org/logo-light.png" alt="" class="logo-light h-8 w-auto" />
+      <img src="https://r2.eacof.org/logo-dark.png" alt="" class="logo-dark h-8 w-auto" />
     </a>
 
     <!-- Desktop links -->

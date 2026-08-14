@@ -1,10 +1,7 @@
 <script>
-	import { mode } from 'mode-watcher';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let { t } = $props();
-	let isDark = $derived(mode.current === 'dark');
-	let logoUrl = $derived(isDark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 	function tVal(key) { return t ? t(key) : key; }
 </script>
 
@@ -13,7 +10,8 @@
 		<div class="grid grid-cols-1 gap-10 md:grid-cols-3">
 			<div>
 				<a href="/" class="inline-block">
-					<img src={logoUrl} alt="" class="mb-4 h-9 w-auto" />
+					<img src="https://r2.eacof.org/logo-light.png" alt="" class="logo-light mb-4 h-9 w-auto" />
+					<img src="https://r2.eacof.org/logo-dark.png" alt="" class="logo-dark mb-4 h-9 w-auto" />
 				</a>
 				<p class="max-w-xs text-sm leading-relaxed text-muted-foreground">{tVal('footer.description')}</p>
 			</div>
