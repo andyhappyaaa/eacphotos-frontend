@@ -1,9 +1,8 @@
 <script>
   import { page } from '$app/state';
-  import { onMount } from 'svelte';
   import { isLoggedIn, currentUser, logout } from '$lib/stores/auth';
   import { lang, setLanguage } from '$lib/stores/i18n';
-  import { theme, toggleTheme } from '$lib/stores/theme';
+  import { mode, toggleMode } from 'mode-watcher';
   import { Button } from '$lib/components/ui/button';
   import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
   import { Separator } from '$lib/components/ui/separator';
@@ -12,16 +11,9 @@
   let { t } = $props();
   let mobileOpen = $state(false);
 
-  // Logo: read directly from DOM, no store wrestling
-  let dark = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
-  let logoSrc = $derived(dark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
-
-  onMount(() => {
-    dark = document.documentElement.classList.contains('dark');
-    const onTheme = () => { dark = document.documentElement.classList.contains('dark'); };
-    window.addEventListener('themechange', onTheme);
-    return () => window.removeEventListener('themechange', onTheme);
-  });
+  // Logo 跟随 ModeWatcher 的 mode（原生跟随系统）
+  let isDark = $derived(mode.current === 'dark');
+  let logoSrc = $derived(isDark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 
   const navLinks = [
     { href: '/', key: 'nav.home' },
@@ -58,8 +50,8 @@
     <div class="flex-1"></div>
 
     <!-- Theme + Lang -->
-    <button class="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary" onclick={toggleTheme} aria-label="Theme">
-      {#if $theme === 'dark'}<Sun class="h-[18px] w-[18px]" />{:else}<Moon class="h-[18px] w-[18px]" />{/if}
+    <button class="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary" onclick={toggleMode} aria-label="Theme">
+      {#if isDark}<Sun class="h-[18px] w-[18px]" />{:else}<Moon class="h-[18px] w-[18px]" />{/if}
     </button>
 
     <div class="relative">

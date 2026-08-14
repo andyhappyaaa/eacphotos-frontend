@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import { page } from '$app/state';
 	import '../app.css';
+	import { ModeWatcher, resetMode } from 'mode-watcher';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Announcement from '$lib/components/Announcement.svelte';
@@ -26,6 +27,8 @@
 	let authCheckInterval;
 	onMount(() => {
 		initAnalytics();
+		// 每次访问强制跟随系统主题（不记忆手动选择）
+		resetMode();
 		// 定期检查登录状态：30 秒一次，若需登录页面未登录则跳转
 		authCheckInterval = setInterval(() => {
 			if (!get(isLoggedIn)) {
@@ -41,6 +44,7 @@
 	let { children } = $props();
 </script>
 
+<ModeWatcher defaultMode="system" />
 <Toaster />
 <div class="flex min-h-screen flex-col">
 	<Navbar t={$t} />

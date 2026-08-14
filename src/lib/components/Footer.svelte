@@ -1,18 +1,10 @@
 <script>
-	import { onMount } from 'svelte';
-	import { theme } from '$lib/stores/theme';
+	import { mode } from 'mode-watcher';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let { t } = $props();
-	let dark = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
-	let logoUrl = $derived(dark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
-
-	onMount(() => {
-		dark = document.documentElement.classList.contains('dark');
-		const onTheme = () => { dark = document.documentElement.classList.contains('dark'); };
-		window.addEventListener('themechange', onTheme);
-		return () => window.removeEventListener('themechange', onTheme);
-	});
+	let isDark = $derived(mode.current === 'dark');
+	let logoUrl = $derived(isDark ? 'https://r2.eacof.org/logo-dark.png' : 'https://r2.eacof.org/logo-light.png');
 	function tVal(key) { return t ? t(key) : key; }
 </script>
 
