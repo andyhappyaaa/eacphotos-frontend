@@ -57,7 +57,8 @@
 				serverURL,
 				path: currentPath,
 				login: 'enable',
-				lang: 'zh-CN'
+				lang: 'zh-CN',
+				dark: 'html.dark'
 			});
 		} catch (e) {
 			console.error('[waline] init failed:', e);
