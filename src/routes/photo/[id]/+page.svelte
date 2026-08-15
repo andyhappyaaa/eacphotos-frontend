@@ -8,6 +8,7 @@
 	import { showToast } from '$lib/stores/toast';
 	import { formatDate } from '$lib/utils/helpers';
 	import { Download, Share2, Heart } from '@lucide/svelte';
+	import WalineComment from '$lib/components/WalineComment.svelte';
 	
 
 	let photo = $state(null);
@@ -61,5 +62,8 @@
 				</div>
 			</div>
 		</div>
+
+		<hr class="my-10 border-border" />
+		<WalineComment path={'/photo/' + id} />
 	</div>
 {/if}

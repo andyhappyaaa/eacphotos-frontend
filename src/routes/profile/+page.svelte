@@ -6,6 +6,7 @@
 	import { api } from '$lib/api';
 	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import WalineComment from '$lib/components/WalineComment.svelte';
 	import { t } from '$lib/stores/i18n';
 
 	let profile = $state(null);
@@ -72,6 +73,9 @@
 					</div>
 				</TabsContent>
 			</Tabs>
+
+			<hr class="my-10 border-border" />
+			<WalineComment path={page.url.pathname + page.url.search} />
 		</div>
 	</div>
 {/if}

@@ -26,6 +26,8 @@ export default function handler(req, res) {
         BACKEND_URL: process.env.BACKEND_URL || '',
 		SUPABASE_URL: process.env.SUPABASE_URL || '',
 		SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || '',
+        // Waline 评论服务端地址（Vercel 部署的 API，不含 /api）
+        WALINE_SERVER_URL: process.env.WALINE_SERVER_URL || '',
         // 站点分析（公开 ID）
         GA_MEASUREMENT_ID: (process.env.GA_MEASUREMENT_ID || '').trim(),
         CLARITY_PROJECT_ID: (process.env.CLARITY_PROJECT_ID || '').trim()

@@ -4,6 +4,7 @@
 	import { api } from '$lib/api';
 	import { formatDate } from '$lib/utils/helpers';
 	import { Loader2 } from '@lucide/svelte';
+	import WalineComment from '$lib/components/WalineComment.svelte';
 
 	let news = $state(null);
 	let loading = $state(true);
@@ -36,6 +37,9 @@
 		<div class="prose prose-neutral mt-8 max-w-none dark:prose-invert">
 			{@html news.content || news.excerpt || ''}
 		</div>
+
+		<hr class="my-10 border-border" />
+		<WalineComment path={'/news/' + slug} />
 	{:else}
 		<div class="flex flex-col items-center justify-center py-24 text-muted-foreground">
 			<p class="text-lg">暂无新闻内容</p>
