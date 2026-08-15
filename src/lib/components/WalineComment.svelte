@@ -51,7 +51,7 @@
 
 		// 3. 动态加载 Waline 并初始化
 		try {
-			const { init } = await import('https://unpkg.com/@waline/client@v3/dist/waline.mjs');
+			const { init } = await import('https://unpkg.com/@waline/client@v3/dist/waline.js');
 			waline = init({
 				el: containerEl,
 				serverURL,
