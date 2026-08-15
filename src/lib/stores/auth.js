@@ -39,15 +39,38 @@ export async function refreshReviewerInfo() {
   } catch (e) { reviewerInfo.set(null); }
 }
 
-// 从 OAuth access_token 解析用户信息（调 Supabase userinfo）
+// 从 OAuth access_token 解析用户信息。
+// access_token 本身就是 JWT，直接本地解码即可拿到 sub/email/user_metadata，
+// 无需再请求 /auth/v1/oauth/userinfo（该端点可能 404/401，导致登录后 isLoggedIn=false）。
+// 签名校验由后端 worker 在真正的 API 调用中完成，前端仅用于展示与 UI 门控。
+function decodeJwtPayload(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch (e) { return null; }
+}
+
 async function fetchUserFromToken(token) {
-  const supabaseUrl = (window.APP_CONFIG?.SUPABASE_URL || '').replace(/\/$/, '');
-  const resp = await fetch(supabaseUrl + '/auth/v1/oauth/userinfo', {
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  if (!resp.ok) return null;
-  const d = await resp.json();
-  return { id: d.sub, email: d.email, username: d.email?.split('@')[0] || d.sub };
+  const claims = decodeJwtPayload(token);
+  if (!claims?.sub) return null;
+  // 已过期则视为无效 token
+  if (claims.exp && claims.exp * 1000 < Date.now()) return null;
+  const email = claims.email || claims.user_metadata?.email || '';
+  const username = claims.user_metadata?.username || (email ? email.split('@')[0] : claims.sub);
+  return {
+    id: claims.sub,
+    email,
+    username,
+    avatar: claims.user_metadata?.avatar_url || ''
+  };
 }
 
 export async function restoreSession() {
