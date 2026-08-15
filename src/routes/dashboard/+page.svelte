@@ -24,6 +24,7 @@
 	let pendingPhotos = $state([]); let approvedPhotos = $state([]); let rejectedPhotos = $state([]);
 	let allMyPhotos = $state([]);
 	let tabLoading = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// 2FA state
 	let tfaEnabled = $state(false); let tfaSecret = $state(''); let tfaSetupCode = $state('');
@@ -64,10 +65,13 @@
 	}
 
 	onMount(async () => {
-		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载）
-		await new Promise(resolve => {
-			const unsub = authLoading.subscribe(loading => { if (!loading) { unsub(); resolve(); } });
-		});
+		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载），最多 3 秒，避免卡死导致「无反应」
+		await Promise.race([
+			new Promise(resolve => {
+				const unsub = authLoading.subscribe(loading => { if (!loading) { unsub(); resolve(); } });
+			}),
+			new Promise(resolve => setTimeout(resolve, 3000))
+		]);
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
 		await refreshReviewerInfo();
@@ -214,20 +218,21 @@
 
 <div class="container mx-auto max-w-[1200px] px-4 py-6">
 	<!-- Mobile sidebar toggle (fixed left) -->
-	<button class="fixed left-3 top-20 z-[100] rounded-lg border bg-background p-2 shadow-md lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#dashboardSidebar" aria-controls="dashboardSidebar" aria-label="菜单">
+	<button class="fixed left-3 top-20 z-[100] rounded-lg border bg-background p-2 shadow-md lg:hidden" type="button" onclick={() => (mobileMenuOpen = true)} aria-label="菜单">
 		<LayoutDashboard class="h-5 w-5" />
 	</button>
 
-		<!-- Bootstrap Offcanvas: mobile sidebar -->
-		<div class="offcanvas offcanvas-start lg:hidden" tabindex="-1" id="dashboardSidebar" aria-labelledby="dashboardSidebarLabel">
-			<div class="offcanvas-header border-b">
-				<h5 class="offcanvas-title small fw-semibold" id="dashboardSidebarLabel">仪表盘菜单</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-			</div>
-			<div class="offcanvas-body p-0">
+		<!-- Mobile sidebar drawer (Tailwind) -->
+		{#if mobileMenuOpen}
+			<div class="fixed inset-0 z-[90] bg-black/30 lg:hidden" onclick={() => (mobileMenuOpen = false)}></div>
+			<aside class="fixed left-0 top-0 bottom-0 z-[95] w-[280px] overflow-y-auto border-r bg-background p-4 shadow-xl lg:hidden">
+				<div class="mb-4 flex items-center justify-between border-b pb-3">
+					<h5 class="text-sm font-semibold">仪表盘菜单</h5>
+					<button type="button" class="rounded p-1 hover:bg-secondary" onclick={() => (mobileMenuOpen = false)} aria-label="Close">✕</button>
+				</div>
 				{@render sidebarContent()}
-			</div>
-		</div>
+			</aside>
+		{/if}
 
 		<Tabs value={activeTab}>
 		<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
