@@ -56,7 +56,7 @@
 				el: containerEl,
 				serverURL,
 				path: currentPath,
-				login: 'enable',
+				login: 'force',
 				lang: 'zh-CN',
 				dark: 'html.dark'
 			});
