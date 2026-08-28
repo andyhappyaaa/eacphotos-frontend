@@ -222,18 +222,6 @@
 		<LayoutDashboard class="h-5 w-5" />
 	</button>
 
-		<!-- Mobile sidebar drawer (Tailwind) -->
-		{#if mobileMenuOpen}
-			<div class="fixed inset-0 z-[90] bg-black/30 lg:hidden" onclick={() => (mobileMenuOpen = false)}></div>
-			<aside class="fixed left-0 top-0 bottom-0 z-[95] w-[280px] overflow-y-auto border-r bg-background p-4 shadow-xl lg:hidden">
-				<div class="mb-4 flex items-center justify-between border-b pb-3">
-					<h5 class="text-sm font-semibold">仪表盘菜单</h5>
-					<button type="button" class="rounded p-1 hover:bg-secondary" onclick={() => (mobileMenuOpen = false)} aria-label="Close">✕</button>
-				</div>
-				{@render sidebarContent()}
-			</aside>
-		{/if}
-
 		<Tabs value={activeTab}>
 		<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
 			<!-- Desktop Sidebar -->
@@ -272,7 +260,18 @@
 					</TabsList>
 				{/snippet}
 
-	
+			<!-- Mobile sidebar drawer (Tailwind，放在 Tabs 内以访问 sidebarContent snippet) -->
+			{#if mobileMenuOpen}
+				<div class="fixed inset-0 z-[90] bg-black/30 lg:hidden" onclick={() => (mobileMenuOpen = false)}></div>
+				<aside class="fixed left-0 top-0 bottom-0 z-[95] w-[280px] overflow-y-auto border-r bg-background p-4 shadow-xl lg:hidden">
+					<div class="mb-4 flex items-center justify-between border-b pb-3">
+						<h5 class="text-sm font-semibold">仪表盘菜单</h5>
+						<button type="button" class="rounded p-1 hover:bg-secondary" onclick={() => (mobileMenuOpen = false)} aria-label="Close">✕</button>
+					</div>
+					{@render sidebarContent()}
+				</aside>
+			{/if}
+
 			<!-- Content -->
 			<Card>
 				<CardContent class="min-h-[400px] p-5 lg:p-7">
