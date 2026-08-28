@@ -3,6 +3,7 @@
   import { Button } from '$lib/components/ui/button';
   import { Card, CardContent } from '$lib/components/ui/card';
   import { Loader2, CheckCircle, XCircle } from '@lucide/svelte';
+  import { buildUrl, useProxy } from '$lib/api';
 
   let status = $state('loading');
   let message = $state('正在验证授权...');
@@ -55,6 +56,18 @@
       // 存 access_token（后端 API 用它验签）
       localStorage.setItem('eac_oauth_access_token', tokens.access_token);
       if (tokens.refresh_token) localStorage.setItem('eac_oauth_refresh_token', tokens.refresh_token);
+
+      // 通知后端记录本次登录时间（会话有效期判断）
+      try {
+        await fetch(buildUrl('/api/auth/session-touch'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + tokens.access_token,
+          },
+          credentials: useProxy() ? 'include' : 'omit',
+        });
+      } catch (e) { /* 忽略会话记录失败 */ }
 
       status = 'success';
       message = '登录成功！正在跳转...';
