@@ -89,7 +89,7 @@
 			else if (tab === 'appeals') { window.location.href = '/appeal'; }
 			else if (tab === 'manage') await loadAllPhotos();
 			else if (tab === 'upload') { goto('/upload'); return; }
-			else if (tab === 'settings') { tfaEnabled = $currentUser?.twoFactorEnabled || false; await loadPasskeys(); }
+			else if (tab === 'settings') { window.location.href = 'https://auth.eacof.org/account'; return; }
 		} catch (e) {}
 		finally { tabLoading = false; }
 	}
