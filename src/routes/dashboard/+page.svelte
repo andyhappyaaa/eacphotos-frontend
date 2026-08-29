@@ -3,21 +3,15 @@
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading, refreshReviewerInfo } from '$lib/stores/auth';
 	import { api } from '$lib/api';
-	import { setup2FA, enable2FA, disable2FA, sendEmailCode, passkeyRegisterOptions, passkeyRegisterVerify, listPasskeys, deletePasskey } from '$lib/stores/auth';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import Turnstile from '$lib/components/Turnstile.svelte';
 	import { showToast } from '$lib/stores/toast';
-	import { t } from '$lib/stores/i18n';
-	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Lock, Mail, Fingerprint, Shield, Loader2, Trash2, Plus, ClipboardCheck, Users, SlidersHorizontal, EyeOff, ImagePlus, Building2 } from '@lucide/svelte';
-	import QRCode from '$lib/components/QRCode.svelte';
+	import { LayoutDashboard, Clock, CheckCircle, XCircle, Settings, Upload, Image, Eye, Heart, Loader2, ClipboardCheck, Users, SlidersHorizontal, Building2 } from '@lucide/svelte';
 
 	let activeTab = $state('overview');
 		let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
@@ -25,44 +19,6 @@
 	let allMyPhotos = $state([]);
 	let tabLoading = $state(false);
 	let mobileMenuOpen = $state(false);
-
-	// 2FA state
-	let tfaEnabled = $state(false); let tfaSecret = $state(''); let tfaSetupCode = $state('');
-	let tfaLoading = $state(false); let tfaError = $state('');
-	let showTfaSetup = $state(false); let showTfaDisable = $state(false); let tfaDisableCode = $state(''); let tfaDisablePass = $state('');
-
-	// Passkey state
-	let passkeys = $state([]); let passkeyLoading = $state(false);
-
-	// Email rebinding state
-	let rebindEmail = $state(""); let rebindCode = $state(""); let rebindStep = $state(0); let rebindLoading = $state(false);
-
-	async function handleRebindEmail() {
-		if (!rebindEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rebindEmail)) { showToast('请输入有效的邮箱地址', 'error'); return; }
-		rebindLoading = true;
-		try {
-			const r = await api("/api/users/me/rebind-email", { method: "POST", body: JSON.stringify({ newEmail: rebindEmail }) });
-			const d = await r.json();
-			if (d.error) { showToast(d.error, "error"); return; }
-			rebindStep = 1;
-			showToast(d.message || "验证码已发送", "success");
-		} catch (err) { showToast(err.message || "发送失败", "error"); }
-		finally { rebindLoading = false; }
-	}
-
-	async function handleConfirmRebind() {
-		if (!rebindCode || rebindCode.length !== 6) { showToast("请输入6位验证码", "error"); return; }
-		rebindLoading = true;
-		try {
-			const r = await api("/api/users/me/confirm-email-rebind", { method: "POST", body: JSON.stringify({ code: rebindCode }) });
-			const d = await r.json();
-			if (d.error) { showToast(d.error, "error"); return; }
-			showToast("邮箱已更新为 " + d.newEmail, "success");
-			if ($currentUser) $currentUser.email = d.newEmail;
-			rebindStep = 0; rebindEmail = ""; rebindCode = "";
-		} catch (err) { showToast(err.message || "验证失败", "error"); }
-		finally { rebindLoading = false; }
-	}
 
 	onMount(async () => {
 		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载），最多 3 秒，避免卡死导致「无反应」
@@ -108,72 +64,6 @@
 	}
 	async function loadAllPhotos() {
 		try { const r = await api("/api/users/me/photos?status=approved,pending,manual_review,rejected,ai_rejected,private", { noRedirect: true }); const d = await r.json(); allMyPhotos = d.photos || []; } catch (e) {}
-	}
-
-	// ── 2FA ──
-	async function handleSetup2FA() {
-		tfaLoading = true; tfaError = '';
-		try {
-			const data = await setup2FA();
-			tfaSecret = data.secret;
-			showTfaSetup = true;
-		} catch (err) { tfaError = err.message || '设置失败'; }
-		finally { tfaLoading = false; }
-	}
-
-	async function handleEnable2FA() {
-		if (!tfaSetupCode || tfaSetupCode.length !== 6) { tfaError = '请输入6位验证码'; return; }
-		tfaLoading = true; tfaError = '';
-		try {
-			await enable2FA(tfaSetupCode);
-			tfaEnabled = true; showTfaSetup = false; showToast('两步验证已启用', 'success');
-			// Update local user
-			if ($currentUser) $currentUser.twoFactorEnabled = true;
-		} catch (err) { tfaError = err.message || '启用失败'; }
-		finally { tfaLoading = false; }
-	}
-
-	async function handleDisable2FA() {
-		if (!tfaDisableCode || tfaDisableCode.length !== 6) { tfaError = '请输入验证码'; return; }
-		tfaLoading = true; tfaError = '';
-		try {
-			await disable2FA(tfaDisableCode);
-			tfaEnabled = false; showTfaDisable = false; tfaDisableCode = ''; tfaDisablePass = '';
-			showToast('两步验证已禁用', 'success');
-			if ($currentUser) $currentUser.twoFactorEnabled = false;
-		} catch (err) { tfaError = err.message || '禁用失败'; }
-		finally { tfaLoading = false; }
-	}
-
-	// ── Passkey ──
-	async function loadPasskeys() {
-		passkeyLoading = true;
-		try { passkeys = await listPasskeys(); } catch (e) {}
-		finally { passkeyLoading = false; }
-	}
-
-	async function handleAddPasskey() {
-		try {
-			const opts = await passkeyRegisterOptions();
-			const cred = await navigator.credentials.create({ publicKey: opts.publicKey });
-			if (!cred) { showToast('用户取消', 'warning'); return; }
-			await passkeyRegisterVerify(cred);
-			showToast('Passkey 添加成功', 'success');
-			loadPasskeys();
-		} catch (err) { showToast(err.message || '添加失败', 'error'); }
-	}
-
-	async function handleDeletePasskey(id) {
-		try { await deletePasskey(id); showToast('已删除', 'success'); loadPasskeys(); }
-		catch (err) { showToast(err.message || '删除失败', 'error'); }
-	}
-
-	async function handleSendPasswordConfirm() {
-		try {
-			const r = await api('/api/users/me/request-password-change', { method: 'POST', body: '{}' });
-			const d = await r.json();
-			showToast(d.message || '确认邮件已发送', 'success');
-		} catch (err) { showToast(err.message || '发送失败', 'error'); }
 	}
 
 	async function handleDeletePhoto(photoId) {
@@ -388,156 +278,6 @@
 						</div>
 					</TabsContent>
 
-				<!-- ── 账号设置 ── -->
-				<TabsContent value="settings">
-					<h2 class="mb-1 text-xl font-bold">账号设置</h2>
-					<p class="mb-6 text-sm text-muted-foreground">管理安全设置、通行密钥和账号信息</p>
-
-					<div class="space-y-6">
-						<!-- 两步验证 -->
-						<Card>
-							<CardContent class="p-5">
-								<div class="flex items-start justify-between">
-									<div class="flex items-start gap-3">
-										<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Shield class="h-5 w-5 text-primary" /></div>
-										<div>
-											<h3 class="font-semibold">两步验证 (2FA)</h3>
-											<p class="text-sm text-muted-foreground">
-												{#if tfaEnabled || $currentUser?.twoFactorEnabled}
-													状态：<Badge class="ml-1">✅ 已启用</Badge>
-												{:else}
-													使用 Google Authenticator 等验证器 App 保护您的账号
-												{/if}
-											</p>
-										</div>
-									</div>
-									{#if !tfaEnabled && !($currentUser?.twoFactorEnabled)}
-										{#if !showTfaSetup}
-											<Button variant="outline" size="sm" onclick={handleSetup2FA} disabled={tfaLoading}>{tfaLoading ? '处理中...' : '启用两步验证'}</Button>
-										{/if}
-									{:else if !showTfaDisable}
-										<Button variant="outline" size="sm" class="text-destructive border-destructive/30 hover:bg-destructive/10" onclick={() => { showTfaDisable = true; tfaError = ''; }}>禁用</Button>
-									{/if}
-								</div>
-
-								{#if showTfaSetup}
-									<Separator class="my-4" />
-									<div class="text-center">
-										<p class="mb-3 text-sm font-medium">使用验证器 App 扫描二维码</p>
-										<div class="mx-auto w-fit rounded-lg border bg-white p-3">
-											<QRCode text={'otpauth://totp/EACPhoto:' + encodeURIComponent($currentUser?.username || '') + '?secret=' + tfaSecret + '&issuer=EACPhoto'} width={180} height={180} />
-										</div>
-										<p class="mt-2 text-xs text-muted-foreground">密钥：<code class="rounded bg-secondary px-1 font-mono text-[11px]">{tfaSecret}</code></p>
-										<div class="mt-4 flex items-center justify-center gap-2">
-											<Input type="text" class="w-[130px] text-center text-lg tracking-[0.3em] font-mono" placeholder="000000" maxlength="6" bind:value={tfaSetupCode} />
-											<Button size="sm" onclick={handleEnable2FA} disabled={tfaLoading || tfaSetupCode.length !== 6}>{tfaLoading ? '验证中...' : '确认启用'}</Button>
-											<Button variant="ghost" size="sm" onclick={() => { showTfaSetup = false; tfaError = ''; tfaSetupCode = ''; }}>取消</Button>
-										</div>
-										{#if tfaError}<p class="mt-2 text-sm text-destructive">{tfaError}</p>{/if}
-									</div>
-								{/if}
-
-								{#if showTfaDisable}
-									<Separator class="my-4" />
-									<div>
-										<p class="mb-3 text-sm text-muted-foreground">请输入验证器 App 中的 6 位验证码以禁用两步验证</p>
-										<div class="flex items-center gap-2">
-											<Input type="text" class="w-[130px] text-center text-lg tracking-[0.3em] font-mono" placeholder="000000" maxlength="6" bind:value={tfaDisableCode} />
-											<Button variant="destructive" size="sm" onclick={handleDisable2FA} disabled={tfaLoading || tfaDisableCode.length !== 6}>{tfaLoading ? '处理中...' : '确认禁用'}</Button>
-											<Button variant="ghost" size="sm" onclick={() => { showTfaDisable = false; tfaError = ''; tfaDisableCode = ''; }}>取消</Button>
-										</div>
-										{#if tfaError}<p class="mt-2 text-sm text-destructive">{tfaError}</p>{/if}
-									</div>
-								{/if}
-							</CardContent>
-						</Card>
-
-						<!-- Passkey 通行密钥 -->
-						<Card>
-							<CardContent class="p-5">
-								<div class="flex items-start justify-between">
-									<div class="flex items-start gap-3">
-										<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Fingerprint class="h-5 w-5 text-primary" /></div>
-										<div>
-											<h3 class="font-semibold">通行密钥 (Passkey)</h3>
-											<p class="text-sm text-muted-foreground">使用指纹、面容或设备密码一键登录</p>
-										</div>
-									</div>
-									<Button variant="outline" size="sm" onclick={handleAddPasskey}><Plus class="mr-1 h-4 w-4" /> 添加</Button>
-								</div>
-
-								{#if passkeyLoading}
-									<div class="mt-3 space-y-2">{#each Array(2) as _}<Skeleton class="h-10 w-full rounded-lg" />{/each}</div>
-								{:else if passkeys.length > 0}
-									<Separator class="my-4" />
-									<div class="space-y-2">
-										{#each passkeys as pk}
-											<div class="flex items-center justify-between rounded-lg border bg-secondary/30 px-3 py-2">
-												<div class="flex items-center gap-2">
-													<Fingerprint class="h-4 w-4 text-muted-foreground" />
-													<span class="text-sm">{pk.device_name || (pk.credential_id ? pk.credential_id.slice(0, 16) + '...' : '通行密钥')}</span>
-													<span class="text-[10px] text-muted-foreground">{pk.created_at ? new Date(pk.created_at).toLocaleDateString() : ''}</span>
-												</div>
-												<Button variant="ghost" size="icon" class="h-7 w-7 text-muted-foreground hover:text-destructive" onclick={() => { if (confirm('确定删除这个通行密钥？')) handleDeletePasskey(pk.credential_id || pk.id); }}>
-													<Trash2 class="h-3.5 w-3.5" />
-												</Button>
-											</div>
-										{/each}
-									</div>
-								{:else}
-									<p class="mt-2 text-xs text-muted-foreground">暂无通行密钥</p>
-								{/if}
-							</CardContent>
-						</Card>
-
-						<!-- 修改密码 -->
-						<Card>
-							<CardContent class="p-5">
-								<div class="flex items-start justify-between">
-									<div class="flex items-start gap-3">
-										<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Lock class="h-5 w-5 text-primary" /></div>
-										<div>
-											<h3 class="font-semibold">修改密码</h3>
-											<p class="text-sm text-muted-foreground">我们将发送一封确认邮件到您的邮箱，点击邮件中的链接即可修改密码</p>
-										</div>
-									</div>
-									<Button variant="outline" size="sm" onclick={handleSendPasswordConfirm}><Mail class="mr-1 h-4 w-4" /> 发送确认邮件</Button>
-								</div>
-							</CardContent>
-						</Card>
-
-						<!-- 邮箱绑定 -->
-						<Card>
-							<CardContent class="p-5">
-								<div class="flex items-start gap-3">
-									<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Mail class="h-5 w-5 text-primary" /></div>
-									<div>
-										<h3 class="font-semibold">邮箱绑定</h3>
-										<p class="text-sm text-muted-foreground">当前邮箱：<strong>{$currentUser?.email || '未绑定'}</strong></p>
-									</div>
-								</div>
-
-								{#if rebindStep === 0}
-									<div class="mt-4 flex items-center gap-2">
-										<Input type="email" placeholder="输入新邮箱地址" class="max-w-[280px]" bind:value={rebindEmail} />
-										<Button variant="outline" size="sm" onclick={handleRebindEmail} disabled={rebindLoading || !rebindEmail}>{rebindLoading ? '发送中...' : '发送验证码'}</Button>
-									</div>
-								{/if}
-
-								{#if rebindStep === 1}
-									<div class="mt-4">
-										<p class="text-sm text-muted-foreground mb-2">验证码已发送至 <strong>{rebindEmail}</strong>，请输入：</p>
-										<div class="flex items-center gap-2">
-											<Input type="text" class="w-[130px] text-center text-lg tracking-[0.3em] font-mono" placeholder="000000" maxlength="6" bind:value={rebindCode} />
-											<Button size="sm" onclick={handleConfirmRebind} disabled={rebindLoading || rebindCode.length !== 6}>{rebindLoading ? '验证中...' : '确认绑定'}</Button>
-											<Button variant="ghost" size="sm" onclick={() => { rebindStep = 0; rebindCode = ''; rebindEmail = ''; }}>取消</Button>
-										</div>
-									</div>
-								{/if}
-							</CardContent>
-						</Card>
-					</div>
-				</TabsContent>
 
 				</CardContent>
 			</Card>
