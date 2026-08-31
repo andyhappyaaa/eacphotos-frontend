@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, verifyTurnstile, authLoading, isReviewer } from '$lib/stores/auth';
-	import { uploadWithProgress } from '$lib/api';
+	import { api, uploadWithProgress } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -19,10 +19,18 @@
 	let isHot = $state(false); let agreeTerms = $state(true);
 	let selectedFiles = $state([]); let uploading = $state(false); let uploadProgress = $state(0);
 	let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
+	let rules = $state([]);
+	let rulesFetchFailed = $state(false);
 
 	onMount(async () => {
 		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
 		if (!$isLoggedIn && !$isReviewer) { window.location.href = '/login'; return; }
+		try {
+			// 后端公开端点，返回管理员可编辑的上传规则；失败时回退 i18n 默认文案
+			const r = await api('/api/site/upload-rules', { bypassSession: true, noRedirect: true });
+			const d = await r.json();
+			rules = (d.rules || []).filter(x => x.active !== false);
+		} catch (e) { rulesFetchFailed = true; }
 	});
 
 	async function verifyTsToken(tk) { tsToken = tk; turnstileVerifying = true; try { await verifyTurnstile(tk); turnstileVerified = true; } catch (e) { showToast('人机验证失败', 'error'); turnstileVerified = false; } finally { turnstileVerifying = false; } }
@@ -53,6 +61,17 @@
 	<div class="mb-8 text-center">
 		<h1 class="text-3xl font-bold tracking-tight">{@html $t('upload.title')}</h1>
 		<p class="mt-2 text-muted-foreground">{@html $t('upload.subtitle')}</p>
+	</div>
+
+	<div class="mb-8 rounded-xl border bg-secondary/40 p-5">
+		<h2 class="mb-3 text-sm font-semibold">{@html $t('upload.rules.title')}</h2>
+		<ol class="list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
+			{#if rulesFetchFailed}
+				{#each [1, 2, 3, 4, 5, 6, 7] as n}<li>{@html $t(`upload.rules.${n}`)}</li>{/each}
+			{:else}
+				{#each rules as r}<li>{r.text}</li>{/each}
+			{/if}
+		</ol>
 	</div>
 
 	<form onsubmit={handleSubmit}>

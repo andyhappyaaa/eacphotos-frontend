@@ -125,7 +125,7 @@
 
     {#if activeTab === 'news'}
       <Card><CardContent class="flex items-center justify-between p-4">
-        <div><h3 class="text-sm font-semibold">拉取新闻</h3><p class="text-xs text-muted-foreground">从 Bing + AeroRoutes RSS 获取最新航空新闻</p></div>
+        <div><h3 class="text-sm font-semibold">拉取新闻</h3><p class="text-xs text-muted-foreground">从 AeroRoutes RSS 获取最新航空新闻</p></div>
         <Button size="sm" onclick={fetchNews}><RefreshCw class="mr-1 h-3.5 w-3.5"/>立即拉取</Button>
       </CardContent></Card>
     {/if}
