@@ -71,7 +71,10 @@
 
       status = 'success';
       message = '登录成功！正在跳转...';
-      setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+      const returnTo = sessionStorage.getItem('oauth_return_to');
+      sessionStorage.removeItem('oauth_return_to');
+      const dest = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard';
+      setTimeout(() => { window.location.href = dest; }, 800);
     } catch (e) {
       status = 'error';
       message = '网络错误：' + (e.message || e);

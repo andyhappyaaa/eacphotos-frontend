@@ -34,7 +34,8 @@
 			if (!get(isLoggedIn)) {
 				const path = page.url.pathname;
 				if (protectedPaths.some(p => path.startsWith(p))) {
-					window.location.href = '/login';
+					// 带上当前位置，登录后回到触发登录的页面而不是一律 /dashboard
+					window.location.href = '/login?redirect=' + encodeURIComponent(path + page.url.search);
 				}
 			}
 		}, 30000);

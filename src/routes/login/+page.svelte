@@ -19,6 +19,21 @@
 
   onMount(async () => {
     try {
+      // 记住触发登录的页面：显式 ?redirect= 优先，其次同源 referrer；登录后回到原页而非一律 /dashboard
+      const returnTo = (() => {
+        const q = new URLSearchParams(window.location.search).get('redirect');
+        if (q && q.startsWith('/') && !q.startsWith('//')) return q;
+        try {
+          const ref = new URL(document.referrer);
+          if (ref.origin === window.location.origin) {
+            const rp = ref.pathname + ref.search;
+            if (rp && rp !== window.location.pathname + window.location.search) return rp;
+          }
+        } catch (e) {}
+        return '';
+      })();
+      if (returnTo) sessionStorage.setItem('oauth_return_to', returnTo);
+
       const supabaseUrl = (window.APP_CONFIG?.SUPABASE_URL || '').replace(/\/$/, '');
       const clientId = window.APP_CONFIG?.OAUTH_CLIENT_ID || '';
       if (!supabaseUrl) { error = '系统未配置 Supabase'; return; }
