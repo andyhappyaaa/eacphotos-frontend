@@ -1,0 +1,6 @@
+{
+  "name": "eac-photo-vercel-functions",
+  "version": "1.0.0",
+  "description": "Vercel Serverless Functions for eac photos frontend",
+  "type": "module"
+}

@@ -1,0 +1,24 @@
+{
+	"name": "eac photos - 航空摄影社区",
+	"short_name": "eac photos",
+	"description": "分享你的航空摄影作品，加入航空摄影爱好者社区",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#2563eb",
+	"orientation": "portrait-primary",
+	"lang": "zh-CN",
+	"dir": "ltr",
+	"categories": ["photo", "social", "travel"],
+	"icons": [
+		{
+			"src": "https://r2.eacof.org/logo-light.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	],
+	"related_applications": [],
+	"prefer_related_applications": false
+}

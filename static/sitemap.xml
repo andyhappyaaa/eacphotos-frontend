@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+	<!-- ===== 主页 ===== -->
+	<url>
+		<loc>https://eacof.org/</loc>
+		<changefreq>daily</changefreq>
+		<priority>1.0</priority>
+		<xhtml:link rel="alternate" hreflang="zh" href="https://eacof.org/" />
+		<xhtml:link rel="alternate" hreflang="en" href="https://eacof.org/" />
+	</url>
+
+	<!-- ===== 核心浏览页 ===== -->
+	<url>
+		<loc>https://eacof.org/gallery</loc>
+		<changefreq>hourly</changefreq>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/search</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/news</loc>
+		<changefreq>daily</changefreq>
+		<priority>0.8</priority>
+	</url>
+
+	<!-- ===== 内容页 ===== -->
+	<url>
+		<loc>https://eacof.org/about</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.6</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/contact</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/careers</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/terms</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/privacy</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.3</priority>
+	</url>
+
+	<!-- ===== 功能页 ===== -->
+	<url>
+		<loc>https://eacof.org/upload</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.6</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/dashboard</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/login</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/register</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/forgot-password</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.1</priority>
+	</url>
+
+	<!-- ===== 工具/辅助页 ===== -->
+	<url>
+		<loc>https://eacof.org/settings</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/profile</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://eacof.org/splash</loc>
+		<changefreq>yearly</changefreq>
+		<priority>0.1</priority>
+	</url>
+
+</urlset>

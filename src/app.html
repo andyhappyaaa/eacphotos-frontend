@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+		<meta name="theme-color" content="#2563eb" id="theme-color-meta" />
+		<!-- Prevent FOUC: apply theme class before paint -->
+		<script>
+			(function(){var t=localStorage.getItem('eacphoto_theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}document.documentElement.classList.add(t);document.documentElement.setAttribute('data-theme',t);var m=document.getElementById('theme-color-meta');if(m)m.content=t==='dark'?'#0f172a':'#2563eb';})();
+		</script>
+		<script src="/api/env"></script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+			</body>
+</html>
