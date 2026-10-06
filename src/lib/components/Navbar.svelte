@@ -77,9 +77,10 @@
       {/if}
     </div>
   </div>
+</nav>
 
-  <!-- Mobile menu -->
-  {#if mobileOpen}
+<!-- Mobile menu（放在 <nav> 外，避免 backdrop-blur 的 backdrop-filter 建立 containing block，导致 fixed 定位错乱） -->
+{#if mobileOpen}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div class="fixed inset-0 top-14 z-40 bg-black/30 md:hidden" onclick={() => (mobileOpen = false)}></div>
     <div class="fixed left-0 top-14 bottom-0 z-50 w-[280px] max-h-[calc(100vh-3.5rem)] overflow-y-auto border-r bg-background p-4 shadow-xl md:hidden">
@@ -101,4 +102,3 @@
       {/if}
     </div>
   {/if}
-</nav>
