@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { isLoggedIn, authLoading } from '$lib/stores/auth';
-	import { api } from '$lib/api';
+	import { api, imageUrl } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
@@ -82,7 +82,7 @@
 			{#each rejectedPhotos as p}
 				<div class="flex gap-4 rounded-xl border bg-card p-3.5">
 					<a href="/photo/{p.id}" class="shrink-0">
-						<img src={p.thumbnail || p.url} alt="" class="h-[80px] w-[120px] rounded-lg object-cover" loading="lazy" />
+						<img src={imageUrl(p.thumbnail || p.url)} alt="" class="h-[80px] w-[120px] rounded-lg object-cover" loading="lazy" />
 					</a>
 					<div class="min-w-0 flex-1">
 						<h4 class="truncate font-semibold">{p.title || '无标题'}</h4>

@@ -12,6 +12,12 @@ export function buildUrl(endpoint) {
   return endpoint;
 }
 
+/** 图片地址：相对 /api/...（未过审原图）走代理，完整 R2 URL 原样返回 */
+export function imageUrl(u) {
+  if (u && u.startsWith('/api/')) return buildUrl(u);
+  return u;
+}
+
 /** Get Supabase access token from session store */
 async function getSupabaseToken() {
   if (!browser) return null;

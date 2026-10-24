@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading, refreshReviewerInfo } from '$lib/stores/auth';
-	import { api } from '$lib/api';
+	import { api, imageUrl } from '$lib/api';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -179,7 +179,7 @@
 							<div class="mb-3 flex items-center gap-2"><Image class="h-4 w-4 text-muted-foreground" /><h3 class="font-semibold">最近上传</h3></div>
 							<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 								{#each stats.recent as photo}
-									<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>
+									<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={imageUrl(photo.thumbnail || photo.url)} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>
 								{/each}
 							</div>
 						{/if}
@@ -191,7 +191,7 @@
 						{:else if pendingPhotos.length}
 							<div class="space-y-3">
 								{#each pendingPhotos as p}
-									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={p.thumbnail || p.url} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p></div><Badge variant="secondary" class="shrink-0 self-start">审核中</Badge></div>
+									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={imageUrl(p.thumbnail || p.url)} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p></div><Badge variant="secondary" class="shrink-0 self-start">审核中</Badge></div>
 								{/each}
 							</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无审核中的照片</p></div>{/if}
@@ -199,7 +199,7 @@
 
 					<TabsContent value="approved">
 						<h2 class="mb-5 text-xl font-bold">✅ 已通过的图片</h2>
-						{#if approvedPhotos.length}<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">{#each approvedPhotos as photo}<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={photo.thumbnail || photo.url} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>{/each}</div>
+						{#if approvedPhotos.length}<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">{#each approvedPhotos as photo}<div class="group relative overflow-hidden rounded-lg border bg-secondary"><a href="/photo/{photo.id}"><img src={imageUrl(photo.thumbnail || photo.url)} alt="" class="aspect-video w-full object-cover transition-transform group-hover:scale-105" loading="lazy" /></a><div class="absolute inset-x-0 bottom-0 flex gap-1 bg-black/60 p-1 opacity-0 transition-opacity group-hover:opacity-100"><button class="flex-1 rounded bg-white/20 px-1 py-0.5 text-[10px] text-white hover:bg-white/40" onclick={() => handleTogglePrivate(photo)}>私密/公开</button><button class="rounded bg-red-500/30 px-1 py-0.5 text-[10px] text-white hover:bg-red-500/60" onclick={() => handleDeletePhoto(photo.id)}>删除</button></div></div>{/each}</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无已过审的照片</p></div>{/if}
 					</TabsContent>
 
@@ -208,7 +208,7 @@
 						{#if rejectedPhotos.length}
 							<div class="space-y-3">
 								{#each rejectedPhotos as p}
-									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={p.thumbnail || p.url} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover opacity-80" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p>{#if p.reject_reason}<p class="mt-1 text-xs text-destructive">原因：{p.reject_reason}</p>{/if}
+									<div class="flex gap-4 rounded-xl border bg-card p-3.5"><img src={imageUrl(p.thumbnail || p.url)} alt="" class="h-[70px] w-[100px] shrink-0 rounded-lg object-cover opacity-80" /><div class="min-w-0 flex-1"><h4 class="truncate font-semibold">{p.title || '无标题'}</h4><p class="mt-1 text-xs text-muted-foreground">{p.aircraft_type || ''} · {p.registration || ''}</p>{#if p.reject_reason}<p class="mt-1 text-xs text-destructive">原因：{p.reject_reason}</p>{/if}
 									<div class="mt-2"><button class="rounded bg-amber-50 px-2 py-1 text-[11px] border border-amber-200 text-amber-700 hover:bg-amber-100" onclick={() => handleAppeal(p.id)}>申诉</button></div></div><Badge variant="destructive" class="shrink-0 self-start">未过审</Badge></div>
 								{/each}
 							</div>
@@ -223,7 +223,7 @@
 							<div class="space-y-3">
 								{#each allMyPhotos as photo}
 									<div class="flex gap-4 rounded-xl border bg-card p-3.5">
-										<a href="/photo/{photo.id}" class="shrink-0"><img src={photo.thumbnail || photo.url} alt="" class="h-[88px] w-[130px] rounded-lg object-cover" loading="lazy" /></a>
+										<a href="/photo/{photo.id}" class="shrink-0"><img src={imageUrl(photo.thumbnail || photo.url)} alt="" class="h-[88px] w-[130px] rounded-lg object-cover" loading="lazy" /></a>
 										<div class="min-w-0 flex-1">
 											<h4 class="truncate font-semibold">{photo.title || '无标题'}</h4>
 											<p class="mt-0.5 text-xs text-muted-foreground">{photo.registration || ''} · {photo.aircraft_type || ''} · {photo.photo_date || ''}</p>

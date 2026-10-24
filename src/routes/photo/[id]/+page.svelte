@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { api } from '$lib/api';
+	import { api, imageUrl } from '$lib/api';
 	import { currentUser } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -26,11 +26,17 @@
 
 	async function handleDownload() {
 		if (!isOwner()) { showToast('仅照片作者可下载原图', 'error'); return; }
-		// 直接用 photo.url（R2 公开地址）下载
-		const a = document.createElement('a');
-		a.href = photo.url || '';
-		a.download = photo.filename?.split('/').pop() || 'photo.jpg';
-		a.click();
+		// 原图在私有桶，经后端 ?download=true 鉴权后返回原图字节
+		try {
+			const r = await api('/api/photos/' + id + '?download=true');
+			if (!r.ok) { showToast('下载失败', 'error'); return; }
+			const blob = await r.blob();
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(blob);
+			a.download = photo.filename?.split('/').pop() || 'photo.jpg';
+			a.click();
+			URL.revokeObjectURL(a.href);
+		} catch (e) { showToast('下载失败', 'error'); }
 	}
 	function handleShare() { navigator.clipboard.writeText(window.location.href).then(() => showToast('链接已复制', 'success')); }
 </script>
@@ -39,7 +45,7 @@
 	<div class="container mx-auto max-w-[1200px] px-5 py-8">
 		<div class="grid gap-8 lg:grid-cols-[1fr_380px]">
 			<div class="flex items-center justify-center rounded-xl bg-secondary p-5">
-				<img src={photo.url} alt={photo.title} class="max-h-[70vh] max-w-full rounded-lg object-contain" />
+				<img src={imageUrl(photo.url)} alt={photo.title} class="max-h-[70vh] max-w-full rounded-lg object-contain" />
 			</div>
 			<div class="space-y-5">
 				<h1 class="text-2xl font-bold">{photo.title || 'Untitled'}</h1>

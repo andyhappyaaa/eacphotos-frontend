@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isReviewer, authLoading } from "$lib/stores/auth";
-	import { api } from '$lib/api';
+	import { api, imageUrl } from '$lib/api';
 	import { showToast } from '$lib/stores/toast';
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -169,7 +169,7 @@
 							style="z-index:{3-i};{i>0?'transform:translateX('+(i*16)+'px) translateY('+(i*10)+'px) scale('+(1-i*0.03)+');opacity:'+(1-i*0.35)+';':''}"
 						>
 							<div class="card-img-wrap" onclick={i===0?openZoom:undefined} onkeydown={i===0?(e)=>e.key==='Enter'&&openZoom():undefined} role={i===0?'button':undefined} tabindex={i===0?0:undefined}>
-								<img src={card.photo.url} alt="" class="card-img" loading="eager" />
+								<img src={imageUrl(card.photo.url)} alt="" class="card-img" loading="eager" />
 								{#if i===0}
 									<button class="zm-btn" onclick={openZoom}><Maximize2 class="h-5 w-5" /></button>
 									{#if hasPrev}<button class="nav-a nav-l" onclick={goPrev}><ChevronLeft class="h-6 w-6" /></button>{/if}
@@ -250,7 +250,7 @@
 	<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95" style="cursor:{zoomScale>1?(isDragging?'grabbing':'grab'):'zoom-out'};" onclick={closeZoom} onwheel={zoomWheel} onmousedown={zoomMDown} onmousemove={zoomMMove} onmouseup={zoomMUp} onmouseleave={zoomMUp} ondblclick={zoomDbl} onkeydown={(e)=>{if(e.key==='Escape')closeZoom();}} role="dialog" tabindex="-1">
 		<button class="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2.5 text-white hover:bg-white/25" onclick={closeZoom}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg></button>
 		<div class="absolute left-4 top-4 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/70">{Math.round(zoomScale * 100)}% · 滚轮缩放 · 拖拽平移 · 双击复位</div>
-		<img src={currentPhoto.url} alt="" class="select-none" style="transform:translate({zoomPanX}px,{zoomPanY}px) scale({zoomScale});max-width:90vw;max-height:90vh;object-fit:contain;" ondragstart={(e)=>e.preventDefault()} />
+		<img src={imageUrl(currentPhoto.url)} alt="" class="select-none" style="transform:translate({zoomPanX}px,{zoomPanY}px) scale({zoomScale});max-width:90vw;max-height:90vh;object-fit:contain;" ondragstart={(e)=>e.preventDefault()} />
 	</div>
 {/if}
 

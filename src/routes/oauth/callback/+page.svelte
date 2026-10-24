@@ -57,6 +57,12 @@
       localStorage.setItem('eac_oauth_access_token', tokens.access_token);
       if (tokens.refresh_token) localStorage.setItem('eac_oauth_refresh_token', tokens.refresh_token);
 
+      // 同时写入 cookie（供 <img> 等无法带 Authorization 头的请求经 /api/proxy 转发，
+      // 用于加载未过审原图 /api/photos/:id/raw）
+      try {
+        document.cookie = 'sb-access-token=' + encodeURIComponent(tokens.access_token) + '; Path=/; Secure; SameSite=Lax; Max-Age=3600';
+      } catch (e) { /* 忽略 cookie 写入失败 */ }
+
       // 通知后端记录本次登录时间（会话有效期判断）
       try {
         await fetch(buildUrl('/api/auth/session-touch'), {

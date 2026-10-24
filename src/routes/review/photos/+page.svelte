@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { isAdmin, authLoading } from "$lib/stores/auth";
-	import { api } from '$lib/api';
+	import { api, imageUrl } from '$lib/api';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -74,7 +74,7 @@
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 			{#each photos as p}
 				<div class="group relative overflow-hidden rounded-xl border bg-card">
-					<a href={p.url} target="_blank"><img src={p.thumbnail || p.url} alt="" class="aspect-video w-full object-cover" loading="lazy" /></a>
+					<a href={imageUrl(p.url)} target="_blank"><img src={imageUrl(p.thumbnail || p.url)} alt="" class="aspect-video w-full object-cover" loading="lazy" /></a>
 					<div class="p-2.5">
 						<div class="flex items-center justify-between gap-2">
 							<span class="truncate text-xs font-medium">{p.title || '无标题'}</span>
