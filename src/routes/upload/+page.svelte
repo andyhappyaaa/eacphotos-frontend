@@ -21,6 +21,31 @@
 	let tsToken = $state(null); let turnstileVerified = $state(false); let turnstileVerifying = $state(false);
 	let rules = $state([]);
 	let rulesFetchFailed = $state(false);
+	let adsbLoading = $state(false);
+	let adsbDone = $state(false);
+
+	// 注册号 → adsbdb 自动填充航司和机型（防抖 600ms，仅在字段为空时填充，避免覆盖手动输入）
+	$effect(() => {
+		const reg = registration.trim();
+		if (!reg || reg.length < 2) return;
+		const timer = setTimeout(() => autoFillFromReg(reg), 600);
+		return () => clearTimeout(timer);
+	});
+
+	async function autoFillFromReg(reg) {
+		adsbLoading = true; adsbDone = false;
+		try {
+			// 走后端代理（/api/proxy → /api/site/aircraft-lookup），服务端请求 adsbdb 避免浏览器 CORS 限制
+			const r = await api(`/api/site/aircraft-lookup?reg=${encodeURIComponent(reg)}`, { bypassSession: true, noRedirect: true });
+			const d = await r.json();
+			if (!d || d.error) return;
+			let filled = false;
+			if (!aircraftType && d.type) { aircraftType = d.type; filled = true; }
+			if (!airline && d.airline) { airline = d.airline; filled = true; }
+			if (filled) { adsbDone = true; showToast('已根据注册号自动填充航司和机型', 'success'); }
+		} catch (e) { /* 网络失败静默忽略，不打断上传 */ }
+		finally { adsbLoading = false; }
+	}
 
 	onMount(async () => {
 		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
@@ -95,7 +120,9 @@
 				<div class="space-y-1.5"><Label for="title">{@html $t('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required class="h-9" /></div>
 				<div class="grid grid-cols-2 gap-4">
 					<div class="space-y-1.5"><Label for="date">{@html $t('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required class="h-9" /></div>
-					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required class="h-9" /></div>
+					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required class="h-9" />
+						{#if adsbLoading}<p class="text-xs text-muted-foreground">正在查询航司/机型...</p>{:else if adsbDone}<p class="text-xs text-emerald-600">✓ 已自动填充航司和机型</p>{/if}
+					</div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div class="space-y-1.5"><Label for="airline">{@html $t('upload.airline')}</Label><Input id="airline" bind:value={airline} required class="h-9" /></div>
