@@ -66,7 +66,7 @@
     <!-- Auth -->
     <div class="hidden md:flex md:items-center md:gap-1.5">
       {#if $isLoggedIn && $currentUser}
-        <Button variant="ghost" class="h-8 gap-2 rounded-full px-2 text-sm">
+        <Button variant="ghost" class="h-8 gap-2 rounded-full px-2 text-sm" href="/dashboard">
           <Avatar class="h-7 w-7"><AvatarImage src={$currentUser.avatar} alt="" /><AvatarFallback class="text-xs">{$currentUser.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
           <span>{$currentUser.username}</span>
         </Button>
