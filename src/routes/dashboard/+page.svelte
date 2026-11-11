@@ -19,6 +19,7 @@
 	let allMyPhotos = $state([]);
 	let friends = $state([]);
 	let friendRequests = $state([]);
+	let friendInviteLink = $state('');
 	let tabLoading = $state(false);
 	let mobileMenuOpen = $state(false);
 
@@ -33,6 +34,7 @@
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
 		await refreshReviewerInfo();
+		if ($currentUser?.id) friendInviteLink = window.location.origin + '/profile?user=' + $currentUser.id;
 		loadTab('overview');
 	});
 
@@ -93,6 +95,16 @@
 			await api(`/api/users/${id}/friend-reject`, { method: 'POST', body: '{}' });
 			showToast('已移除', 'success'); loadFriends();
 		} catch (e) { showToast('操作失败', 'error'); }
+	}
+
+	async function copyFriendInvite() {
+		if (!friendInviteLink) return;
+		try {
+			await navigator.clipboard.writeText(friendInviteLink);
+			showToast('邀请链接已复制', 'success');
+		} catch (e) {
+			showToast('复制失败，请手动复制链接', 'error');
+		}
 	}
 
 	async function handleDeletePhoto(photoId) {
@@ -270,6 +282,14 @@
 						</TabsContent>
 						<TabsContent value="friends">
 							<h2 class="mb-5 text-xl font-bold">好友</h2>
+							<div class="mb-6 rounded-xl border bg-card p-4">
+								<h3 class="mb-1 text-sm font-semibold">邀请好友</h3>
+								<p class="mb-3 text-xs text-muted-foreground">把链接发给好友，对方打开后可直接加你为好友</p>
+								<div class="flex gap-2">
+									<input readonly value={friendInviteLink} class="h-9 flex-1 rounded-lg border bg-secondary px-3 text-sm text-muted-foreground" onclick={(e) => e.currentTarget.select()} />
+									<Button size="sm" onclick={copyFriendInvite}>复制链接</Button>
+								</div>
+							</div>
 							{#if friendRequests.length}
 								<h3 class="mb-3 text-sm font-semibold text-muted-foreground">好友申请</h3>
 								<div class="mb-6 space-y-2">
