@@ -17,6 +17,8 @@
 		let stats = $state({ approved: 0, pending: 0, rejected: 0, totalViews: 0, totalLikes: 0, recent: [] });
 	let pendingPhotos = $state([]); let approvedPhotos = $state([]); let rejectedPhotos = $state([]);
 	let allMyPhotos = $state([]);
+	let friends = $state([]);
+	let friendRequests = $state([]);
 	let tabLoading = $state(false);
 	let mobileMenuOpen = $state(false);
 
@@ -44,6 +46,7 @@
 			else if (tab === 'rejected') await loadRejected();
 			else if (tab === 'appeals') { window.location.href = '/appeal'; }
 			else if (tab === 'manage') await loadAllPhotos();
+			else if (tab === 'friends') await loadFriends();
 			else if (tab === 'upload') { goto('/upload'); return; }
 			else if (tab === 'settings') { window.location.href = 'https://auth.eacof.org/account'; return; }
 		} catch (e) {}
@@ -66,6 +69,32 @@
 		try { const r = await api("/api/users/me/photos?status=approved,pending,manual_review,rejected,ai_rejected,private", { noRedirect: true }); const d = await r.json(); allMyPhotos = d.photos || []; } catch (e) {}
 	}
 
+	async function loadFriends() {
+		try {
+			const [fr, rq] = await Promise.all([
+				api('/api/users/me/friends', { noRedirect: true }),
+				api('/api/users/me/friend-requests', { noRedirect: true }),
+			]);
+			const fd = await fr.json(); friends = fd.friends || [];
+			const rd = await rq.json(); friendRequests = rd.requests || [];
+		} catch (e) {}
+	}
+
+	async function handleFriendAccept(id) {
+		try {
+			const r = await api(`/api/users/${id}/friend-accept`, { method: 'POST', body: '{}' });
+			const d = await r.json();
+			if (d.error) { showToast(d.error, 'error'); return; }
+			showToast('已成为好友', 'success'); loadFriends();
+		} catch (e) { showToast('操作失败', 'error'); }
+	}
+	async function handleFriendReject(id) {
+		try {
+			await api(`/api/users/${id}/friend-reject`, { method: 'POST', body: '{}' });
+			showToast('已移除', 'success'); loadFriends();
+		} catch (e) { showToast('操作失败', 'error'); }
+	}
+
 	async function handleDeletePhoto(photoId) {
 		if (!confirm('确定要删除这张照片？此操作不可恢复。')) return;
 		try { await api('/api/photos/' + photoId + '/delete', { method: 'POST', body: '{}' }); showToast('已删除', 'success'); loadTab(activeTab); }
@@ -84,6 +113,8 @@
 		{ value: 'pending', label: '审核中', icon: Clock },
 		{ value: 'approved', label: '已过审', icon: CheckCircle },
 		{ value: 'rejected', label: '未过审', icon: XCircle },
+		{ value: 'manage', label: '图片管理', icon: Image },
+		{ value: 'friends', label: '好友', icon: Users },
 			{ value: 'organizations', label: '组织', icon: Building2 },
 		{ value: 'settings', label: '账号设置', icon: Settings }
 	];
@@ -236,6 +267,36 @@
 								{/each}
 							</div>
 						{:else}<div class="flex flex-col items-center py-16 text-muted-foreground"><Image class="mb-3 h-10 w-10 opacity-30" /><p>暂无照片</p></div>{/if}
+						</TabsContent>
+						<TabsContent value="friends">
+							<h2 class="mb-5 text-xl font-bold">好友</h2>
+							{#if friendRequests.length}
+								<h3 class="mb-3 text-sm font-semibold text-muted-foreground">好友申请</h3>
+								<div class="mb-6 space-y-2">
+									{#each friendRequests as req}
+										<div class="flex items-center gap-3 rounded-xl border bg-card p-3">
+											<Avatar class="h-10 w-10"><AvatarImage src={req.avatar} alt="" /><AvatarFallback>{req.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+											<div class="min-w-0 flex-1"><a href="/profile?user={req.requester_id}" class="font-medium hover:text-primary">{req.username}</a></div>
+											<button class="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90" onclick={() => handleFriendAccept(req.requester_id)}>接受</button>
+											<button class="rounded border px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary" onclick={() => handleFriendReject(req.requester_id)}>拒绝</button>
+										</div>
+									{/each}
+								</div>
+							{/if}
+							{#if friends.length}
+								<h3 class="mb-3 text-sm font-semibold text-muted-foreground">我的好友（{friends.length}）</h3>
+								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									{#each friends as f}
+										<div class="flex items-center gap-3 rounded-xl border bg-card p-3">
+											<Avatar class="h-10 w-10"><AvatarImage src={f.avatar} alt="" /><AvatarFallback>{f.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>
+											<a href="/profile?user={f.id}" class="min-w-0 flex-1 truncate font-medium hover:text-primary">{f.username}</a>
+											<button class="rounded border px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary" onclick={() => handleFriendReject(f.id)}>移除</button>
+										</div>
+									{/each}
+								</div>
+							{:else if !friendRequests.length}
+								<div class="flex flex-col items-center py-16 text-muted-foreground"><Users class="mb-3 h-10 w-10 opacity-30" /><p>还没有好友</p></div>
+							{/if}
 						</TabsContent>
 						<!-- ── 审核队列（仅审核员）── -->
 					<TabsContent value="review-queue">
