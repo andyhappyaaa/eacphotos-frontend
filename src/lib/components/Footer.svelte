@@ -18,11 +18,11 @@
 			<div>
 				<h3 class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tVal('footer.links')}</h3>
 				<ul class="space-y-2.5 text-sm">
-					<li><a href="/about" class="text-muted-foreground transition-colors hover:text-foreground">关于我们</a></li>
-					<li><a href="/contact" class="text-muted-foreground transition-colors hover:text-foreground">联系我们</a></li>
+					<li><a href="https://docs.eacof.org/about/" class="text-muted-foreground transition-colors hover:text-foreground">关于我们</a></li>
+					<li><a href="https://docs.eacof.org/contact/" class="text-muted-foreground transition-colors hover:text-foreground">联系我们</a></li>
 					<li><a href="/careers" class="text-muted-foreground transition-colors hover:text-foreground">加入我们</a></li>
-					<li><a href="/terms" class="text-muted-foreground transition-colors hover:text-foreground">服务条款</a></li>
-					<li><a href="/privacy" class="text-muted-foreground transition-colors hover:text-foreground">隐私政策</a></li>
+					<li><a href="https://docs.eacof.org/terms/" class="text-muted-foreground transition-colors hover:text-foreground">服务条款</a></li>
+					<li><a href="https://docs.eacof.org/privacy/" class="text-muted-foreground transition-colors hover:text-foreground">隐私政策</a></li>
 					<li><a href="/upload" class="text-muted-foreground transition-colors hover:text-foreground">上传规则</a></li>
 				</ul>
 			</div>
@@ -35,8 +35,8 @@
 		<div class="flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
 			<p>&copy; 2026 eac photos. All rights reserved.</p>
 			<div class="flex gap-6">
-				<a href="/terms" class="hover:text-foreground">服务条款</a>
-				<a href="/privacy" class="hover:text-foreground">隐私政策</a>
+				<a href="https://docs.eacof.org/terms/" class="hover:text-foreground">服务条款</a>
+				<a href="https://docs.eacof.org/privacy/" class="hover:text-foreground">隐私政策</a>
 			</div>
 		</div>
 	</div>

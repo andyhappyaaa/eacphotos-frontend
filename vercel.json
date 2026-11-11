@@ -5,6 +5,28 @@
 			"maxDuration": 30
 		}
 	},
+	"redirects": [
+		{
+			"source": "/about",
+			"destination": "https://docs.eacof.org/about/",
+			"permanent": true
+		},
+		{
+			"source": "/contact",
+			"destination": "https://docs.eacof.org/contact/",
+			"permanent": true
+		},
+		{
+			"source": "/privacy",
+			"destination": "https://docs.eacof.org/privacy/",
+			"permanent": true
+		},
+		{
+			"source": "/terms",
+			"destination": "https://docs.eacof.org/terms/",
+			"permanent": true
+		}
+	],
 	"routes": [
 		{
 			"src": "/api/proxy/(.*)",
