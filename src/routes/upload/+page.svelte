@@ -22,29 +22,57 @@
 	let rules = $state([]);
 	let rulesFetchFailed = $state(false);
 	let adsbLoading = $state(false);
-	let adsbDone = $state(false);
+	let adsbOpen = $state(false);
+	let regSuggestions = $state([]);
+	let selecting = false;
 
-	// 注册号 → adsbdb 自动填充航司和机型（防抖 600ms，仅在字段为空时填充，避免覆盖手动输入）
+	// 注册号 → adsbdb 下拉联想（每输入一个字符就刷新菜单，类似搜索引擎）
 	$effect(() => {
+		if (selecting) return;
 		const reg = registration.trim();
-		if (!reg || reg.length < 2) return;
-		const timer = setTimeout(() => autoFillFromReg(reg), 600);
+		if (!reg || reg.length < 2) {
+			regSuggestions = [];
+			adsbOpen = false;
+			return;
+		}
+		const timer = setTimeout(() => searchAircraft(reg), 300);
 		return () => clearTimeout(timer);
 	});
 
-	async function autoFillFromReg(reg) {
-		adsbLoading = true; adsbDone = false;
+	async function searchAircraft(reg) {
+		adsbLoading = true;
 		try {
 			// 走后端代理（/api/proxy → /api/site/aircraft-lookup），服务端请求 adsbdb 避免浏览器 CORS 限制
 			const r = await api(`/api/site/aircraft-lookup?reg=${encodeURIComponent(reg)}`, { bypassSession: true, noRedirect: true });
 			const d = await r.json();
-			if (!d || d.error) return;
-			let filled = false;
-			if (!aircraftType && d.type) { aircraftType = d.type; filled = true; }
-			if (!airline && d.airline) { airline = d.airline; filled = true; }
-			if (filled) { adsbDone = true; showToast('已根据注册号自动填充航司和机型', 'success'); }
-		} catch (e) { /* 网络失败静默忽略，不打断上传 */ }
-		finally { adsbLoading = false; }
+			if (d && d.type) {
+				regSuggestions = [{ registration: reg.toUpperCase(), type: d.type, airline: d.airline || '' }];
+				adsbOpen = true;
+			} else {
+				regSuggestions = [];
+				adsbOpen = true;
+			}
+		} catch (e) {
+			regSuggestions = [];
+			adsbOpen = false;
+		} finally {
+			adsbLoading = false;
+		}
+	}
+
+	function selectAircraft(s) {
+		selecting = true;
+		registration = s.registration;
+		aircraftType = s.type;
+		airline = s.airline;
+		regSuggestions = [];
+		adsbOpen = false;
+		showToast('已填充航司和机型', 'success');
+		setTimeout(() => { selecting = false; }, 100);
+	}
+
+	function closeSuggestions() {
+		setTimeout(() => { adsbOpen = false; }, 150);
 	}
 
 	onMount(async () => {
@@ -120,8 +148,26 @@
 				<div class="space-y-1.5"><Label for="title">{@html $t('upload.title')}</Label><Input id="title" bind:value={title} maxlength="100" required class="h-9" /></div>
 				<div class="grid grid-cols-2 gap-4">
 					<div class="space-y-1.5"><Label for="date">{@html $t('upload.date')}</Label><Input id="date" type="date" bind:value={photoDate} required class="h-9" /></div>
-					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label><Input id="reg" bind:value={registration} required class="h-9" />
-						{#if adsbLoading}<p class="text-xs text-muted-foreground">正在查询航司/机型...</p>{:else if adsbDone}<p class="text-xs text-emerald-600">✓ 已自动填充航司和机型</p>{/if}
+					<div class="space-y-1.5"><Label for="reg">{@html $t('upload.registration')}</Label>
+						<div class="relative" onfocusout={closeSuggestions}>
+							<Input id="reg" bind:value={registration} required class="h-9" />
+							{#if adsbOpen}
+								<div class="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border bg-popover shadow-md">
+									{#if adsbLoading}
+										<div class="px-3 py-2 text-sm text-muted-foreground">查询中...</div>
+									{:else if regSuggestions.length === 0}
+										<div class="px-3 py-2 text-sm text-muted-foreground">未找到匹配的注册号</div>
+									{:else}
+										{#each regSuggestions as s}
+											<button type="button" class="block w-full px-3 py-2 text-left text-sm transition-colors hover:bg-secondary" onclick={() => selectAircraft(s)}>
+												<span class="font-medium">{s.registration}</span>
+												<span class="text-muted-foreground"> · {s.type}{s.airline ? ' · ' + s.airline : ''}</span>
+											</button>
+										{/each}
+									{/if}
+								</div>
+							{/if}
+						</div>
 					</div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
