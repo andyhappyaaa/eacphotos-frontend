@@ -1,5 +1,6 @@
 <script>
 	import { openCheckout } from '@creem_io/svelte';
+	import { requireAuth } from '$lib/auth-guard';
 
 	const tiers = [
 		{ amount: 200, name: '心意档', price: '$2', note: '一点点心意' },
@@ -12,6 +13,8 @@
 
 	async function donate(/** @type {number} */ amount) {
 		if (loading) return;
+		const authed = await requireAuth();
+		if (!authed) return;
 		loading = true;
 		error = '';
 		try {
