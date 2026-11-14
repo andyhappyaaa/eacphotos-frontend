@@ -1,6 +1,12 @@
+import { env } from '$env/dynamic/public';
 import * as Sentry from '@sentry/sveltekit';
 
-const dsn = import.meta.env.PUBLIC_SENTRY_DSN;
+let dsn = '';
+try {
+	dsn = env.PUBLIC_SENTRY_DSN || '';
+} catch {
+	// PUBLIC_SENTRY_DSN 未配置，Sentry 不启用
+}
 
 if (dsn) {
 	Sentry.init({
