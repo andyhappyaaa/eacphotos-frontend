@@ -13,10 +13,10 @@ import { isLoggedIn, isReviewer, authLoading } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export async function requireAuth(): Promise<boolean> {
+export async function requireAuth() {
   if (!browser) return false;
   // Wait for auth init
-  await new Promise<void>(resolve => {
+  await new Promise((resolve) => {
     const unsub = authLoading.subscribe(loading => {
       if (!loading) { unsub(); resolve(); }
     });

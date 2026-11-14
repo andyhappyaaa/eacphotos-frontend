@@ -43,6 +43,7 @@
 	},
 	"dependencies": {
 		"@creem_io/svelte": "^0.2.3",
+		"@sentry/sveltekit": "^11.12.0",
 		"@supabase/supabase-js": "^2.112.2",
 		"clsx": "^2.1.1",
 		"lucide-svelte": "^1.0.1",
