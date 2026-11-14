@@ -17,7 +17,8 @@
     { href: '/gallery', key: 'nav.gallery' },
     { href: '/dashboard', key: 'nav.dashboard' },
     { href: '/search', key: 'nav.search' },
-    { href: '/news', key: 'nav.news' }
+    { href: '/news', key: 'nav.news' },
+    { href: '/donate', key: 'nav.donate' }
   ];
 
   function tVal(key) { return t ? t(key) : key; }
