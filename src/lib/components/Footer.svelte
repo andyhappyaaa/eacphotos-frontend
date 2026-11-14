@@ -1,5 +1,6 @@
 <script>
 	import { Separator } from '$lib/components/ui/separator';
+	import SupportDialog from '$lib/components/SupportDialog.svelte';
 
 	let { t } = $props();
 	function tVal(key) { return t ? t(key) : key; }
@@ -35,6 +36,7 @@
 		<div class="flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
 			<p>&copy; 2026 eac photos. All rights reserved.</p>
 			<div class="flex gap-6">
+				<SupportDialog />
 				<a href="https://docs.eacof.org/terms/" class="hover:text-foreground">服务条款</a>
 				<a href="https://docs.eacof.org/privacy/" class="hover:text-foreground">隐私政策</a>
 			</div>
