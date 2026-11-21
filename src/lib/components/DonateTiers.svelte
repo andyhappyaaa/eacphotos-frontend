@@ -31,7 +31,9 @@
 			});
 			const data = await resp.json();
 			if (!resp.ok) throw new Error(data?.error || '创建支付失败');
-			await openCheckout({ checkoutUrl: data.checkoutUrl, onComplete: () => {} });
+			const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+			openCheckout({ checkoutUrl: data.checkoutUrl, theme, onComplete: () => {} });
+			maximizeCreemModal(theme);
 		} catch (e) {
 			error = e instanceof Error ? e.message : '支付请求失败，请稍后再试';
 		} finally {
@@ -57,6 +59,22 @@
 		}
 		customError = '';
 		donate(Math.round(v * 100));
+	}
+
+	/** @param {'dark' | 'light'} theme */
+	function maximizeCreemModal(theme) {
+		// openCheckout 同步把全屏 overlay 追加到 body，这里把默认的 460×860 弹窗撑满
+		const overlay = /** @type {HTMLElement | null} */ (document.querySelector('div[style*="z-index:2147483647"]'));
+		if (!overlay) return;
+		overlay.style.padding = '0';
+		overlay.style.background = theme === 'dark' ? '#000' : '#f9fafb';
+		const column = /** @type {HTMLElement | null} */ (overlay.firstElementChild);
+		if (!column) return;
+		column.style.width = '100%';
+		column.style.height = '100%';
+		column.style.gap = '0';
+		const wrap = /** @type {HTMLElement | undefined} */ (column.children[1]);
+		if (wrap) wrap.style.borderRadius = '0';
 	}
 </script>
 
