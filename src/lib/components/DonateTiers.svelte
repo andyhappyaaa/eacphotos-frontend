@@ -15,8 +15,10 @@
 	let note = $state('');
 
 	async function donate(/** @type {number} */ amount) {
+		console.log('[donate] clicked', amount);
 		if (loading) return;
 		const authed = await requireAuth();
+		console.log('[donate] authed =', authed);
 		if (!authed) return;
 		loading = true;
 		error = '';

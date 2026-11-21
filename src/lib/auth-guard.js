@@ -24,7 +24,11 @@ export async function requireAuth() {
     }),
     new Promise((resolve) => setTimeout(resolve, 3000))
   ]);
-  if (get(isLoggedIn) || get(isReviewer)) return true;
+  if (get(isLoggedIn) || get(isReviewer)) {
+    console.log('[auth-guard] authenticated');
+    return true;
+  }
+  console.log('[auth-guard] not authenticated, redirecting to login');
   // 未登录：跳登录页并带上 redirect，登录后回到当前页面
   const current = window.location.pathname + window.location.search;
   window.location.href = '/login?redirect=' + encodeURIComponent(current);
