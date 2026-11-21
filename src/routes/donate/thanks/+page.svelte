@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { requireAuth } from '$lib/auth-guard';
+	import { api } from '$lib/api';
 
 	let status = $state('loading'); // 'loading' | 'verified' | 'denied'
 	let error = $state('');
@@ -20,9 +21,8 @@
 
 		// 3. 服务端核对这笔捐赠确已完成
 		try {
-			const resp = await fetch('/api/verify-donation', {
+			const resp = await api('/api/donate/verify', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ checkoutId })
 			});
 			const data = await resp.json();

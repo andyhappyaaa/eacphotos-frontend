@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import DonateTiers from '$lib/components/DonateTiers.svelte';
 	import { Separator } from '$lib/components/ui/separator';
+	import { api } from '$lib/api';
 
 	let donations = $state([]);
 	let loading = $state(true);
@@ -9,7 +10,7 @@
 
 	onMount(async () => {
 		try {
-			const resp = await fetch('/api/donations');
+			const resp = await api('/api/donate/list');
 			const data = await resp.json();
 			if (!resp.ok) throw new Error(data?.error || '加载失败');
 			donations = Array.isArray(data.donations) ? data.donations : [];
@@ -45,12 +46,17 @@
 		{:else}
 			<ul class="mx-auto max-w-md divide-y">
 				{#each donations as d (d.id)}
-					<li class="flex items-center justify-between gap-4 py-2.5 text-sm">
-						<span class="truncate text-muted-foreground">{d.name}</span>
-						<span class="flex shrink-0 items-center gap-3">
-							{#if d.amountLabel}<span class="font-medium">{d.amountLabel}</span>{/if}
-							{#if d.dateLabel}<span class="text-xs text-muted-foreground">{d.dateLabel}</span>{/if}
-						</span>
+					<li class="py-2.5 text-sm">
+						<div class="flex items-center justify-between gap-4">
+							<span class="truncate text-muted-foreground">{d.name}</span>
+							<span class="flex shrink-0 items-center gap-3">
+								{#if d.amountLabel}<span class="font-medium">{d.amountLabel}</span>{/if}
+								{#if d.dateLabel}<span class="text-xs text-muted-foreground">{d.dateLabel}</span>{/if}
+							</span>
+						</div>
+						{#if d.note}
+							<p class="mt-1 text-xs text-muted-foreground">“{d.note}”</p>
+						{/if}
 					</li>
 				{/each}
 			</ul>
