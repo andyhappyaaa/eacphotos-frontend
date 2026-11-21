@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 				custom_price: amount,
 				units: 1,
 				request_id: `donate_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-				success_url: 'https://eacof.org'
+				success_url: 'https://eacof.org/donate/thanks'
 			})
 		});
 
