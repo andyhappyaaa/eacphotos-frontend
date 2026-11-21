@@ -25,6 +25,8 @@ export async function requireAuth() {
     new Promise((resolve) => setTimeout(resolve, 3000))
   ]);
   if (get(isLoggedIn) || get(isReviewer)) return true;
-  window.location.href = '/login';
+  // 未登录：跳登录页并带上 redirect，登录后回到当前页面
+  const current = window.location.pathname + window.location.search;
+  window.location.href = '/login?redirect=' + encodeURIComponent(current);
   return false;
 }
