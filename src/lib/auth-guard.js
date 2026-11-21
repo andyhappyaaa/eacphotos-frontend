@@ -15,12 +15,15 @@ import { browser } from '$app/environment';
 
 export async function requireAuth() {
   if (!browser) return false;
-  // Wait for auth init
-  await new Promise((resolve) => {
-    const unsub = authLoading.subscribe(loading => {
-      if (!loading) { unsub(); resolve(); }
-    });
-  });
+  // 等待 auth 初始化完成（最多 3 秒，避免卡死导致「无反应」）
+  await Promise.race([
+    new Promise((resolve) => {
+      const unsub = authLoading.subscribe((loading) => {
+        if (!loading) { unsub(); resolve(undefined); }
+      });
+    }),
+    new Promise((resolve) => setTimeout(resolve, 3000))
+  ]);
   if (get(isLoggedIn) || get(isReviewer)) return true;
   window.location.href = '/login';
   return false;

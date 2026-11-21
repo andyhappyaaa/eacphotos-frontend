@@ -31,7 +31,7 @@
 			}),
 			new Promise(resolve => setTimeout(resolve, 3000))
 		]);
-		if (!$isLoggedIn) { window.location.href = '/login'; return; }
+		if (!$isLoggedIn && !$isReviewer) { window.location.href = '/login'; return; }
 		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
 		await refreshReviewerInfo();
 		if ($currentUser?.id) friendInviteLink = window.location.origin + '/profile?user=' + $currentUser.id;
