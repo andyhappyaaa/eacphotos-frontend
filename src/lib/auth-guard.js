@@ -9,21 +9,14 @@
  * If not logged in, redirects to /login.
  * Returns true if authenticated, false if redirected.
  */
-import { isLoggedIn, isReviewer, authLoading } from '$lib/stores/auth';
+import { isLoggedIn, isReviewer, waitForAuth } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 import { browser } from '$app/environment';
 
 export async function requireAuth() {
   if (!browser) return false;
   // 等待 auth 初始化完成（最多 3 秒，避免卡死导致「无反应」）
-  await Promise.race([
-    new Promise((resolve) => {
-      const unsub = authLoading.subscribe((loading) => {
-        if (!loading) { unsub(); resolve(undefined); }
-      });
-    }),
-    new Promise((resolve) => setTimeout(resolve, 3000))
-  ]);
+  await waitForAuth();
   if (get(isLoggedIn) || get(isReviewer)) {
     console.log('[auth-guard] authenticated');
     return true;

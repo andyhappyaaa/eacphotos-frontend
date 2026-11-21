@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
-  import { isLoggedIn, authLoading, currentUser } from '$lib/stores/auth';
+  import { isLoggedIn, waitForAuth, currentUser } from '$lib/stores/auth';
   import { api } from '$lib/api';
   import { showToast } from '$lib/stores/toast';
   import { Button } from '$lib/components/ui/button';
@@ -19,7 +19,7 @@
   let showInvite = $state(false); let inviteUsername = $state('');
 
   onMount(async () => {
-    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+    await waitForAuth();
     if (!$isLoggedIn) { window.location.href = '/login'; return; }
     loadOrg();
   });

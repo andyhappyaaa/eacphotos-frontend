@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { isLoggedIn, authLoading } from '$lib/stores/auth';
+  import { isLoggedIn, waitForAuth } from '$lib/stores/auth';
   import { api } from '$lib/api';
   import { showToast } from '$lib/stores/toast';
   import { Button } from '$lib/components/ui/button';
@@ -17,7 +17,7 @@
   let creating = $state(false);
 
   onMount(async () => {
-    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+    await waitForAuth();
     if (!$isLoggedIn) { window.location.href = '/login'; return; }
     loadOrgs();
   });

@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, verifyTurnstile, authLoading, isReviewer } from '$lib/stores/auth';
+	import { isLoggedIn, verifyTurnstile, waitForAuth, isReviewer } from '$lib/stores/auth';
 	import { api, uploadWithProgress } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -76,7 +76,7 @@
 	}
 
 	onMount(async () => {
-		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+		await waitForAuth();
 		if (!$isLoggedIn && !$isReviewer) { window.location.href = '/login'; return; }
 		try {
 			// 后端公开端点，返回管理员可编辑的上传规则；失败时回退 i18n 默认文案

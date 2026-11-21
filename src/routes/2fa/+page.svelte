@@ -1,14 +1,14 @@
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { isLoggedIn, authLoading, loginWith2FA } from '$lib/stores/auth';
+  import { isLoggedIn, waitForAuth, loginWith2FA } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
   import { Shield, Loader2 } from '@lucide/svelte';
 
   onMount(async () => {
-    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+    await waitForAuth();
     if ($isLoggedIn) { window.location.href = '/dashboard'; }
   });
 

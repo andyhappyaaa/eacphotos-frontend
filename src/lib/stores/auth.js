@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import { api as apiCall } from '$lib/api';
 
@@ -85,6 +85,23 @@ export async function restoreSession() {
     await refreshReviewerInfo();
   } catch (e) { /* ignore */ }
   finally { authLoading.set(false); }
+}
+
+/**
+ * 等待 auth 初始化完成（最多 timeoutMs 毫秒）。
+ * 注意：不能在 subscribe 的同步回调里调用尚未赋值的 unsub（TDZ 报错），
+ * 所以先判断是否已完成，再决定是否订阅。
+ */
+export function waitForAuth(timeoutMs = 3000) {
+  if (!browser) return Promise.resolve();
+  if (!get(authLoading)) return Promise.resolve();
+  return new Promise((resolve) => {
+    let unsub;
+    const timer = setTimeout(() => { unsub(); resolve(); }, timeoutMs);
+    unsub = authLoading.subscribe((loading) => {
+      if (!loading) { clearTimeout(timer); unsub(); resolve(); }
+    });
+  });
 }
 
 // ── Actions ──

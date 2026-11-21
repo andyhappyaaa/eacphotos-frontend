@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, authLoading, refreshReviewerInfo } from '$lib/stores/auth';
+	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, waitForAuth, refreshReviewerInfo } from '$lib/stores/auth';
 	import { api, imageUrl } from '$lib/api';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
@@ -25,12 +25,7 @@
 
 	onMount(async () => {
 		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载），最多 3 秒，避免卡死导致「无反应」
-		await Promise.race([
-			new Promise(resolve => {
-				const unsub = authLoading.subscribe(loading => { if (!loading) { unsub(); resolve(); } });
-			}),
-			new Promise(resolve => setTimeout(resolve, 3000))
-		]);
+		await waitForAuth();
 		if (!$isLoggedIn && !$isReviewer) { window.location.href = '/login'; return; }
 		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
 		await refreshReviewerInfo();

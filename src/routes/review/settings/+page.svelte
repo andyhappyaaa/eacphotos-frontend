@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { isAdmin, isSuperAdmin, authLoading } from "$lib/stores/auth";
+  import { isAdmin, isSuperAdmin, waitForAuth } from "$lib/stores/auth";
   import { api } from '$lib/api';
   import { showToast } from '$lib/stores/toast';
   import { Button } from '$lib/components/ui/button';
@@ -31,7 +31,7 @@
   let showJobForm = $state(false);
 
   onMount(async () => {
-    await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+    await waitForAuth();
     if (!$isAdmin) { window.location.href = '/login'; return; }
     loadTab('carousel');
   });

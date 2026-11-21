@@ -1,7 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isReviewer, authLoading } from "$lib/stores/auth";
+	import { isReviewer, waitForAuth } from "$lib/stores/auth";
 	import { api, imageUrl } from '$lib/api';
 	import { showToast } from '$lib/stores/toast';
 	import { Button } from '$lib/components/ui/button';
@@ -41,7 +41,7 @@
 	].filter(c => c.photo));
 
 	onMount(async () => {
-		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+		await waitForAuth();
 		if (!$isReviewer) { window.location.href = '/login'; return; }
 		loadQueue();
 		window.addEventListener('keydown', handleKeydown);

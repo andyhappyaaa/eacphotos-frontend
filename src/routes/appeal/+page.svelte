@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { isLoggedIn, authLoading } from '$lib/stores/auth';
+	import { isLoggedIn, waitForAuth } from '$lib/stores/auth';
 	import { api, imageUrl } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -14,7 +14,7 @@
 	let appealingId = $state(null);
 
 	onMount(async () => {
-		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+		await waitForAuth();
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		loadRejected();
 	});

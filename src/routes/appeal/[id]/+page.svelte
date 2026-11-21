@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api } from '$lib/api';
-	import { isLoggedIn, authLoading } from '$lib/stores/auth';
+	import { isLoggedIn, waitForAuth } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { showToast } from '$lib/stores/toast';
@@ -16,7 +16,7 @@
 	let error = $state('');
 
 	onMount(async () => {
-		await new Promise(r => { let u = authLoading.subscribe(v => { if (!v) { u(); r(); } }); });
+		await waitForAuth();
 		if (!$isLoggedIn) { window.location.href = '/login'; return; }
 		try {
 			const r = await api('/api/photos/' + photoId + '/status', { noRedirect: true });
