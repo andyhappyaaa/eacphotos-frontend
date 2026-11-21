@@ -109,9 +109,8 @@
 				<div class="relative flex-1">
 					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
 					<input
-						type="number"
-						min="0.01"
-						step="0.01"
+						type="text"
+						inputmode="decimal"
 						placeholder="输入金额"
 						bind:value={customAmount}
 						class="w-full rounded-lg border bg-transparent py-2 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
