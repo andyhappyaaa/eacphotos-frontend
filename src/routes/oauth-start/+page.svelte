@@ -45,7 +45,7 @@
 				<p class="text-sm text-destructive">{error}</p>
 			{:else}
 				<div class="text-5xl">🔐</div>
-				<h2 class="text-xl font-bold">正在跳转到授权页面...</h2>
+				<h2 class="text-xl font-bold">请稍后</h2>
 				<p class="text-sm text-muted-foreground">即将前往审核员后台进行身份验证</p>
 				<Loader2 class="mx-auto h-6 w-6 animate-spin text-primary" />
 			{/if}

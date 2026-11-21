@@ -70,6 +70,6 @@
   {#if error}
     <p class="text-destructive">{error}</p>
   {:else}
-    <p class="text-muted-foreground">正在跳转到登录页面...</p>
+    <p class="text-muted-foreground">请稍后</p>
   {/if}
 </div>

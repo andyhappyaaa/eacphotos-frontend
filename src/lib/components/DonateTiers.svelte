@@ -13,6 +13,8 @@
 	let loading = $state(false);
 	let error = $state('');
 	let note = $state('');
+	let customAmount = $state('');
+	let customError = $state('');
 
 	async function donate(/** @type {number} */ amount) {
 		console.log('[donate] clicked', amount);
@@ -35,6 +37,26 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	function submitCustom() {
+		if (loading) return;
+		const raw = customAmount.trim();
+		const v = Number(raw);
+		if (!raw || !Number.isFinite(v)) {
+			customError = '请输入有效金额';
+			return;
+		}
+		if (v <= 5) {
+			customError = '金额需大于 $5';
+			return;
+		}
+		if (v >= 10000) {
+			customError = '金额需小于 $10,000';
+			return;
+		}
+		customError = '';
+		donate(Math.round(v * 100));
 	}
 </script>
 
@@ -79,6 +101,32 @@
 					<span class="text-xs text-muted-foreground">{tier.desc}</span>
 				</button>
 			{/each}
+		</div>
+
+		<div class="border-t pt-3">
+			<p class="mb-2 text-xs text-muted-foreground">自定义金额（$5 – $10,000）</p>
+			<div class="flex gap-2">
+				<div class="relative flex-1">
+					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+					<input
+						type="number"
+						min="0.01"
+						step="0.01"
+						placeholder="输入金额"
+						bind:value={customAmount}
+						class="w-full rounded-lg border bg-transparent py-2 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+					/>
+				</div>
+				<button
+					type="button"
+					disabled={loading}
+					onclick={submitCustom}
+					class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+				>捐赠</button>
+			</div>
+			{#if customError}
+				<p class="mt-1 text-xs text-destructive">{customError}</p>
+			{/if}
 		</div>
 	</div>
 
