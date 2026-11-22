@@ -63,8 +63,12 @@
 
 	/** @param {'dark' | 'light'} theme */
 	function maximizeCreemModal(theme) {
-		// openCheckout 同步把全屏 overlay 追加到 body，这里把默认的 460×860 弹窗撑满
-		const overlay = /** @type {HTMLElement | null} */ (document.querySelector('div[style*="z-index:2147483647"]'));
+		// openCheckout 同步把全屏 overlay 追加到 body，这里把默认的 460×860 弹窗撑满。
+		// 不能用 style 属性字符串匹配：浏览器会把 inline style 规范成 "z-index: 2147483647"（冒号后带空格），
+		// 直接读 CSSOM 的 el.style.zIndex 才可靠。
+		const overlay = /** @type {HTMLElement | null} */ (
+			Array.from(document.querySelectorAll('div')).find((el) => el.style.zIndex === '2147483647') ?? null
+		);
 		if (!overlay) return;
 		overlay.style.padding = '0';
 		overlay.style.background = theme === 'dark' ? '#000' : '#f9fafb';
