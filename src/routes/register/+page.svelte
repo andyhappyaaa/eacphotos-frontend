@@ -7,5 +7,5 @@
 </script>
 
 <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-  <p class="text-muted-foreground">请稍后</p>
+  <p class="text-muted-foreground">请稍后...</p>
 </div>

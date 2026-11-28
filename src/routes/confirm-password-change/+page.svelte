@@ -67,7 +67,7 @@
       {:else if phase === 'success'}
         <CheckCircle class="mx-auto h-14 w-14 text-emerald-500" />
         <h2 class="text-xl font-bold text-emerald-600">密码修改成功</h2>
-        <p class="text-sm text-muted-foreground">请稍后</p>
+        <p class="text-sm text-muted-foreground">请稍后...</p>
 
       {:else}
         <CardHeader class="space-y-1 p-0 pb-4">

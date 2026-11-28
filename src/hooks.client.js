@@ -12,7 +12,13 @@ try {
 if (dsn) {
 	Sentry.init({
 		dsn,
-		tracesSampleRate: 1.0
+		tracesSampleRate: 1.0,
+		integrations: [
+			Sentry.replayIntegration()
+		],
+		// Session Replay
+		replaysSessionSampleRate: 0.1, // 生产环境抽样 10%；开发调试时可临时调成 1.0
+		replaysOnErrorSampleRate: 1.0 // 出错会话 100% 采集
 	});
 }
 

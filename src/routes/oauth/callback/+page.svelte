@@ -76,7 +76,7 @@
       } catch (e) { /* 忽略会话记录失败 */ }
 
       status = 'success';
-      message = '登录成功！请稍后';
+      message = '登录成功！请稍后...';
       const returnTo = sessionStorage.getItem('oauth_return_to');
       sessionStorage.removeItem('oauth_return_to');
       const dest = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard';
