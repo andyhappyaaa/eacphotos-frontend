@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { requireAuth } from '$lib/auth-guard';
 	import { api } from '$lib/api';
+	import { t } from '$lib/stores/i18n';
 
 	let status = $state('loading'); // 'loading' | 'verified' | 'denied'
 	let error = $state('');
@@ -33,7 +34,7 @@
 				status = 'denied';
 			}
 		} catch (e) {
-			error = e instanceof Error ? e.message : '校验失败';
+			error = e instanceof Error ? e.message : $t('donate.thanks.verifyFailed');
 			status = 'denied';
 		}
 	});
@@ -49,23 +50,23 @@
 
 <div class="container mx-auto max-w-2xl px-5 py-16">
 	{#if status === 'loading'}
-		<p class="text-center text-muted-foreground">加载中…</p>
+		<p class="text-center text-muted-foreground">{$t('donate.loading')}</p>
 	{:else if status === 'verified'}
 		<div class="text-center">
 			<div class="mb-4 text-6xl">🎉</div>
-			<h1 class="text-3xl font-bold tracking-tight">感谢你的支持！</h1>
-			<p class="mt-3 text-muted-foreground">你的心意已收到，正是这些支持让这个小站能够继续存在。</p>
+			<h1 class="text-3xl font-bold tracking-tight">{$t('donate.thanks.title')}</h1>
+			<p class="mt-3 text-muted-foreground">{$t('donate.thanks.subtitle')}</p>
 			<div class="mt-8 flex justify-center gap-3">
-				<a href="/" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">返回首页</a>
-				<a href="/gallery" class="rounded-lg border px-4 py-2 text-sm">浏览图库</a>
+				<a href="/" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">{$t('donate.thanks.home')}</a>
+				<a href="/gallery" class="rounded-lg border px-4 py-2 text-sm">{$t('donate.thanks.gallery')}</a>
 			</div>
 		</div>
 	{:else}
 		<div class="text-center">
-			<h1 class="text-2xl font-bold">未找到捐赠记录</h1>
-			<p class="mt-3 text-muted-foreground">{error || '只有完成捐赠后才能看到这个页面'}</p>
+			<h1 class="text-2xl font-bold">{$t('donate.thanks.notFound')}</h1>
+			<p class="mt-3 text-muted-foreground">{error || $t('donate.thanks.denied')}</p>
 			<div class="mt-8">
-				<a href="/donate" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">去支持一下</a>
+				<a href="/donate" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">{$t('donate.thanks.donateNow')}</a>
 			</div>
 		</div>
 	{/if}

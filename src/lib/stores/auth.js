@@ -9,6 +9,8 @@ const REFRESH_KEY = 'eac_oauth_refresh_token';
 export const authSession = writable(null);
 export const reviewerInfo = writable(null);
 export const authLoading = writable(true);
+// 会话因过期/失效被清除时置为 true（供页面提示「登录已过期」）
+export const sessionExpired = writable(false);
 
 export const isLoggedIn = derived([authSession, reviewerInfo], ([$s, $r]) => !!($s?.user || $r?.authenticated));
 export const currentUser = derived([authSession, reviewerInfo], ([$s, $r]) => {
@@ -79,8 +81,8 @@ export async function restoreSession() {
     const token = getToken();
     if (token) {
       const user = await fetchUserFromToken(token).catch(() => null);
-      if (user) authSession.set({ access_token: token, user });
-      else clearSession(); // token 失效
+      if (user) { sessionExpired.set(false); authSession.set({ access_token: token, user }); }
+      else { sessionExpired.set(true); clearSession(); } // token 失效/过期
     }
     await refreshReviewerInfo();
   } catch (e) { /* ignore */ }

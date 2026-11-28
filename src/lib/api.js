@@ -57,14 +57,19 @@ export async function api(endpoint, options = {}) {
   delete fetchOpts.noRedirect;
 
   const r = await fetch(url, fetchOpts);
-  // Only redirect on 401 if we actually sent credentials (logged-in user's token expired)
-  if (r.status === 401 && !options.noRedirect && headers['Authorization']) {
+  // 带了 token 却仍 401 → 会话过期/失效：清会话并提示；未设置 noRedirect 时稍候跳转登录
+  if (r.status === 401 && headers['Authorization']) {
     if (browser) {
-      const { clearSession } = await import('$lib/stores/auth');
+      const { clearSession, sessionExpired } = await import('$lib/stores/auth');
       clearSession();
-      window.location.href = '/login';
+      sessionExpired.set(true);
+      const { showToast } = await import('$lib/stores/toast');
+      showToast('会话已过期，请重新登录', 'error');
+      if (!options.noRedirect) {
+        setTimeout(() => { window.location.href = '/login'; }, 1200);
+      }
     }
-    throw new Error('Unauthorized');
+    throw new Error('会话已过期，请重新登录');
   }
   return r;
 }

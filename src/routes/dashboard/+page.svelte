@@ -1,7 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, waitForAuth, refreshReviewerInfo } from '$lib/stores/auth';
+	import { isLoggedIn, currentUser, isReviewer, isAdmin, isSuperAdmin, reviewerRole, waitForAuth, refreshReviewerInfo, sessionExpired } from '$lib/stores/auth';
 	import { api, imageUrl } from '$lib/api';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
@@ -26,7 +27,16 @@
 	onMount(async () => {
 		// 等待 auth 初始化完成（OAuth cookie / 本地 session 加载），最多 3 秒，避免卡死导致「无反应」
 		await waitForAuth();
-		if (!$isLoggedIn && !$isReviewer) { window.location.href = '/login'; return; }
+		if (!$isLoggedIn && !$isReviewer) {
+			// 会话过期（本地 token 失效）时先提示，再跳转登录；从未登录则直接跳转
+			if (get(sessionExpired)) {
+				showToast('会话已过期，请重新登录', 'error');
+				setTimeout(() => { window.location.href = '/login'; }, 1500);
+			} else {
+				window.location.href = '/login';
+			}
+			return;
+		}
 		// OAuth 登录后刷新 reviewer 信息（确保审核/管理标签页立即出现）
 		await refreshReviewerInfo();
 		if ($currentUser?.id) friendInviteLink = window.location.origin + '/profile?user=' + $currentUser.id;
@@ -45,6 +55,7 @@
 			else if (tab === 'manage') await loadAllPhotos();
 			else if (tab === 'friends') await loadFriends();
 			else if (tab === 'upload') { goto('/upload'); return; }
+			else if (tab === 'organizations') { goto('/orgs'); return; }
 			else if (tab === 'settings') { window.location.href = 'https://auth.eacof.org/account'; return; }
 		} catch (e) {}
 		finally { tabLoading = false; }

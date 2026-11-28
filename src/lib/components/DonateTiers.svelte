@@ -3,11 +3,12 @@
 	import { requireAuth } from '$lib/auth-guard';
 	import { api } from '$lib/api';
 	import { isLoggedIn, isReviewer, authLoading } from '$lib/stores/auth';
+	import { t } from '$lib/stores/i18n';
 
 	const tiers = [
-		{ amount: 200, name: '心意档', price: '$2', desc: '一点点心意' },
-		{ amount: 500, name: '咖啡档', price: '$5', desc: '请作者喝杯咖啡 ☕', recommended: true },
-		{ amount: 800, name: '支持档', price: '$8', desc: '真心喜欢，想多支持一点' }
+		{ amount: 200, key: 'basic', price: '$2', recommended: false },
+		{ amount: 500, key: 'coffee', price: '$5', recommended: true },
+		{ amount: 800, key: 'supporter', price: '$8', recommended: false }
 	];
 
 	let loading = $state(false);
@@ -30,12 +31,12 @@
 				body: JSON.stringify({ amount, note: note.trim() })
 			});
 			const data = await resp.json();
-			if (!resp.ok) throw new Error(data?.error || '创建支付失败');
+			if (!resp.ok) throw new Error(data?.error || $t('donate.errorCreate'));
 			const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 			openCheckout({ checkoutUrl: data.checkoutUrl, theme, onComplete: () => {} });
 			maximizeCreemModal(theme);
 		} catch (e) {
-			error = e instanceof Error ? e.message : '支付请求失败，请稍后再试';
+			error = e instanceof Error ? e.message : $t('donate.errorRequest');
 		} finally {
 			loading = false;
 		}
@@ -46,15 +47,15 @@
 		const raw = customAmount.trim();
 		const v = Number(raw);
 		if (!raw || !Number.isFinite(v)) {
-			customError = '请输入有效金额';
+			customError = $t('donate.errorInvalid');
 			return;
 		}
 		if (v <= 5) {
-			customError = '金额需大于 $5';
+			customError = $t('donate.errorTooLow');
 			return;
 		}
 		if (v >= 10000) {
-			customError = '金额需小于 $10,000';
+			customError = $t('donate.errorTooHigh');
 			return;
 		}
 		customError = '';
@@ -83,14 +84,14 @@
 </script>
 
 {#if $authLoading}
-	<p class="py-6 text-center text-sm text-muted-foreground">加载中…</p>
+	<p class="py-6 text-center text-sm text-muted-foreground">{$t('donate.loading')}</p>
 {:else if !$isLoggedIn && !$isReviewer}
 	<div class="rounded-lg border p-6 text-center">
-		<p class="font-medium">登录后才能捐赠</p>
-		<p class="mt-1 text-xs text-muted-foreground">登录后即可支持这个小站继续存在</p>
+		<p class="font-medium">{$t('donate.loginRequired')}</p>
+		<p class="mt-1 text-xs text-muted-foreground">{$t('donate.loginRequiredSub')}</p>
 		<div class="mt-4 flex justify-center gap-3">
-			<a href="/login?redirect=/donate" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">登录</a>
-			<a href="/register" class="rounded-lg border px-4 py-2 text-sm">注册</a>
+			<a href="/login?redirect=/donate" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">{$t('nav.login')}</a>
+			<a href="/register" class="rounded-lg border px-4 py-2 text-sm">{$t('nav.register')}</a>
 		</div>
 	</div>
 {:else}
@@ -99,7 +100,7 @@
 			rows="2"
 			bind:value={note}
 			maxlength="500"
-			placeholder="想说的话（可选，会随付款一起记录）"
+			placeholder={$t('donate.notePlaceholder')}
 			class="w-full resize-none rounded-lg border bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 		></textarea>
 
@@ -114,26 +115,26 @@
 						: ''}"
 				>
 					<span class="flex items-baseline gap-2">
-						<span class="font-medium">{tier.name}</span>
+						<span class="font-medium">{$t('donate.tier.' + tier.key + '.name')}</span>
 						<span class="text-base font-semibold">{tier.price}</span>
 						{#if tier.recommended}
-							<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] text-primary-foreground">推荐</span>
+							<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] text-primary-foreground">{$t('donate.recommended')}</span>
 						{/if}
 					</span>
-					<span class="text-xs text-muted-foreground">{tier.desc}</span>
+					<span class="text-xs text-muted-foreground">{$t('donate.tier.' + tier.key + '.desc')}</span>
 				</button>
 			{/each}
 		</div>
 
 		<div class="border-t pt-3">
-			<p class="mb-2 text-xs text-muted-foreground">自定义金额（$5 – $10,000）</p>
+			<p class="mb-2 text-xs text-muted-foreground">{$t('donate.customAmount')}</p>
 			<div class="flex gap-2">
 				<div class="relative flex-1">
 					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
 					<input
 						type="text"
 						inputmode="decimal"
-						placeholder="输入金额"
+						placeholder={$t('donate.customPlaceholder')}
 						bind:value={customAmount}
 						class="w-full rounded-lg border bg-transparent py-2 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					/>
@@ -143,7 +144,7 @@
 					disabled={loading}
 					onclick={submitCustom}
 					class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
-				>捐赠</button>
+				>{$t('donate.submit')}</button>
 			</div>
 			{#if customError}
 				<p class="mt-1 text-xs text-destructive">{customError}</p>
@@ -152,7 +153,7 @@
 	</div>
 
 	{#if loading}
-		<p class="text-center text-xs text-muted-foreground">正在打开支付…</p>
+		<p class="text-center text-xs text-muted-foreground">{$t('donate.opening')}</p>
 	{/if}
 	{#if error}
 		<p class="text-sm text-destructive">{error}</p>

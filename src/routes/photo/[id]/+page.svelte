@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api, imageUrl } from '$lib/api';
-	import { currentUser } from '$lib/stores/auth';
+	import { currentUser, isLoggedIn, isReviewer } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { showToast } from '$lib/stores/toast';
@@ -11,6 +11,7 @@
 	import WalineComment from '$lib/components/WalineComment.svelte';
 	
 
+	/** @type {any} */
 	let photo = $state(null);
 	let id = $derived(page.params.id);
 
@@ -19,7 +20,18 @@
 	});
 
 	async function handleLike() {
-		try { const r = await api('/api/photos/' + id + '/like', { method: 'POST' }); const d = await r.json(); photo = { ...photo, likes: d.likes }; showToast(d.liked ? '已点赞' : '已取消点赞', 'success'); } catch (e) { showToast('操作失败', 'error'); }
+		if (!$isLoggedIn && !$isReviewer) {
+			showToast('请先登录后再点赞', 'error');
+			window.location.href = '/login?redirect=' + encodeURIComponent('/photo/' + id);
+			return;
+		}
+		try {
+			const r = await api('/api/photos/' + id + '/like', { method: 'POST' });
+			const d = await r.json();
+			if (!r.ok || d.error) { showToast(d.error || '操作失败', 'error'); return; }
+			photo = { ...photo, likes: d.likes, liked: d.liked };
+			showToast(d.liked ? '已点赞' : '已取消点赞', 'success');
+		} catch (e) { showToast('操作失败', 'error'); }
 	}
 
 	function isOwner() { return $currentUser?.id && photo && ($currentUser.id === photo.photographer_id || $currentUser.id === photo.photographer?.id); }
@@ -62,7 +74,7 @@
 					<div><h3 class="mb-1 font-semibold text-sm">描述</h3><p class="text-sm text-muted-foreground">{photo.description}</p></div>
 				{/if}
 				<div class="flex gap-2.5">
-					<Button variant="outline" size="sm" onclick={handleLike} class="gap-1.5"><Heart class="h-4 w-4" /> {photo.likes || 0}</Button>
+					<Button variant="outline" size="sm" onclick={handleLike} class="gap-1.5 {photo.liked ? 'text-red-500' : ''}"><Heart class="h-4 w-4" fill={photo.liked ? 'currentColor' : 'none'} /> {photo.likes || 0}</Button>
 					{#if isOwner()}<Button variant="outline" size="sm" onclick={handleDownload} class="gap-1.5"><Download class="h-4 w-4" /> 下载原图</Button>{/if}
 					<Button variant="outline" size="sm" onclick={handleShare} class="gap-1.5"><Share2 class="h-4 w-4" /> 分享</Button>
 				</div>
