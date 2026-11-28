@@ -5,6 +5,7 @@
 	import { currentUser, isLoggedIn, isReviewer } from '$lib/stores/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '$lib/components/ui/dialog';
 	import { showToast } from '$lib/stores/toast';
 	import { formatDate } from '$lib/utils/helpers';
 	import { Download, Share2, Heart } from '@lucide/svelte';
@@ -14,6 +15,7 @@
 	/** @type {any} */
 	let photo = $state(null);
 	let id = $derived(page.params.id);
+	let showLoginPrompt = $state(false);
 
 	onMount(async () => {
 		try { const r = await api('/api/photos/' + id); photo = await r.json(); } catch (e) {}
@@ -21,8 +23,7 @@
 
 	async function handleLike() {
 		if (!$isLoggedIn && !$isReviewer) {
-			showToast('请先登录后再点赞', 'error');
-			window.location.href = '/login?redirect=' + encodeURIComponent('/photo/' + id);
+			showLoginPrompt = true;
 			return;
 		}
 		try {
@@ -85,3 +86,15 @@
 		<WalineComment path={'/photo/' + id} />
 	</div>
 {/if}
+
+<Dialog bind:open={showLoginPrompt}>
+	<DialogContent class="max-w-[400px]">
+		<DialogHeader>
+			<DialogTitle>登录后即可点赞</DialogTitle>
+			<DialogDescription>登录 eac 账号后即可点赞和参与互动</DialogDescription>
+		</DialogHeader>
+		<div class="mt-2 flex flex-col gap-2">
+			<Button href={'/login?redirect=' + encodeURIComponent('/photo/' + id)} class="w-full">通过 OAuth 登录 eac 账号</Button>
+		</div>
+	</DialogContent>
+</Dialog>
